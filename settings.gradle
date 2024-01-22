@@ -1,2 +1,4 @@
 rootProject.name = 'jpacifica'
 
+include "pacifica-core"
+include "pacifica-config"
