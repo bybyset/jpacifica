@@ -17,9 +17,12 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.error.PacificaException;
+
 public interface ReplicaService {
 
 
+    public void handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request) throws PacificaException;
 
 
 }

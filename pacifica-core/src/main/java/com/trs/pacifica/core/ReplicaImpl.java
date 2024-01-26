@@ -17,10 +17,8 @@
 
 package com.trs.pacifica.core;
 
-import com.trs.pacifica.Callback;
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.Replica;
-import com.trs.pacifica.ReplicaService;
+import com.trs.pacifica.*;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
@@ -106,6 +104,11 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
     }
 
     @Override
+    public ReplicaState getReplicaState() {
+        return Replica.super.getReplicaState();
+    }
+
+    @Override
     public void apply(Operation operation) {
 
     }
@@ -140,4 +143,8 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
         return null;
     }
 
+    @Override
+    public void handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request) throws PacificaException {
+        
+    }
 }
