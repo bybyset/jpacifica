@@ -48,5 +48,9 @@ public class TimeUtils {
         return TimeUnit.NANOSECONDS.toMicros(System.nanoTime());
     }
 
+    public static void main(String[] args) {
+        System.out.printf(monotonicMs() + " ");
+    }
+
 
 }

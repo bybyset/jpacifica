@@ -17,46 +17,47 @@
 
 package com.trs.pacifica.core;
 
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.LogManager;
-import com.trs.pacifica.LogStorage;
-import com.trs.pacifica.async.Callback;
-import com.trs.pacifica.model.LogEntry;
-import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.sender.Sender;
+import com.trs.pacifica.sender.SenderGroup;
+import com.trs.pacifica.sender.SenderType;
 
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class LogManagerImpl implements LogManager, LifeCycle<Void> {
+public class SenderGroupImpl implements SenderGroup {
 
 
-    private final LogStorage logStorage;
+    private final PacificaClient pacificaClient;
 
-    public LogManagerImpl(LogStorage logStorage) {
-        this.logStorage = logStorage;
+    private final Map<ReplicaId, Sender> senderContainer = new ConcurrentHashMap<>();
+
+    public SenderGroupImpl(PacificaClient pacificaClient) {
+        this.pacificaClient = pacificaClient;
     }
 
     @Override
-    public void init(Void option) {
-
+    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection) {
+        return false;
     }
 
     @Override
-    public void startup() {
-
+    public boolean isAlive(ReplicaId replicaId) {
+        return false;
     }
 
     @Override
-    public void shutdown() {
-
-    }
-
-    @Override
-    public void appendLogEntries(List<LogEntry> logEntries, Callback callback) {
-
-    }
-
-    @Override
-    public LogId getCommitPoint() {
+    public Sender removeSender(ReplicaId replicaId) {
         return null;
     }
+
+    @Override
+    public void clear() {
+
+    }
+
+    
+
+
 }

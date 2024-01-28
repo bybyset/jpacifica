@@ -17,9 +17,15 @@
 
 package com.trs.pacifica.rpc.client;
 
+import com.google.protobuf.Message;
+import com.trs.pacifica.RpcRequest;
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.rpc.ReplicaConnection;
 
 public interface PacificaClient extends ReplicaConnection {
+
+
+    Message appendLogEntries(RpcRequest.AppendEntriesRequest request, Callback done);
 
 
 

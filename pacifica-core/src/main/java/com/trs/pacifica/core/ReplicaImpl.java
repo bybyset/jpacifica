@@ -23,6 +23,9 @@ import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.sender.SenderGroup;
+import com.trs.pacifica.sender.SenderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +50,36 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
 
     private ReplicaState state = ReplicaState.Uninitialized;
 
+    private ConfigurationClient configurationClient;
+
+    private PacificaClient pacificaClient;
+
+    private LogManagerImpl logManager;
+
+    private SnapshotManagerImpl snapshotManager;
+
+    private SenderGroup senderGroup;
+
     public ReplicaImpl(ReplicaId replicaId) {
         this.replicaId = replicaId;
+    }
+
+
+
+    private void initLogManager(ReplicaOption option) {
+        final PacificaServiceFactory pacificaServiceFactory = Objects.requireNonNull(option.getPacificaServiceFactory(), "pacificaServiceFactory");
+        final String logStoragePath = Objects.requireNonNull(option.getLogStoragePath(), "logStoragePath");
+        final LogStorage logStorage = pacificaServiceFactory.newLogStorage(logStoragePath);
+        this.logManager = new LogManagerImpl(logStorage);
+
+    }
+
+    private void initSnapshotManager(ReplicaOption option) {
+
+    }
+
+    private void initSenderGroup(ReplicaOption option) {
+        this.senderGroup = new SenderGroupImpl(Objects.requireNonNull(this.pacificaClient, "pacificaClient"));
     }
 
     @Override
@@ -57,7 +88,11 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
         try {
             if (this.state == ReplicaState.Uninitialized) {
                 this.option = Objects.requireNonNull(option, "require option");
-
+                this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
+                this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
+                initLogManager(option);
+                initSnapshotManager(option);
+                initSenderGroup(option);
 
 
                 this.state = ReplicaState.Shutdown;

@@ -17,8 +17,18 @@
 
 package com.trs.pacifica.sender;
 
+import com.trs.pacifica.model.ReplicaId;
+
 /**
  *
  */
-public class Sender {
+public interface Sender {
+
+
+    /**
+     * Check if the peer-to-peer heartbeat is alive
+     * @return true if alive
+     */
+    public boolean isAlive();
+
 }

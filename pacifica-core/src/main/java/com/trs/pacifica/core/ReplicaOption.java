@@ -18,6 +18,8 @@
 package com.trs.pacifica.core;
 
 import com.trs.pacifica.ConfigurationClient;
+import com.trs.pacifica.PacificaServiceFactory;
+import com.trs.pacifica.rpc.client.PacificaClient;
 
 import java.util.concurrent.TimeUnit;
 
@@ -28,9 +30,6 @@ public class ReplicaOption {
     static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
 
 
-    private ConfigurationClient configurationClient;
-
-
     /**
      * Grace period. If the time limit of the Secondary detection is exceeded,
      * the Primary is considered to be faulty, and the Primary change request is sent
@@ -39,11 +38,65 @@ public class ReplicaOption {
 
     /**
      * lease period timeout ms= gracePeriodTimeoutMs * leasePeriodTimeoutRatio/100
-     *
      */
     private int leasePeriodTimeoutRatio = 80;
 
+    /**
+     * path of the log storage
+     */
+    private String logStoragePath;
 
+    private PacificaServiceFactory pacificaServiceFactory = new DefaultPacificaServiceFactory();
 
+    private ConfigurationClient configurationClient;
 
+    private PacificaClient pacificaClient;
+
+    public int getGracePeriodTimeoutMs() {
+        return gracePeriodTimeoutMs;
+    }
+
+    public void setGracePeriodTimeoutMs(int gracePeriodTimeoutMs) {
+        this.gracePeriodTimeoutMs = gracePeriodTimeoutMs;
+    }
+
+    public int getLeasePeriodTimeoutRatio() {
+        return leasePeriodTimeoutRatio;
+    }
+
+    public void setLeasePeriodTimeoutRatio(int leasePeriodTimeoutRatio) {
+        this.leasePeriodTimeoutRatio = leasePeriodTimeoutRatio;
+    }
+
+    public ConfigurationClient getConfigurationClient() {
+        return configurationClient;
+    }
+
+    public void setConfigurationClient(ConfigurationClient configurationClient) {
+        this.configurationClient = configurationClient;
+    }
+
+    public PacificaClient getPacificaClient() {
+        return pacificaClient;
+    }
+
+    public void setPacificaClient(PacificaClient pacificaClient) {
+        this.pacificaClient = pacificaClient;
+    }
+
+    public PacificaServiceFactory getPacificaServiceFactory() {
+        return pacificaServiceFactory;
+    }
+
+    public void setPacificaServiceFactory(PacificaServiceFactory pacificaServiceFactory) {
+        this.pacificaServiceFactory = pacificaServiceFactory;
+    }
+
+    public String getLogStoragePath() {
+        return logStoragePath;
+    }
+
+    public void setLogStoragePath(String logStoragePath) {
+        this.logStoragePath = logStoragePath;
+    }
 }

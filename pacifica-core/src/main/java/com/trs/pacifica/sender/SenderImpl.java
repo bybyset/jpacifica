@@ -18,29 +18,31 @@
 package com.trs.pacifica.sender;
 
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.util.TimeUtils;
 
-public interface SenderGroup {
+public class SenderImpl implements Sender{
 
+    private final ReplicaId fromId;
 
-    /**
-     * add Sender
-     * @param replicaId
-     * @param senderType
-     * @param checkConnection
-     * @return
-     */
-    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
+    private final ReplicaId toId;
 
+    private SenderType type;
 
-    /**
-     * Whether the specified Replica is alive
-     * @param replicaId
-     * @return true if the Replica is alive
-     */
-    public boolean isAlive(ReplicaId replicaId);
+    private long lastResponseTime = Long.MIN_VALUE;
 
 
-    public Sender removeSender(ReplicaId replicaId);
+    public SenderImpl(ReplicaId fromId, ReplicaId toId, SenderType type) {
+        this.fromId = fromId;
+        this.toId = toId;
+        this.type = type;
+    }
 
-    public void clear();
+    private void updateLastResponseTime() {
+        this.lastResponseTime = TimeUtils.monotonicMs();
+    }
+
+    @Override
+    public boolean isAlive() {
+        return false;
+    }
 }

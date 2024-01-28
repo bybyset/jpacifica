@@ -53,7 +53,7 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:$protobuf_version"
     }
-    generateProtoTasks.generatedFilesBaseDir = 'generated-sources'
+    generatedFilesBaseDir = "generated-sources"
     generateProtoTasks {
         all().each { task ->
         }

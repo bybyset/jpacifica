@@ -15,32 +15,13 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.sender;
+package com.trs.pacifica;
 
-import com.trs.pacifica.model.ReplicaId;
+public interface PacificaServiceFactory {
 
-public interface SenderGroup {
+    LogStorage newLogStorage(final String path);
 
-
-    /**
-     * add Sender
-     * @param replicaId
-     * @param senderType
-     * @param checkConnection
-     * @return
-     */
-    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
+    SnapshotStorage newSnapshotStorage();
 
 
-    /**
-     * Whether the specified Replica is alive
-     * @param replicaId
-     * @return true if the Replica is alive
-     */
-    public boolean isAlive(ReplicaId replicaId);
-
-
-    public Sender removeSender(ReplicaId replicaId);
-
-    public void clear();
 }

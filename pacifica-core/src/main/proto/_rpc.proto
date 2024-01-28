@@ -8,7 +8,6 @@ option java_outer_classname="RpcRequest";
 
 
 message AppendEntriesRequest {
-
   optional ReplicaId primary_id = 1;
   optional ReplicaId target_id = 2;
   optional int64 prev_log_index = 3;
@@ -17,5 +16,33 @@ message AppendEntriesRequest {
   optional int64 version = 6;
   repeated LogEntryMeta log_meta = 7;
   optional bytes log_data = 8;
-
 }
+
+message AppendEntriesResponse {
+  optional bool success = 1;
+  optional int64 version = 2;
+  optional int64 commit_point = 3;
+}
+
+message InstallSnapshotRequest {
+  optional ReplicaId primary_id = 1;
+  optional ReplicaId target_id = 2;
+  optional int64 version = 3;
+}
+
+message InstallSnapshotResponse {
+  optional bool success = 1;
+  optional int64 version = 2;
+}
+
+message RecoverRequest {
+  optional ReplicaId recover_id = 1;
+  optional ReplicaId primary_id = 2;
+  optional int64 version = 3;
+}
+
+message RecoverResponse {
+  optional bool success = 1;
+  optional int64 version = 2;
+}
+

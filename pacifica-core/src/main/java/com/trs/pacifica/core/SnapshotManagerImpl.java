@@ -15,32 +15,10 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.sender;
+package com.trs.pacifica.core;
 
-import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.SnapshotManager;
 
-public interface SenderGroup {
+public class SnapshotManagerImpl implements SnapshotManager {
 
-
-    /**
-     * add Sender
-     * @param replicaId
-     * @param senderType
-     * @param checkConnection
-     * @return
-     */
-    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
-
-
-    /**
-     * Whether the specified Replica is alive
-     * @param replicaId
-     * @return true if the Replica is alive
-     */
-    public boolean isAlive(ReplicaId replicaId);
-
-
-    public Sender removeSender(ReplicaId replicaId);
-
-    public void clear();
 }
