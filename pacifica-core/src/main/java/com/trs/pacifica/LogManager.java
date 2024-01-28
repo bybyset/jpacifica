@@ -16,6 +16,7 @@
  */
 package com.trs.pacifica;
 
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 

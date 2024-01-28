@@ -16,13 +16,11 @@
  */
 package com.trs.pacifica;
 
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.core.ReplicaState;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
-
-import javax.swing.plaf.PanelUI;
-import java.security.PublicKey;
 
 public interface Replica {
 

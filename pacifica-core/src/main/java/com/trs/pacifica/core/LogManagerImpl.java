@@ -15,15 +15,40 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.core;
 
-public interface Finished {
+import com.trs.pacifica.LifeCycle;
+import com.trs.pacifica.LogManager;
+import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
 
-    public Throwable error();
+import java.util.List;
 
-    public default boolean isOk() {
-        return error() == null;
+public class LogManagerImpl implements LogManager, LifeCycle<Void> {
+
+    @Override
+    public void init(Void option) {
+
     }
 
+    @Override
+    public void startup() {
 
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    @Override
+    public void appendLogEntries(List<LogEntry> logEntries, Callback callback) {
+
+    }
+
+    @Override
+    public LogId getCommitPoint() {
+        return null;
+    }
 }

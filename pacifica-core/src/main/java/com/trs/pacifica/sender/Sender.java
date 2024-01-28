@@ -15,33 +15,10 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.model;
+package com.trs.pacifica.sender;
 
-import com.trs.pacifica.model.ReplicaId;
-
-import java.util.List;
-
-public interface ReplicaGroup {
-
-
-    /**
-     * get name of the replica group
-     * @return
-     */
-    public  String getGroupName();
-
-    /**
-     *
-     * @return
-     */
-    public ReplicaId getPrimary();
-    public List<ReplicaId> listSecondary();
-
-    public long getVersion();
-
-
-
-
-
-
+/**
+ *
+ */
+public class Sender {
 }

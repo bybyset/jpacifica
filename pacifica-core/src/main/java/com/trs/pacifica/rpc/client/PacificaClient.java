@@ -15,32 +15,11 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.model;
+package com.trs.pacifica.rpc.client;
 
-import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.ReplicaConnection;
 
-import java.util.List;
-
-public interface ReplicaGroup {
-
-
-    /**
-     * get name of the replica group
-     * @return
-     */
-    public  String getGroupName();
-
-    /**
-     *
-     * @return
-     */
-    public ReplicaId getPrimary();
-    public List<ReplicaId> listSecondary();
-
-    public long getVersion();
-
-
-
+public interface PacificaClient extends ReplicaConnection {
 
 
 

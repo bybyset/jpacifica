@@ -15,35 +15,38 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.core;
-
-import com.trs.pacifica.ConfigurationClient;
+package com.trs.pacifica.util;
 
 import java.util.concurrent.TimeUnit;
 
-public class ReplicaOption {
-
-    static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
-    static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
-    static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
+public class TimeUtils {
 
 
-    private ConfigurationClient configurationClient;
+    private TimeUtils() {
 
+    }
 
     /**
-     * Grace period. If the time limit of the Secondary detection is exceeded,
-     * the Primary is considered to be faulty, and the Primary change request is sent
+     * Gets the current monotonic time in milliseconds.
      */
-    private int gracePeriodTimeoutMs = DEFAULT_GRACE_PERIOD_TIMEOUT_MS; // default 60 s
+    public static long monotonicMs() {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
+    }
 
     /**
-     * lease period timeout ms= gracePeriodTimeoutMs * leasePeriodTimeoutRatio/100
-     *
+     * Returns the current time in milliseconds, it's not monotonic, would be forwarded/backward by
+     * clock synchronous.
      */
-    private int leasePeriodTimeoutRatio = 80;
+    public static long nowMs() {
+        return System.currentTimeMillis();
+    }
 
-
+    /**
+     * Gets the current monotonic time in microseconds.
+     */
+    public static long monotonicUs() {
+        return TimeUnit.NANOSECONDS.toMicros(System.nanoTime());
+    }
 
 
 }

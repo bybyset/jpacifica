@@ -18,6 +18,7 @@
 package com.trs.pacifica;
 
 import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
 
 import java.util.List;
 
@@ -31,27 +32,27 @@ public interface LogStorage {
      */
     LogEntry getLogEntry(final long index);
 
+
+    /**
+     *  get the LogId at index
+     * @param index
+     * @return null if it does not exist
+     */
+    LogId getLogIdAt(int index);
+
     /**
      * get the index of the first log
      *
-     * @return -1 if nothing
+     * @return null if nothing
      */
-    long getFirstLogIndex();
+    LogId getFirstLogIndex();
 
     /**
      * get the index of the last log
      *
-     * @return -1 if nothing
+     * @return null if nothing
      */
-    long getLastLogIndex();
-
-    /**
-     * get the version of the LogId at index
-     *
-     * @param index
-     * @return
-     */
-    long getVersionAt(final long index);
+    LogId getLastLogIndex();
 
 
     /**

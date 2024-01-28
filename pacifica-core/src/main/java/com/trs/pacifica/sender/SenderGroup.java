@@ -15,33 +15,27 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.model;
+package com.trs.pacifica.sender;
 
 import com.trs.pacifica.model.ReplicaId;
 
-import java.util.List;
-
-public interface ReplicaGroup {
+public interface SenderGroup {
 
 
     /**
-     * get name of the replica group
+     * add Sender
+     * @param replicaId
+     * @param senderType
+     * @param checkConnection
      * @return
      */
-    public  String getGroupName();
+    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
+
 
     /**
-     *
-     * @return
+     * Whether the specified Replica is alive
+     * @param replicaId
+     * @return true if the Replica is alive
      */
-    public ReplicaId getPrimary();
-    public List<ReplicaId> listSecondary();
-
-    public long getVersion();
-
-
-
-
-
-
+    public boolean isAlive(ReplicaId replicaId);
 }

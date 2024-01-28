@@ -15,33 +15,20 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.model;
+package com.trs.pacifica.sender;
 
-import com.trs.pacifica.model.ReplicaId;
+public enum SenderType {
 
-import java.util.List;
+    Secondary,//
 
-public interface ReplicaGroup {
+    Candidate;//
 
+    public final boolean isSecondary() {
+        return this == Secondary;
+    }
 
-    /**
-     * get name of the replica group
-     * @return
-     */
-    public  String getGroupName();
-
-    /**
-     *
-     * @return
-     */
-    public ReplicaId getPrimary();
-    public List<ReplicaId> listSecondary();
-
-    public long getVersion();
-
-
-
-
-
+    public final boolean isCandidate() {
+        return this == Candidate;
+    }
 
 }

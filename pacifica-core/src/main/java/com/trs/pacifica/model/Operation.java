@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.model;
 
-import com.trs.pacifica.Callback;
+import com.trs.pacifica.async.Callback;
 
 import java.nio.ByteBuffer;
 

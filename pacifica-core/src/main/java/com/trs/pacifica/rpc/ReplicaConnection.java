@@ -15,33 +15,34 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.model;
+package com.trs.pacifica.rpc;
 
 import com.trs.pacifica.model.ReplicaId;
 
-import java.util.List;
-
-public interface ReplicaGroup {
-
+public interface ReplicaConnection {
 
     /**
-     * get name of the replica group
-     * @return
+     * connect to targetReplicaId
+     * @param targetReplicaId
+     * @return true if success
      */
-    public  String getGroupName();
+    public boolean connect(ReplicaId targetReplicaId);
 
     /**
-     *
+     * disconnect to targetReplicaId
+     * @param targetReplicaId
+     * @return true if success
+     */
+    public boolean disconnect(ReplicaId targetReplicaId);
+
+    /**
+     * Check the connection for the given targetReplicaId,
+     * and if there is no connection, create a new address.
+     * @param targetReplicaId
+     * @param createIfAbsent
      * @return
      */
-    public ReplicaId getPrimary();
-    public List<ReplicaId> listSecondary();
-
-    public long getVersion();
-
-
-
-
+    public boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent);
 
 
 }

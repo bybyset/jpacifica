@@ -18,10 +18,13 @@
 package com.trs.pacifica.core;
 
 import com.trs.pacifica.*;
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
@@ -29,6 +32,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaService {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(ReplicaImpl.class);
 
     private final ReplicaId replicaId;
 
@@ -145,6 +150,7 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
 
     @Override
     public void handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request) throws PacificaException {
-        
+
+
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.async;
 
 public interface Callback {
 

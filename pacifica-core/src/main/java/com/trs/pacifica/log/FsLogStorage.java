@@ -19,6 +19,7 @@ package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
 import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
 
 import java.util.List;
 
@@ -33,20 +34,19 @@ public class FsLogStorage implements LogStorage {
     }
 
     @Override
-    public long getFirstLogIndex() {
-        return 0;
+    public LogId getLogIdAt(int index) {
+        return null;
     }
 
     @Override
-    public long getLastLogIndex() {
-        return 0;
+    public LogId getFirstLogIndex() {
+        return null;
     }
 
     @Override
-    public long getVersionAt(long index) {
-        return 0;
+    public LogId getLastLogIndex() {
+        return null;
     }
-
     @Override
     public boolean appendLogEntry(LogEntry logEntry) {
         return false;
