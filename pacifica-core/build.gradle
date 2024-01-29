@@ -26,7 +26,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
+        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.19")
     }
 }
 
@@ -53,7 +53,7 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:$protobuf_version"
     }
-    generatedFilesBaseDir = "generated-sources"
+    generatedFilesBaseDir = 'generated-sources'
     generateProtoTasks {
         all().each { task ->
         }
