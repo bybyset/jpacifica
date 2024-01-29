@@ -15,19 +15,16 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.log.codec;
 
-import com.trs.pacifica.fsm.OperationIterator;
+/**
+ * LogEntry codec factory for decode/encode LogEntry
+ */
+public interface LogEntryCodecFactory {
 
-public interface StateMachine {
 
-    public void onApply(OperationIterator iterator);
+    public LogEntryDecoder getLogEntryDecoder();
 
-    public boolean onSnapshotLoad();
-
-    public boolean onSnapshotSave();
-
-    public void onShutdown();
-
+    public LogEntryEncoder getLogEntryEncoder();
 
 }

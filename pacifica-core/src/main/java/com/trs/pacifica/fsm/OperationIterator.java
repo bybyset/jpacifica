@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.fsm;
 
-import com.trs.pacifica.fsm.OperationIterator;
+import com.trs.pacifica.async.Callback;
 
-public interface StateMachine {
+import java.nio.ByteBuffer;
 
-    public void onApply(OperationIterator iterator);
-
-    public boolean onSnapshotLoad();
-
-    public boolean onSnapshotSave();
-
-    public void onShutdown();
+/**
+ * TODO optimize ByteBuffer, or BytesArray??
+ */
+public interface OperationIterator extends Iterable<ByteBuffer>{
 
 
+    public ByteBuffer getLogData();
+
+    public long getLogIndex();
+
+    public long getLogVersion();
+
+    public Callback getCallback();
 }
