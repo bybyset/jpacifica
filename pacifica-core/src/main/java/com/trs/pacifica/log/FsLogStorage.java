@@ -22,9 +22,18 @@ import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * base on FileSystem implement
+ */
 public class FsLogStorage implements LogStorage {
 
+    private final String storagePath;
+
+    public FsLogStorage(String storagePath) {
+        this.storagePath = Objects.requireNonNull(storagePath, "storagePath");
+    }
 
 
 
@@ -65,5 +74,10 @@ public class FsLogStorage implements LogStorage {
     @Override
     public boolean truncateSuffix(long lastIndexKept) {
         return false;
+    }
+
+    @Override
+    public void close() {
+
     }
 }

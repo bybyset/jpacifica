@@ -26,17 +26,19 @@ import com.trs.pacifica.model.LogId;
 
 import java.util.List;
 
-public class LogManagerImpl implements LogManager, LifeCycle<Void> {
+public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Option> {
 
 
-    private final LogStorage logStorage;
+    private Option option;
 
-    public LogManagerImpl(LogStorage logStorage) {
-        this.logStorage = logStorage;
+    private LogStorage logStorage;
+
+    public LogManagerImpl() {
     }
 
     @Override
-    public void init(Void option) {
+    public void init(LogManagerImpl.Option option) {
+        this.option = option;
 
     }
 
@@ -58,5 +60,22 @@ public class LogManagerImpl implements LogManager, LifeCycle<Void> {
     @Override
     public LogId getCommitPoint() {
         return null;
+    }
+
+
+
+    public static final class Option {
+
+        ReplicaOption replicaOption;
+
+
+
+        public ReplicaOption getReplicaOption() {
+            return replicaOption;
+        }
+
+        public void setReplicaOption(ReplicaOption replicaOption) {
+            this.replicaOption = replicaOption;
+        }
     }
 }

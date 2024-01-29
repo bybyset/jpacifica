@@ -70,7 +70,7 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
         final PacificaServiceFactory pacificaServiceFactory = Objects.requireNonNull(option.getPacificaServiceFactory(), "pacificaServiceFactory");
         final String logStoragePath = Objects.requireNonNull(option.getLogStoragePath(), "logStoragePath");
         final LogStorage logStorage = pacificaServiceFactory.newLogStorage(logStoragePath);
-        this.logManager = new LogManagerImpl(logStorage);
+        this.logManager = new LogManagerImpl();
 
     }
 

@@ -86,4 +86,7 @@ public interface LogStorage {
     boolean truncateSuffix(final long lastIndexKept);
 
 
+    void close();
+
+
 }

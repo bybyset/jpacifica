@@ -34,6 +34,7 @@ buildscript {
 dependencies {
     api project(':pacifica-config')
     implementation "com.google.protobuf:protobuf-java:$protobuf_version"
+    implementation "com.google.guava:guava:$guava_version"
 }
 
 sourceSets {
