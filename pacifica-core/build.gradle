@@ -62,4 +62,10 @@ protobuf {
     }
 }
 
+tasks.withType(Copy) {
+    filesMatching("**/*.proto") {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+}
+
 

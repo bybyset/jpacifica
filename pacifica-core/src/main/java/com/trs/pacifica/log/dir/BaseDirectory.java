@@ -15,11 +15,31 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log;
+package com.trs.pacifica.log.dir;
 
-public class Index {
+import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.log.io.DataInOutput;
+
+import java.io.IOException;
+
+public abstract class BaseDirectory {
 
 
+    protected volatile boolean isOpen = true;
 
+    public abstract String[] listAll() throws IOException;
+
+
+    public abstract void deleteFile(String name) throws IOException;
+
+
+    public abstract DataInOutput createDataInOutput(String name) throws IOException;
+
+
+    protected final void ensureOpen() throws AlreadyClosedException {
+        if (!isOpen) {
+            throw new AlreadyClosedException("this Directory is closed");
+        }
+    }
 
 }

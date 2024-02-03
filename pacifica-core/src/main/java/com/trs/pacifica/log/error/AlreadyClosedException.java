@@ -15,7 +15,14 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log;
+package com.trs.pacifica.log.error;
 
-public class Block {
+public class AlreadyClosedException  extends IllegalStateException {
+    public AlreadyClosedException(String message) {
+        super(message);
+    }
+
+    public AlreadyClosedException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

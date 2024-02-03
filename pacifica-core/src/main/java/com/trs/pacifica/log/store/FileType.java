@@ -15,18 +15,30 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.storage;
+package com.trs.pacifica.log.store;
 
-import com.trs.pacifica.log.file.AbstractFile;
+public enum FileType {
 
-import java.util.ArrayList;
-import java.util.List;
+    INDEX(".i", "_log_index"),
+    SEGMENT(".s", "_log_segment")
+    ;
 
-public abstract class AbstractStore {
+    private final String suffix;
+
+    private final String filename;
 
 
-    private List<AbstractFile> files = new ArrayList<>();
+    FileType(String suffix, String filename) {
+        this.suffix = suffix;
+        this.filename = filename;
+    }
 
 
+    public String getSuffix() {
+        return suffix;
+    }
 
+    public String getFilename() {
+        return filename;
+    }
 }

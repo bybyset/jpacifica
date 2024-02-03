@@ -15,16 +15,36 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.codec;
+package com.trs.pacifica.util;
 
-import com.trs.pacifica.model.LogEntry;
+/**
+ * two-tuples
+ * @param <A>
+ * @param <B>
+ */
+public class Tuple2<A, B> {
+    private final A first;
+    private final B second;
 
-public interface LogEntryEncoder {
+    public Tuple2(final A first, final B second) {
+        this.first = first;
+        this.second = second;
+    }
 
-    /**
-     * encode LogEntry
-     * @param logEntry
-     * @return byte[]
-     */
-    public byte[] encode(LogEntry logEntry);
+    public static <K, V> Tuple2<K, V> of(final K first, final V second) {
+        return new Tuple2<K, V>(first, second);
+    }
+
+    public A getFirst() {
+        return first;
+    }
+
+    public B getSecond() {
+        return second;
+    }
+
+    @Override
+    public String toString() {
+        return "Tuple{" + "first=" + first + ", second=" + second + '}';
+    }
 }

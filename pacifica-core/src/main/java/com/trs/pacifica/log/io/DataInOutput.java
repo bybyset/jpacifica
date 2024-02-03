@@ -15,16 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.codec;
+package com.trs.pacifica.log.io;
 
-import com.trs.pacifica.model.LogEntry;
-
-public interface LogEntryEncoder {
-
-    /**
-     * encode LogEntry
-     * @param logEntry
-     * @return byte[]
-     */
-    public byte[] encode(LogEntry logEntry);
+public interface DataInOutput extends Input, Output{
 }

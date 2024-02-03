@@ -15,16 +15,23 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.codec;
+package com.trs.pacifica.log.io;
 
-import com.trs.pacifica.model.LogEntry;
+import java.io.IOException;
 
-public interface LogEntryEncoder {
+public interface Input {
 
     /**
-     * encode LogEntry
-     * @param logEntry
-     * @return byte[]
+     * Reads and returns a single byte.
      */
-    public byte[] encode(LogEntry logEntry);
+    public byte readByte() throws IOException;
+
+    /**
+     * Sets current position in this file, where the next read will occur. If this is beyond the end
+     * of the file then this will throw {@code EOFException} and then the stream is in an undetermined
+     * state.
+     */
+    public abstract void seek(long pos) throws IOException;
+
+
 }
