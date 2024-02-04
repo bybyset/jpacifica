@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.log.file;
 
+import com.trs.pacifica.log.dir.BaseDirectory;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -30,17 +32,15 @@ public class SegmentFile extends AbstractFile {
     // 4 Bytes for written data length
     static final int _SEGMENT_DATA_LENGTH_SIZE = 4;
 
-
-    public SegmentFile(String filePath, int fileSize, long firstLogIndex, long startOffset) {
-        super(filePath, fileSize, firstLogIndex, startOffset);
+    public SegmentFile(BaseDirectory parentDir, String filename) throws IOException {
+        super(parentDir, filename);
     }
+
 
     public int appendSegmentData(final long logIndex, final byte[] data) throws IOException {
         final byte[] segmentEntry = encodeData(data);
         return doAppendData(logIndex, segmentEntry);
     }
-
-
 
 
     private byte[] encodeData(final byte[] data) {

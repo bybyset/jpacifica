@@ -15,30 +15,38 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.store;
+package com.trs.pacifica.log.dir;
 
-public enum FileType {
+import com.trs.pacifica.log.io.Input;
+import com.trs.pacifica.log.io.Output;
 
-    INDEX(".i", "_log_index"),
-    SEGMENT(".s", "_log_segment")
-    ;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collection;
 
-    private final String suffix;
+public class NIOFSDirectory extends FsDirectory {
 
-    private final String filename;
-
-
-    FileType(String suffix, String filename) {
-        this.suffix = suffix;
-        this.filename = filename;
+    public NIOFSDirectory(Path path) throws IOException {
+        super(path);
     }
 
+    @Override
+    public void sync(Collection<String> names) throws IOException {
 
-    public String getSuffix() {
-        return suffix;
     }
 
-    public String getFilename() {
-        return filename;
+    @Override
+    public Input openInput(String name) throws IOException {
+        return null;
+    }
+
+    @Override
+    public Output openOutput(String name) throws IOException {
+        return null;
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 }

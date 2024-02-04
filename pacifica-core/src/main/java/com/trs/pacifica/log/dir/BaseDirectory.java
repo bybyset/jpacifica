@@ -26,12 +26,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.Collection;
 
 public abstract class BaseDirectory implements Closeable {
 
 
     protected volatile boolean isOpen = true;
+
+
+
 
     /**
      * Returns names of all files stored in this directory.
@@ -62,7 +66,7 @@ public abstract class BaseDirectory implements Closeable {
      * @return
      * @throws IOException
      */
-    public abstract int fileLength(String name) throws IOException;
+    public abstract long fileLength(String name) throws IOException;
 
 
     /**

@@ -18,22 +18,31 @@
 package com.trs.pacifica.log.dir;
 
 import com.trs.pacifica.log.io.DataInOutput;
+import com.trs.pacifica.util.Constants;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class FsDirectory extends BaseDirectory{
+public abstract class FsDirectory extends BaseDirectory {
 
     protected final Path directory;
 
-    private final AtomicLong fileCounter = new AtomicLong(0);
+
+    private final AtomicInteger opsSinceLastDelete = new AtomicInteger();
+
+    /**
+     * Maps files that we are trying to delete (or we tried already but failed) before attempting to delete that key.
+     */
+    private final Set<String> pendingDeletes =
+            Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     public FsDirectory(Path path) throws IOException {
         if (!Files.isDirectory(path)) {
@@ -43,8 +52,20 @@ public abstract class FsDirectory extends BaseDirectory{
     }
 
 
+    /**
+     *
+     */
+    public static FsDirectory open(Path path) throws IOException {
+        if (Constants.JRE_IS_64BIT && MMapDirectory.UNMAP_SUPPORTED) {
+            return new MMapDirectory(path);
+        } else {
+            return new NIOFSDirectory(path);
+        }
+    }
+
     @Override
     public String[] listAll() throws IOException {
+        ensureOpen();
         return listAll(directory, null);
     }
 
@@ -66,11 +87,89 @@ public abstract class FsDirectory extends BaseDirectory{
 
     @Override
     public void deleteFile(String name) throws IOException {
-
+        if (pendingDeletes.contains(name)) {
+            throw new NoSuchFileException("file \"" + name + "\" is already pending delete");
+        }
+        privateDeleteFile(name, false);
+        maybeDeletePendingFiles();
     }
 
     @Override
-    public DataInOutput createDataInOutput(String name) throws IOException {
-        return null;
+    public long fileLength(String name) throws IOException {
+        ensureOpen();
+        if (pendingDeletes.contains(name)) {
+            throw new NoSuchFileException("file \"" + name + "\" is pending delete");
+        }
+        return Files.size(directory.resolve(name));
     }
+
+
+    @Override
+    public synchronized void close() throws IOException {
+        isOpen = false;
+        deletePendingFiles();
+    }
+
+    /**
+     * Try to delete any pending files that we had previously tried to delete but failed because we
+     * are on Windows and the files were still held open.
+     */
+    public synchronized void deletePendingFiles() throws IOException {
+        if (pendingDeletes.isEmpty() == false) {
+
+            // TODO: we could fix IndexInputs from FSDirectory subclasses to call this when they are
+            // closed?
+            // Clone the set since we mutate it in privateDeleteFile:
+            for (String name : new HashSet<>(pendingDeletes)) {
+                privateDeleteFile(name, true);
+            }
+        }
+    }
+
+    private void maybeDeletePendingFiles() throws IOException {
+        if (pendingDeletes.isEmpty() == false) {
+            // This is a silly heuristic to try to avoid O(N^2), where N = number of files pending
+            // deletion, behaviour on Windows:
+            int count = opsSinceLastDelete.incrementAndGet();
+            if (count >= pendingDeletes.size()) {
+                opsSinceLastDelete.addAndGet(-count);
+                deletePendingFiles();
+            }
+        }
+    }
+
+    private void privateDeleteFile(String name, boolean isPendingDelete) throws IOException {
+        try {
+            Files.delete(directory.resolve(name));
+            pendingDeletes.remove(name);
+        } catch (NoSuchFileException | FileNotFoundException e) {
+            // We were asked to delete a non-existent file:
+            pendingDeletes.remove(name);
+            if (isPendingDelete && Constants.WINDOWS) {
+                // TODO: can we remove this OS-specific hacky logic?  If windows deleteFile is buggy, we
+                // should instead contain this workaround in
+                // a WindowsFSDirectory ...
+                // "pending delete" state, failing the first
+                // delete attempt with access denied and then apparently falsely failing here when we try ot
+                // delete it again, with NSFE/FNFE
+            } else {
+                throw e;
+            }
+        } catch (
+                @SuppressWarnings("unused")
+                IOException ioe) {
+            // On windows, a file delete can fail because there's still an open
+            // file handle against it.  We record this in pendingDeletes and
+            // try again later.
+
+            // TODO: this is hacky/lenient (we don't know which IOException this is), and
+            // it should only happen on filesystems that can do this, so really we should
+            // move this logic to WindowsDirectory or something
+
+            // TODO: can/should we do if (Constants.WINDOWS) here, else throw the exc?
+            // but what about a Linux box with a CIFS mount?
+            pendingDeletes.add(name);
+        }
+    }
+
 }

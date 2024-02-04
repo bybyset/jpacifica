@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.log.file;
 
+import com.trs.pacifica.log.dir.BaseDirectory;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -29,8 +31,8 @@ public class IndexFile extends AbstractFile {
 
     static final int _INDEX_ENTRY_BYTE_SIZE = _INDEX_MAGIC_BYTES.length + Integer.BYTES + Integer.BYTES;
 
-    public IndexFile(String filePath, int fileSize, long firstLogIndex, long startOffset) {
-        super(filePath, fileSize, firstLogIndex, startOffset);
+    public IndexFile(BaseDirectory parentDir, String filename) throws IOException {
+        super(parentDir, filename);
     }
 
 

@@ -22,34 +22,41 @@ import com.trs.pacifica.log.file.IndexFile;
 import com.trs.pacifica.util.Tuple2;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
-import static com.trs.pacifica.log.store.FileType.INDEX;
-
-public class IndexStore extends AbstractStore{
+public class IndexStore extends AbstractStore {
 
 
-    public IndexStore(FileType type) {
-        super(INDEX);
+    static final String _FILE_SUFFIX = ".i";
+
+    public IndexStore(Path dir) throws IOException {
+        super(dir);
+    }
+
+
+    @Override
+    protected String getFileSuffix() {
+        return _FILE_SUFFIX;
     }
 
     /**
      * build an index for LogEntry, so that it is easy to read the log bytes through logIndex.
      *
-     * @param logIndex  log index of LogEntry
+     * @param logIndex    log index of LogEntry
      * @param logPosition start position in segment file about LogEntry
      * @return two-tuples: (start write position of segment file, expect flush position)
-     * @exception IllegalArgumentException we have to submit in the order of log index, otherwise throw
+     * @throws IllegalArgumentException we have to submit in the order of log index, otherwise throw
      */
     public Tuple2<Integer, Long> appendLogIndex(final long logIndex, final int logPosition) throws IOException {
         //TODO How is the order of logIndex guaranteed for concurrency, or do we not need to consider the order?
         final long lastLogIndex = getLastLogIndex();
         if (logIndex != lastLogIndex + 1) {
-            throw  new IllegalArgumentException("expect logIndex=" + lastLogIndex + 1 + ", but logIndex=" + logIndex);
+            throw new IllegalArgumentException("expect logIndex=" + lastLogIndex + 1 + ", but logIndex=" + logIndex);
         }
         final int minFreeByteSize = IndexFile.getWriteByteSize();
-        final AbstractFile lastFile = getLastFile(minFreeByteSize , true);
+        final AbstractFile lastFile = getLastFile(minFreeByteSize, true);
         if (lastFile != null && lastFile instanceof IndexFile) {
-            final int startWritePos = ((IndexFile)lastFile).appendIndexData(logIndex, logPosition);
+            final int startWritePos = ((IndexFile) lastFile).appendIndexData(logIndex, logPosition);
             final long expectFlushPos = lastFile.getStartOffset() + startWritePos + minFreeByteSize;
             return Tuple2.of(startWritePos, expectFlushPos);
         }

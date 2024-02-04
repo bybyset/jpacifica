@@ -49,7 +49,7 @@ public abstract class AbstractFile {
 
     private final String filename;
 
-    private final int fileSize;
+    private final long fileSize;
 
     private long lastLogIndex;
 

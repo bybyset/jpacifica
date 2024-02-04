@@ -22,18 +22,19 @@ import com.trs.pacifica.log.file.SegmentFile;
 import com.trs.pacifica.util.Tuple2;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
-import static com.trs.pacifica.log.store.FileType.SEGMENT;
+public class SegmentStore extends AbstractStore {
 
-public class SegmentStore extends AbstractStore{
+    static final String _FILE_SUFFIX = ".s";
 
-
-    public SegmentStore() {
-        super(SEGMENT);
+    public SegmentStore(Path dir) throws IOException {
+        super(dir);
     }
 
     /**
      * append byte array of the log data to segment file
+     *
      * @param logIndex
      * @param logData
      * @return two-tuples: (start write position of segment file, expect flush position)
@@ -43,13 +44,18 @@ public class SegmentStore extends AbstractStore{
         final int minFreeByteSize = SegmentFile.getWriteByteSize(logData);
         final AbstractFile lastFile = getLastFile(minFreeByteSize, true);
         if (lastFile != null && lastFile instanceof SegmentFile) {
-            final int startWritePos = ((SegmentFile)lastFile).appendSegmentData(logIndex, logData);
+            final int startWritePos = ((SegmentFile) lastFile).appendSegmentData(logIndex, logData);
             final long expectFlushPos = lastFile.getStartOffset() + startWritePos + minFreeByteSize;
             return Tuple2.of(startWritePos, expectFlushPos);
         }
         return Tuple2.of(-1, -1L);
     }
 
+
+    @Override
+    protected String getFileSuffix() {
+        return _FILE_SUFFIX;
+    }
 
     @Override
     protected AbstractFile doAllocateFile(String filename) throws IOException {

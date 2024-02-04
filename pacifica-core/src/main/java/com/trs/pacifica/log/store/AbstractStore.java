@@ -17,10 +17,13 @@
 
 package com.trs.pacifica.log.store;
 
+import com.trs.pacifica.log.dir.BaseDirectory;
+import com.trs.pacifica.log.dir.FsDirectory;
 import com.trs.pacifica.log.file.AbstractFile;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,17 +50,23 @@ public abstract class AbstractStore {
     protected final Lock writeLock = lock.writeLock();
 
 
-    protected final FileType type;
+    protected final BaseDirectory directory;
 
 
-    public AbstractStore(final FileType type) {
-        this.type = type;
+    public AbstractStore(Path dir) throws IOException {
+        this.directory = FsDirectory.open(dir);
     }
 
-    private final String getNextFilename(String suffix) {
-        return String.format("%019d", this.nextFileSequence.getAndIncrement()) + suffix;
+
+    private final String getNextFilename() {
+        return String.format("%019d", this.nextFileSequence.getAndIncrement()) + getFileSuffix();
     }
 
+    /**
+     * get file suffix when create next file
+     * @return
+     */
+    protected abstract String getFileSuffix();
 
 
     protected abstract AbstractFile doAllocateFile(final String filename) throws IOException;
@@ -65,11 +74,12 @@ public abstract class AbstractStore {
 
     /**
      * create next file
+     *
      * @return AbstractFile
      * @throws IOException
      */
     protected AbstractFile allocateNextFile() throws IOException {
-        final String nextFilename = getNextFilename(this.type.getSuffix());
+        final String nextFilename = getNextFilename();
         return doAllocateFile(nextFilename);
     }
 
@@ -98,12 +108,13 @@ public abstract class AbstractStore {
                 this.writeLock.unlock();
             }
         }
-        return  lastFile;
+        return lastFile;
     }
 
 
     /**
      * get first log index
+     *
      * @return -1L if nothing
      */
     public long getFirstLogIndex() {
@@ -121,6 +132,7 @@ public abstract class AbstractStore {
 
     /**
      * get last log index
+     *
      * @return -1L if nothing
      */
     public long getLastLogIndex() {
