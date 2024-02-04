@@ -17,16 +17,18 @@
 
 package com.trs.pacifica.log.file;
 
+import com.trs.pacifica.log.dir.BaseDirectory;
+import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 
-import java.io.Closeable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public abstract class AbstractFile implements Output {
+public abstract class AbstractFile {
 
     protected static final byte _FILE_END_BYTE = 'x';
 
@@ -43,37 +45,21 @@ public abstract class AbstractFile implements Output {
     private final AtomicInteger currentFlushPosition = new AtomicInteger(0);
 
 
-    private final String filePath;
+    private final BaseDirectory parentDir;
 
-    private int fileSize;
+    private final String filename;
+
+    private final int fileSize;
 
     private long lastLogIndex;
 
 
-    public AbstractFile(final String filePath, final int fileSize, final long firstLogIndex, final long startOffset) {
-        this.filePath = filePath;
-        this.fileSize = fileSize;
-        this.header.setFirstLogIndex(firstLogIndex);
-        this.header.setStartOffset(startOffset);
+    public AbstractFile(final BaseDirectory parentDir, final String filename) throws IOException {
+        this.parentDir = parentDir;
+        this.filename = filename;
+        this.fileSize = parentDir.fileLength(filename);
+        this.loadHeader();
     }
-
-
-    public String getFilePath() {
-        return this.filePath;
-    }
-
-
-    public void open() throws IOException {
-        this.writeLock.lock();
-        try {
-
-
-            loadHeader();
-        } finally {
-            this.writeLock.unlock();
-        }
-    }
-
 
     /**
      * append data to
@@ -85,16 +71,13 @@ public abstract class AbstractFile implements Output {
      */
     protected int doAppendData(final long logIndex, final byte[] data) throws IOException {
         this.writeLock.lock();
-        int wrotePosition = this.currentPosition.get();
         try {
             if (this.header.isBlank()) {
                 this.header.setFirstLogIndex(logIndex);
                 this.saveHeader();
-                wrotePosition = this.header.getBytesSize();
             }
+            int wrotePosition = this.currentPosition.get();
             writeBytes(data);
-            // set current position write
-            this.currentPosition.set(wrotePosition + data.length);
             // set last log index
             this.lastLogIndex = logIndex;
             return wrotePosition;
@@ -103,18 +86,27 @@ public abstract class AbstractFile implements Output {
         }
     }
 
-    @Override
-    public void writeByte(byte b) throws IOException {
-
+    private void loadHeader() throws IOException {
+        try (final Input input = this.parentDir.openInput(this.filename);) {
+            byte[] bytes = new byte[FileHeader.getBytesSize()];
+            input.seek(0);
+            input.readBytes(bytes);
+            this.header.decode(ByteBuffer.wrap(bytes));
+        }
     }
 
-
-    private void loadHeader() {
-
+    private void saveHeader() throws IOException {
+        final ByteBuffer byteBuffer = this.header.encode();
+        writeBytes(byteBuffer.array());
     }
 
-    private void saveHeader() {
-
+    private void writeBytes(final byte[] bytes) throws IOException {
+        assert bytes != null;
+        assert bytes.length > 0;
+        try (final Output output = this.parentDir.openOutput(this.filename);) {
+            output.writeBytes(bytes);
+            this.currentPosition.getAndAdd(bytes.length);
+        }
     }
 
 
@@ -208,12 +200,15 @@ public abstract class AbstractFile implements Output {
     public void fillEmptyBytesInFileEnd() throws IOException {
         this.writeLock.lock();
         try {
-            if (this.currentPosition.get() == this.fileSize) {
+            if (this.currentPosition.get() >= this.fileSize) {
                 return;
             }
-            while (this.currentPosition.getAndIncrement() < this.fileSize) {
-                writeByte(_FILE_END_BYTE);
+
+            byte[] footer = new byte[this.fileSize - this.currentPosition.get()];
+            for (int i = 0; i < footer.length; i++) {
+                footer[i] = _FILE_END_BYTE;
             }
+            writeBytes(footer);
         } finally {
             this.writeLock.unlock();
         }

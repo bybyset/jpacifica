@@ -17,9 +17,10 @@
 
 package com.trs.pacifica.log.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 
-public interface Output {
+public interface Output extends Closeable {
 
     /**
      * Writes a single byte.

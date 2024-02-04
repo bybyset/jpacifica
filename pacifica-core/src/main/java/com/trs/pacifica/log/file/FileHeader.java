@@ -88,7 +88,7 @@ public class FileHeader {
         return this.firstLogIndex < 0;
     }
 
-    public int getBytesSize() {
+    public static int getBytesSize() {
         return _HEADER_BYTE_SIZE;
     }
 
