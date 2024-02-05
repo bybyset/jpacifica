@@ -61,6 +61,7 @@ public interface Output extends Closeable {
         }
     }
 
+    public void flush() throws IOException;
 
 
 

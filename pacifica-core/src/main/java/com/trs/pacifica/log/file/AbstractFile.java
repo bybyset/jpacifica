@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.log.file;
 
-import com.trs.pacifica.log.dir.BaseDirectory;
+import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 
@@ -45,7 +45,7 @@ public abstract class AbstractFile {
     private final AtomicInteger currentFlushPosition = new AtomicInteger(0);
 
 
-    private final BaseDirectory parentDir;
+    private final Directory parentDir;
 
     private final String filename;
 
@@ -54,7 +54,7 @@ public abstract class AbstractFile {
     private long lastLogIndex;
 
 
-    public AbstractFile(final BaseDirectory parentDir, final String filename) throws IOException {
+    public AbstractFile(final Directory parentDir, final String filename) throws IOException {
         this.parentDir = parentDir;
         this.filename = filename;
         this.fileSize = parentDir.fileLength(filename);
@@ -87,7 +87,7 @@ public abstract class AbstractFile {
     }
 
     private void loadHeader() throws IOException {
-        try (final Input input = this.parentDir.openInput(this.filename);) {
+        try (final Input input = this.parentDir.openInOutput(this.filename);) {
             byte[] bytes = new byte[FileHeader.getBytesSize()];
             input.seek(0);
             input.readBytes(bytes);
@@ -103,7 +103,7 @@ public abstract class AbstractFile {
     private void writeBytes(final byte[] bytes) throws IOException {
         assert bytes != null;
         assert bytes.length > 0;
-        try (final Output output = this.parentDir.openOutput(this.filename);) {
+        try (final Output output = this.parentDir.openInOutput(this.filename);) {
             output.writeBytes(bytes);
             this.currentPosition.getAndAdd(bytes.length);
         }
@@ -188,7 +188,7 @@ public abstract class AbstractFile {
     public int getFreeByteSize() {
         this.readLock.lock();
         try {
-            return this.fileSize - this.currentPosition.get();
+            return (int)(this.fileSize - this.currentPosition.get());
         } finally {
             this.readLock.unlock();
         }
@@ -203,8 +203,8 @@ public abstract class AbstractFile {
             if (this.currentPosition.get() >= this.fileSize) {
                 return;
             }
-
-            byte[] footer = new byte[this.fileSize - this.currentPosition.get()];
+            final int emptySize = (int) (this.fileSize - this.currentPosition.get());
+            byte[] footer = new byte[emptySize];
             for (int i = 0; i < footer.length; i++) {
                 footer[i] = _FILE_END_BYTE;
             }

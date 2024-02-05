@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.log.dir;
 
+import com.trs.pacifica.log.io.DataInOutput;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 
@@ -36,14 +37,10 @@ public class NIOFSDirectory extends FsDirectory {
     }
 
     @Override
-    public Input openInput(String name) throws IOException {
+    public DataInOutput openInOutput(String name) throws IOException {
         return null;
     }
 
-    @Override
-    public Output openOutput(String name) throws IOException {
-        return null;
-    }
 
     @Override
     public void close() throws IOException {

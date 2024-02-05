@@ -19,6 +19,7 @@ package com.trs.pacifica.log.dir;
 
 import com.trs.pacifica.log.io.DataInOutput;
 import com.trs.pacifica.util.Constants;
+import com.trs.pacifica.util.IOUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -103,11 +104,40 @@ public abstract class FsDirectory extends BaseDirectory {
         return Files.size(directory.resolve(name));
     }
 
+    @Override
+    public void sync(Collection<String> names) throws IOException {
+        ensureOpen();
+        for (String name : names) {
+            fsync(name);
+        }
+        maybeDeletePendingFiles();
+    }
+
+    @Override
+    public synchronized Set<String> getPendingDeletions() throws IOException {
+        deletePendingFiles();
+        if (pendingDeletes.isEmpty()) {
+            return Collections.emptySet();
+        } else {
+            return Set.copyOf(pendingDeletes);
+        }
+    }
 
     @Override
     public synchronized void close() throws IOException {
         isOpen = false;
         deletePendingFiles();
+    }
+
+    protected void ensureCanRead(String name) throws IOException {
+        if (pendingDeletes.contains(name)) {
+            throw new NoSuchFileException(
+                    "file \"" + name + "\" is pending delete and cannot be opened for read");
+        }
+    }
+
+    protected void fsync(String name) throws IOException {
+        IOUtils.fsync(directory.resolve(name), false);
     }
 
     /**

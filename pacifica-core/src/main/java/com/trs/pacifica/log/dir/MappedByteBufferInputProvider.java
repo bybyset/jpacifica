@@ -18,6 +18,8 @@
 package com.trs.pacifica.log.dir;
 
 import com.trs.pacifica.log.dir.MMapDirectory;
+import com.trs.pacifica.log.io.ByteBufferDataInOutput;
+import com.trs.pacifica.log.io.DataInOutput;
 import com.trs.pacifica.util.Constants;
 
 import java.io.IOException;
@@ -25,6 +27,11 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
@@ -33,7 +40,7 @@ import java.util.logging.Logger;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
 
-public class MappedByteBufferInputProvider implements MMapDirectory.MMapInputProvider {
+public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutputProvider {
 
     private final BufferCleaner cleaner;
 
@@ -55,6 +62,24 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInputPro
     }
 
     @Override
+    public DataInOutput openInput(Path path, int chunkSizePower, boolean preload) throws IOException {
+        if (chunkSizePower > 30) {
+            throw new IllegalArgumentException(
+                    "ByteBufferIndexInput cannot use a chunk size of >1 GiBytes.");
+        }
+
+        final String resourceDescription = "ByteBufferIndexInput(path=\"" + path.toString() + "\")";
+
+        try (FileChannel fc = FileChannel.open(path, StandardOpenOption.READ)) {
+            final long fileSize = fc.size();
+            return ByteBufferDataInOutput.newInstance(
+                    map(resourceDescription, fc, chunkSizePower, preload, fileSize),
+                    fileSize,
+                    chunkSizePower);
+        }
+    }
+
+    @Override
     public boolean isUnmapSupported() {
         return unmapSupported;
     }
@@ -69,6 +94,42 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInputPro
         return Constants.JRE_IS_64BIT ? (1L << 30) : (1L << 28);
     }
 
+
+    /** Maps a file into a set of buffers */
+    final ByteBuffer[] map(
+            String resourceDescription, FileChannel fc, int chunkSizePower, boolean preload, long length)
+            throws IOException {
+        if ((length >>> chunkSizePower) >= Integer.MAX_VALUE)
+            throw new IllegalArgumentException(
+                    "RandomAccessFile too big for chunk size: " + resourceDescription);
+
+        final long chunkSize = 1L << chunkSizePower;
+
+        // we always allocate one more buffer, the last one may be a 0 byte one
+        final int nrBuffers = (int) (length >>> chunkSizePower) + 1;
+
+        final ByteBuffer[] buffers = new ByteBuffer[nrBuffers];
+
+        long startOffset = 0L;
+        for (int bufNr = 0; bufNr < nrBuffers; bufNr++) {
+            final int bufSize =
+                    (int) ((length > (startOffset + chunkSize)) ? chunkSize : (length - startOffset));
+            final MappedByteBuffer buffer;
+            try {
+                buffer = fc.map(FileChannel.MapMode.READ_WRITE, startOffset, bufSize);
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+            } catch (IOException ioe) {
+                throw convertMapFailedIOException(ioe, resourceDescription, bufSize);
+            }
+            if (preload) {
+                buffer.load();
+            }
+            buffers[bufNr] = buffer;
+            startOffset += bufSize;
+        }
+
+        return buffers;
+    }
 
     private static Object unmapHackImpl() {
         final MethodHandles.Lookup lookup = lookup();

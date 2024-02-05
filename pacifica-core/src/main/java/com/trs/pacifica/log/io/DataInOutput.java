@@ -17,5 +17,10 @@
 
 package com.trs.pacifica.log.io;
 
+import java.io.IOException;
+
 public interface DataInOutput extends Input, Output{
+
+    @Override
+    public void close() throws IOException;
 }

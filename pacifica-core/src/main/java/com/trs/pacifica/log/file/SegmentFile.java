@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.log.file;
 
-import com.trs.pacifica.log.dir.BaseDirectory;
+import com.trs.pacifica.log.dir.Directory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,7 +32,7 @@ public class SegmentFile extends AbstractFile {
     // 4 Bytes for written data length
     static final int _SEGMENT_DATA_LENGTH_SIZE = 4;
 
-    public SegmentFile(BaseDirectory parentDir, String filename) throws IOException {
+    public SegmentFile(Directory parentDir, String filename) throws IOException {
         super(parentDir, filename);
     }
 

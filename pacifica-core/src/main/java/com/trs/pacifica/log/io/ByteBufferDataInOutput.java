@@ -90,6 +90,11 @@ public class ByteBufferDataInOutput implements DataInOutput {
         this.outputContext.curByteBuffer.put(b);
     }
 
+    @Override
+    public void flush() throws IOException {
+
+    }
+
     public long getWritePosition() {
         return calculatePosition(this.outputContext);
     }
@@ -113,6 +118,18 @@ public class ByteBufferDataInOutput implements DataInOutput {
         context.curByteBufferIndex = byteBufferIndex;
     }
 
+    @Override
+    public void close() throws IOException {
+
+    }
+
+
+    public static ByteBufferDataInOutput newInstance(
+            ByteBuffer[] buffers,
+            long length,
+            int chunkSizePower) {
+        return new ByteBufferDataInOutput(buffers, chunkSizePower, length);
+    }
 
     static class Context {
 
