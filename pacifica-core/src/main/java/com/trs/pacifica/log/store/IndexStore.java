@@ -18,7 +18,9 @@
 package com.trs.pacifica.log.store;
 
 import com.trs.pacifica.log.file.AbstractFile;
+import com.trs.pacifica.log.file.FileHeader;
 import com.trs.pacifica.log.file.IndexFile;
+import com.trs.pacifica.log.file.SegmentFile;
 import com.trs.pacifica.util.Tuple2;
 
 import java.io.IOException;
@@ -29,8 +31,13 @@ public class IndexStore extends AbstractStore {
 
     static final String _FILE_SUFFIX = ".i";
 
-    public IndexStore(Path dir) throws IOException {
+    static final int _DEFAULT_SEGMENT_FILE_SIZE = FileHeader.getBytesSize() + 1000 * IndexFile.getWriteByteSize();
+
+    private final int fileSize;
+
+    public IndexStore(Path dir, int fileSize) throws IOException {
         super(dir);
+        this.fileSize = fileSize;
     }
 
 
@@ -66,6 +73,7 @@ public class IndexStore extends AbstractStore {
 
     @Override
     protected AbstractFile doAllocateFile(String filename) throws IOException {
-        return null;
+        this.directory.createFile(filename, this.fileSize);
+        return new IndexFile(this.directory, filename);
     }
 }

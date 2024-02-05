@@ -17,12 +17,13 @@
 
 package com.trs.pacifica.log.dir;
 
-import com.trs.pacifica.log.io.DataInOutput;
 import com.trs.pacifica.util.Constants;
 import com.trs.pacifica.util.IOUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -30,7 +31,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class FsDirectory extends BaseDirectory {
 
@@ -127,6 +127,15 @@ public abstract class FsDirectory extends BaseDirectory {
     public synchronized void close() throws IOException {
         isOpen = false;
         deletePendingFiles();
+    }
+
+    @Override
+    public void createFile(String filename, int fileSize) throws IOException {
+        final Path path = this.directory.resolve(filename);
+        File file = path.toFile();
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");) {
+            randomAccessFile.setLength(fileSize);
+        }
     }
 
     protected void ensureCanRead(String name) throws IOException {

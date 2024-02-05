@@ -18,7 +18,7 @@
 package com.trs.pacifica.log.dir;
 
 import com.trs.pacifica.log.error.AlreadyClosedException;
-import com.trs.pacifica.log.io.DataInOutput;
+import com.trs.pacifica.log.io.InOutput;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -61,7 +61,7 @@ public abstract class FilterDirectory extends Directory {
     }
 
     @Override
-    public DataInOutput openInOutput(String name) throws IOException {
+    public InOutput openInOutput(String name) throws IOException {
         return this.delegate.openInOutput(name);
     }
 

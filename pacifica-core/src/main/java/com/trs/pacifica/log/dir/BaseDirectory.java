@@ -18,17 +18,6 @@
 package com.trs.pacifica.log.dir;
 
 import com.trs.pacifica.log.error.AlreadyClosedException;
-import com.trs.pacifica.log.io.DataInOutput;
-import com.trs.pacifica.log.io.Input;
-import com.trs.pacifica.log.io.Output;
-
-import java.io.Closeable;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.util.Collection;
 
 public abstract class BaseDirectory extends Directory {
 

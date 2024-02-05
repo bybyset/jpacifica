@@ -27,9 +27,17 @@ import java.nio.file.Path;
 public class SegmentStore extends AbstractStore {
 
     static final String _FILE_SUFFIX = ".s";
+    static final int _DEFAULT_SEGMENT_FILE_SIZE = 32 * 1024 * 1024;
+
+    private final int fileSize;
+
+    public SegmentStore(Path dir, int fileSize) throws IOException {
+        super(dir);
+        this.fileSize = fileSize;
+    }
 
     public SegmentStore(Path dir) throws IOException {
-        super(dir);
+        this(dir, _DEFAULT_SEGMENT_FILE_SIZE);
     }
 
     /**
@@ -59,7 +67,8 @@ public class SegmentStore extends AbstractStore {
 
     @Override
     protected AbstractFile doAllocateFile(String filename) throws IOException {
-        return null;
+        this.directory.createFile(filename, this.fileSize);
+        return new SegmentFile(this.directory, filename);
     }
 
 

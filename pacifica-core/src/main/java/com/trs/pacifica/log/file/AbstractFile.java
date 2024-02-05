@@ -109,17 +109,6 @@ public abstract class AbstractFile {
         }
     }
 
-
-    /**
-     * @param index
-     * @param data
-     * @return
-     */
-    protected int appendBytes(final long index, final byte[] data) {
-
-        return 0;
-    }
-
     /**
      * @return
      */
@@ -213,15 +202,5 @@ public abstract class AbstractFile {
             this.writeLock.unlock();
         }
     }
-
-
-    public void flush() {
-
-    }
-
-    public void close() {
-
-    }
-
 
 }

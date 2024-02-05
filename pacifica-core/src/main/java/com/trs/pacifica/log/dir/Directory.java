@@ -18,7 +18,7 @@
 package com.trs.pacifica.log.dir;
 
 import com.trs.pacifica.log.error.AlreadyClosedException;
-import com.trs.pacifica.log.io.DataInOutput;
+import com.trs.pacifica.log.io.InOutput;
 
 import java.io.Closeable;
 import java.io.FileNotFoundException;
@@ -80,7 +80,16 @@ public abstract class Directory implements Closeable {
      * @return Input
      * @throws IOException in case of I/O error
      */
-    public abstract DataInOutput openInOutput(String name) throws IOException;
+    public abstract InOutput openInOutput(String name) throws IOException;
+
+
+    /**
+     * Creates a file with the specified filename and file byte size
+     * @param filename name of the file
+     * @param fileSize byte size of the file
+     * @throws IOException
+     */
+    public abstract void createFile(String filename, int fileSize) throws IOException;
 
 
     /**

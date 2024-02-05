@@ -15,12 +15,9 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.dir;
+package com.trs.pacifica.log.io;
 
 import com.trs.pacifica.log.dir.MMapDirectory;
-import com.trs.pacifica.log.io.ByteBufferDataInOutput;
-import com.trs.pacifica.log.io.DataInOutput;
-import com.trs.pacifica.util.Constants;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
@@ -36,6 +33,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
 import java.util.logging.Logger;
+import com.trs.pacifica.log.io.ByteBufferGuard.BufferCleaner;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
@@ -62,20 +60,21 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
     }
 
     @Override
-    public DataInOutput openInput(Path path, int chunkSizePower, boolean preload) throws IOException {
+    public InOutput openInput(Path path, int chunkSizePower, boolean preload, boolean useUnmapHack) throws IOException {
         if (chunkSizePower > 30) {
             throw new IllegalArgumentException(
                     "ByteBufferIndexInput cannot use a chunk size of >1 GiBytes.");
         }
 
-        final String resourceDescription = "ByteBufferIndexInput(path=\"" + path.toString() + "\")";
-
+        final String resourceDescription = "ByteBufferInOutput(path=\"" + path.toString() + "\")";
         try (FileChannel fc = FileChannel.open(path, StandardOpenOption.READ)) {
             final long fileSize = fc.size();
             return ByteBufferDataInOutput.newInstance(
+                    resourceDescription,
                     map(resourceDescription, fc, chunkSizePower, preload, fileSize),
                     fileSize,
-                    chunkSizePower);
+                    chunkSizePower,
+                    new ByteBufferGuard(resourceDescription, useUnmapHack ? cleaner : null));
         }
     }
 
@@ -91,7 +90,7 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
 
     @Override
     public long getDefaultMaxChunkSize() {
-        return Constants.JRE_IS_64BIT ? (1L << 30) : (1L << 28);
+        return 1L << 20; // 1M
     }
 
 
@@ -165,7 +164,7 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
         }
     }
 
-    private static BufferCleaner newBufferCleaner(final MethodHandle unmapper) {
+    private static ByteBufferGuard.BufferCleaner newBufferCleaner(final MethodHandle unmapper) {
         assert Objects.equals(methodType(void.class, ByteBuffer.class), unmapper.type());
         return (String resourceDescription, ByteBuffer buffer) -> {
             if (!buffer.isDirect()) {
@@ -192,13 +191,4 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
         return AccessController.doPrivileged(action);
     }
 
-
-    /**
-     * Pass in an implementation of this interface to cleanup ByteBuffers. MMapDirectory implements
-     * this to allow unmapping of bytebuffers with private Java APIs.
-     */
-    @FunctionalInterface
-    static interface BufferCleaner {
-        void freeBuffer(String resourceDescription, ByteBuffer b) throws IOException;
-    }
 }

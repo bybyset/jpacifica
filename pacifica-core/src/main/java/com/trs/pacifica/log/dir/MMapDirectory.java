@@ -17,7 +17,9 @@
 
 package com.trs.pacifica.log.dir;
 
-import com.trs.pacifica.log.io.DataInOutput;
+import com.trs.pacifica.log.io.InOutput;
+import com.trs.pacifica.log.io.Input;
+import com.trs.pacifica.log.io.MappedByteBufferInputProvider;
 import com.trs.pacifica.util.Constants;
 
 import java.io.IOException;
@@ -28,6 +30,9 @@ import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+/**
+ * code from lucene
+ */
 public class MMapDirectory extends FsDirectory {
 
     /**
@@ -75,6 +80,9 @@ public class MMapDirectory extends FsDirectory {
     private Predicate<String> preload = NO_FILES;
 
 
+    private boolean useUnmapHack = UNMAP_SUPPORTED;
+
+
     public MMapDirectory(Path path) throws IOException {
         this(path, DEFAULT_MAX_CHUNK_SIZE);
     }
@@ -91,11 +99,11 @@ public class MMapDirectory extends FsDirectory {
 
 
     @Override
-    public DataInOutput openInOutput(String name) throws IOException {
+    public InOutput openInOutput(String name) throws IOException {
         ensureOpen();
         ensureCanRead(name);
         Path path = directory.resolve(name);
-        return PROVIDER.openInput(path, chunkSizePower, preload.test(name));
+        return PROVIDER.openInput(path, chunkSizePower, preload.test(name), useUnmapHack);
     }
 
     /**
@@ -108,6 +116,52 @@ public class MMapDirectory extends FsDirectory {
      */
     public void setPreload(Predicate<String> preload) {
         this.preload = preload;
+    }
+
+
+    /**
+     * This method enables the workaround for unmapping the buffers from address space after closing
+     * {@link Input}, that is mentioned in the bug report. This hack may fail on
+     * non-Oracle/OpenJDK JVMs. It forcefully unmaps the buffer on close by using an undocumented
+     * internal cleanup functionality.
+     *
+     * <p>On Java 19 with {@code --enable-preview} command line setting, this class will use the
+     * modern {@code MemorySegment} API which allows to safely unmap. <em>The following warnings no
+     * longer apply in that case!</em>
+     *
+     * <p><b>NOTE:</b> Enabling this is completely unsupported by Java and may lead to JVM crashes if
+     * <code>IndexInput</code> is closed while another thread is still accessing it (SIGSEGV).
+     *
+     * <p>To enable the hack, the following requirements need to be fulfilled: The used JVM must be
+     * Oracle Java / OpenJDK 8 <em>(preliminary support for Java 9 EA build 150+ was added with Lucene
+     * 6.4)</em>. In addition, the following permissions need to be granted to {@code lucene-core.jar}
+     * in your <a
+     * href="http://docs.oracle.com/javase/8/docs/technotes/guides/security/PolicyFiles.html">policy
+     * file</a>:
+     *
+     * <ul>
+     *   <li>{@code permission java.lang.reflect.ReflectPermission "suppressAccessChecks";}
+     *   <li>{@code permission java.lang.RuntimePermission "accessClassInPackage.sun.misc";}
+     * </ul>
+     *
+     * @throws IllegalArgumentException if {@link #UNMAP_SUPPORTED} is <code>false</code> and the
+     *                                  workaround cannot be enabled. The exception message also contains an explanation why the
+     *                                  hack cannot be enabled (e.g., missing permissions).
+     */
+    public void setUseUnmap(final boolean useUnmapHack) {
+        if (useUnmapHack && !UNMAP_SUPPORTED) {
+            throw new IllegalArgumentException(UNMAP_NOT_SUPPORTED_REASON);
+        }
+        this.useUnmapHack = useUnmapHack;
+    }
+
+    /**
+     * Returns <code>true</code>, if the unmap workaround is enabled.
+     *
+     * @see #setUseUnmap
+     */
+    public boolean getUseUnmap() {
+        return useUnmapHack;
     }
 
     private static MMapInOutputProvider lookupProvider() {
@@ -138,7 +192,7 @@ public class MMapDirectory extends FsDirectory {
                         "You are running with Java 19. To make full use of MMapDirectory, please pass '--enable-preview' to the Java command line.");
             } else {
                 log.warning(
-                        "You are running with Java 20 or later. To make full use of MMapDirectory, please update Apache Lucene.");
+                        "You are running with Java 20 or later. To make full use of MMapDirectory.");
             }
             return new MappedByteBufferInputProvider();
         } catch (NoSuchMethodException | IllegalAccessException e) {
@@ -154,9 +208,9 @@ public class MMapDirectory extends FsDirectory {
         UNMAP_NOT_SUPPORTED_REASON = PROVIDER.getUnmapNotSupportedReason();
     }
 
-    static interface MMapInOutputProvider {
+    public static interface MMapInOutputProvider {
 
-        DataInOutput openInput(Path path, int chunkSizePower, boolean preload) throws IOException;
+        InOutput openInput(Path path, int chunkSizePower, boolean preload, boolean useUnmapHack) throws IOException;
 
         boolean isUnmapSupported();
 
