@@ -28,18 +28,23 @@ import java.nio.file.Path;
 
 public class IndexStore extends AbstractStore {
 
-
     static final String _FILE_SUFFIX = ".i";
 
-    static final int _DEFAULT_SEGMENT_FILE_SIZE = FileHeader.getBytesSize() + 1000 * IndexFile.getWriteByteSize();
+    public static final String _DEFAULT_INDEX_DIR_NAME = "log_index";
+    public static final int _DEFAULT_INDEX_ENTRY_COUNT_PER_FILE = 1000;
+
+    static final int _DEFAULT_SEGMENT_FILE_SIZE = FileHeader.getBytesSize() + _DEFAULT_INDEX_ENTRY_COUNT_PER_FILE * IndexFile.getWriteByteSize();
 
     private final int fileSize;
 
-    public IndexStore(Path dir, int fileSize) throws IOException {
+    public IndexStore(Path dir, int indexEntryCountPerFile) throws IOException {
         super(dir);
-        this.fileSize = fileSize;
+        this.fileSize = FileHeader.getBytesSize() + indexEntryCountPerFile * IndexFile.getWriteByteSize();;
     }
 
+    public IndexStore(Path dir) throws IOException {
+        this(dir, _DEFAULT_INDEX_ENTRY_COUNT_PER_FILE);
+    }
 
     @Override
     protected String getFileSuffix() {
@@ -75,5 +80,19 @@ public class IndexStore extends AbstractStore {
     protected AbstractFile doAllocateFile(String filename) throws IOException {
         this.directory.createFile(filename, this.fileSize);
         return new IndexFile(this.directory, filename);
+    }
+
+
+    /**
+     * lookup position of the log in segment file
+     * @param index  sequence number of log
+     * @return _NOT_FOUND
+     */
+    public int lookupPositionAt(long index) {
+        // lookup IndexFile
+
+        //
+
+        return AbstractFile._NOT_FOUND;
     }
 }

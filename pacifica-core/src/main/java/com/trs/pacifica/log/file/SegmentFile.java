@@ -37,9 +37,21 @@ public class SegmentFile extends AbstractFile {
     }
 
 
-    public int appendSegmentData(final long logIndex, final byte[] data) throws IOException {
-        final byte[] segmentEntry = encodeData(data);
+    /**
+     *
+     * @param logIndex
+     * @param logEntryBytes
+     * @return
+     * @throws IOException
+     */
+    public int appendLogEntry(final long logIndex, final byte[] logEntryBytes) throws IOException {
+        final byte[] segmentEntry = encodeData(logEntryBytes);
         return doAppendData(logIndex, segmentEntry);
+    }
+
+    public byte[] lookupLogEntry(final int position) {
+
+        return null;
     }
 
 

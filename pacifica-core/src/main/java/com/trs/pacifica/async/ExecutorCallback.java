@@ -19,10 +19,12 @@ package com.trs.pacifica.async;
 
 import java.util.concurrent.Executor;
 
-public interface Callback {
+public interface ExecutorCallback extends Callback {
 
 
-    public void run(Finished finished);
+    static final Executor _DEFAULT_EXECUTOR = new DirectExecutor();
 
-
+    default public Executor executor() {
+        return _DEFAULT_EXECUTOR;
+    }
 }

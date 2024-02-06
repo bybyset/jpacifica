@@ -30,6 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class AbstractFile {
 
+    public static int _NOT_FOUND = Integer.MIN_VALUE;
+
     protected static final byte _FILE_END_BYTE = 'x';
 
     protected final FileHeader header = new FileHeader();

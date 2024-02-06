@@ -28,7 +28,11 @@ import com.trs.pacifica.util.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
@@ -48,26 +52,52 @@ public class FsLogStorage implements LogStorage {
 
     private final LogEntryEncoder logEntryEncoder;
 
-    private IndexStore indexStore;
+    private final IndexStore indexStore;
 
-    private SegmentStore segmentStore;
+    private final SegmentStore segmentStore;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
+    private final FsLogStorageOption option;
 
-    public FsLogStorage(String storagePath, LogEntryDecoder logEntryDecoder, LogEntryEncoder logEntryEncoder) {
+
+    public FsLogStorage(String storagePath, LogEntryDecoder logEntryDecoder, LogEntryEncoder logEntryEncoder, FsLogStorageOption option) throws IOException {
         this.storagePath = Objects.requireNonNull(storagePath, "storagePath");
         this.logEntryDecoder = logEntryDecoder;
         this.logEntryEncoder = logEntryEncoder;
+        this.option = option;
+        File storageDir = new File(storagePath);
+        if (!storageDir.exists() && !storageDir.mkdir()) {
+            throw new IOException(String.format("storagePath=%s not is directory.", storagePath));
+        }
+        final Path path = storageDir.toPath();
+        this.indexStore = new IndexStore(path.resolve(this.option.getIndexDirName()), this.option.getIndexEntryCountPerFile());
+        this.segmentStore = new SegmentStore(path.resolve(this.option.getSegmentDirName()), this.option.getSegmentFileSize());
     }
 
+    public FsLogStorage(String storagePath, LogEntryDecoder logEntryDecoder, LogEntryEncoder logEntryEncoder) throws IOException {
+        this(storagePath, logEntryDecoder, logEntryEncoder, new FsLogStorageOption());
+    }
 
 
     @Override
     public LogEntry getLogEntry(long index) {
+        //validate
+
+        //look index  at IndexStore
+
+        final int logPosition = this.indexStore.lookupPositionAt(index);
+
+        //look LogEntry bytes at SegmentStore
+
+        final byte[] logEntryBytes = this.segmentStore.lookupLogEntry(index, logPosition);
+
+        // decode LogEntry bytes
+        this.logEntryDecoder.decode(logEntryBytes);
+
         return null;
     }
 

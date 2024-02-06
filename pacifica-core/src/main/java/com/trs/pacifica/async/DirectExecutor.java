@@ -19,10 +19,9 @@ package com.trs.pacifica.async;
 
 import java.util.concurrent.Executor;
 
-public interface Callback {
-
-
-    public void run(Finished finished);
-
-
+public class DirectExecutor implements Executor {
+    @Override
+    public void execute(Runnable command) {
+        command.run();
+    }
 }

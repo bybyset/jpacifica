@@ -21,21 +21,27 @@ import java.util.Objects;
 
 public class LogId {
 
+    /**
+     * sequence number of
+     */
     private final long index;
 
-    private final long version;
+    /**
+     * term number of primary
+     */
+    private final long term;
 
-    public LogId(long index, long version) {
+    public LogId(long index, long term) {
         this.index = index;
-        this.version = version;
+        this.term = term;
     }
 
     public long getIndex() {
         return index;
     }
 
-    public long getVersion() {
-        return version;
+    public long getTerm() {
+        return term;
     }
 
     @Override
@@ -43,11 +49,11 @@ public class LogId {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LogId logId = (LogId) o;
-        return index == logId.index && version == logId.version;
+        return index == logId.index && term == logId.term;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(index, version);
+        return Objects.hash(index, term);
     }
 }

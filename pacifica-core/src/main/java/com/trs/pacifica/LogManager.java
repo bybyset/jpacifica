@@ -35,6 +35,8 @@ public interface LogManager {
 
     public LogId getCommitPoint();
 
+    
+
 
 
 

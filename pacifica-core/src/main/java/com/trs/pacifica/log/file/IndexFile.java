@@ -18,6 +18,7 @@
 package com.trs.pacifica.log.file;
 
 import com.trs.pacifica.log.dir.Directory;
+import com.trs.pacifica.log.store.IndexStore;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,6 +40,16 @@ public class IndexFile extends AbstractFile {
     public int appendIndexData(final long logIndex, final int logPosition) throws IOException {
         final byte[] indexEntry = encodeData(toRelativeOffset(logIndex), logPosition);
         return doAppendData(logIndex, indexEntry);
+    }
+
+    /**
+     * lookup position of the log in segment file
+     * @param logIndex
+     * @return
+     */
+    public int lookupPositionAt(final long logIndex) {
+
+        return AbstractFile._NOT_FOUND;
     }
 
 

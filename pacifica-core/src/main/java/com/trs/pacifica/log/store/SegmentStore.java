@@ -27,8 +27,9 @@ import java.nio.file.Path;
 public class SegmentStore extends AbstractStore {
 
     static final String _FILE_SUFFIX = ".s";
-    static final int _DEFAULT_SEGMENT_FILE_SIZE = 32 * 1024 * 1024;
 
+    public static final String _DEFAULT_SEGMENT_DIR_NAME = "log_segment";
+    public static final int _DEFAULT_SEGMENT_FILE_SIZE = 32 * 1024 * 1024;
     private final int fileSize;
 
     public SegmentStore(Path dir, int fileSize) throws IOException {
@@ -52,13 +53,24 @@ public class SegmentStore extends AbstractStore {
         final int minFreeByteSize = SegmentFile.getWriteByteSize(logData);
         final AbstractFile lastFile = getLastFile(minFreeByteSize, true);
         if (lastFile != null && lastFile instanceof SegmentFile) {
-            final int startWritePos = ((SegmentFile) lastFile).appendSegmentData(logIndex, logData);
+            final int startWritePos = ((SegmentFile) lastFile).appendLogEntry(logIndex, logData);
             final long expectFlushPos = lastFile.getStartOffset() + startWritePos + minFreeByteSize;
             return Tuple2.of(startWritePos, expectFlushPos);
         }
         return Tuple2.of(-1, -1L);
     }
 
+    /**
+     *
+     * @param logIndex
+     * @param logPosition
+     * @return
+     */
+    public byte[] lookupLogEntry(final long logIndex, final int logPosition) {
+        //lookup segment file
+        final SegmentFile segmentFile = (SegmentFile) this.lookupFile(logIndex);
+        return null;
+    }
 
     @Override
     protected String getFileSuffix() {

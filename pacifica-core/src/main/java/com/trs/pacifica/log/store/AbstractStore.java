@@ -113,6 +113,16 @@ public abstract class AbstractStore {
 
 
     /**
+     * lookup a file that contains the specified logIndex
+     * @param logIndex sequence number of log
+     * @return null if not found
+     */
+    public AbstractFile lookupFile(final long logIndex) {
+        return null;
+    }
+
+
+    /**
      * get first log index
      *
      * @return -1L if nothing
@@ -147,6 +157,7 @@ public abstract class AbstractStore {
         }
         return -1L;
     }
+
 
 
 }
