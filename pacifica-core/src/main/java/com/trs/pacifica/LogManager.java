@@ -35,7 +35,19 @@ public interface LogManager {
 
     public LogId getCommitPoint();
 
-    
+
+    public void waitNewLog(final long waitLogIndex, final NewLogListener listener);
+
+
+
+
+
+    public static interface NewLogListener {
+
+    }
+
+
+
 
 
 

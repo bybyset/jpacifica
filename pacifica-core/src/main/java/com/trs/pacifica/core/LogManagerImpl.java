@@ -62,6 +62,10 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         return null;
     }
 
+    @Override
+    public void waitNewLog(long waitLogIndex, NewLogListener listener) {
+        
+    }
 
 
     public static final class Option {
