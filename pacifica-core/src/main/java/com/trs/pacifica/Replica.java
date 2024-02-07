@@ -45,6 +45,17 @@ public interface Replica {
 
     /**
      *
+     * @param block
+     * @return ture if state of the replica is Primary
+     */
+    public boolean isPrimary(boolean block);
+
+    default  public boolean isPrimary() {
+        return isPrimary(false);
+    }
+
+    /**
+     *
      * @param operation
      */
     public void apply(Operation operation);
@@ -55,9 +66,18 @@ public interface Replica {
 
     public void recover(Callback onFinish);
 
+
+    /**
+     * get LogId at commit point
+     * @return
+     */
     public LogId getCommitPoint();
 
 
+    /**
+     * get LogId at snapshot
+     * @return
+     */
     public LogId getSnapshotLogId();
 
 

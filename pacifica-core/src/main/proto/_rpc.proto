@@ -1,9 +1,9 @@
-syntax="proto3";
+syntax = "proto3";
 
 package jpacifica;
 import "_common.proto";
-option java_package="com.trs.pacifica";
-option java_outer_classname="RpcRequest";
+option java_package = "com.trs.pacifica.proto";
+option java_outer_classname = "RpcRequest";
 
 
 
@@ -11,38 +11,58 @@ message AppendEntriesRequest {
   optional ReplicaId primary_id = 1;
   optional ReplicaId target_id = 2;
   optional int64 prev_log_index = 3;
-  optional int64 prev_log_version = 4;
+  optional int64 prev_log_term = 4;
   optional int64 commit_point = 5;
-  optional int64 version = 6;
-  repeated LogEntryMeta log_meta = 7;
-  optional bytes log_data = 8;
+  optional int64 term = 6;
+  optional int64 version = 7;
+  repeated LogEntryMeta log_meta = 8;
+  optional bytes log_data = 9;
 }
 
 message AppendEntriesResponse {
   optional bool success = 1;
-  optional int64 version = 2;
-  optional int64 commit_point = 3;
+  optional int64 term = 2;
+  optional int64 version = 3;
+  optional int64 commit_point = 4;
 }
+
+message ReplicaRecoverRequest {
+  optional ReplicaId recover_id = 1;
+  optional ReplicaId primary_id = 2;
+  optional int64 term = 3;
+}
+
+message ReplicaRecoverResponse {
+  optional bool success = 1;
+  optional int64 term = 2;
+  optional int64 version = 3;
+}
+
 
 message InstallSnapshotRequest {
   optional ReplicaId primary_id = 1;
   optional ReplicaId target_id = 2;
-  optional int64 version = 3;
+  optional int64 term = 3;
+  optional int64 version = 4;
 }
 
 message InstallSnapshotResponse {
   optional bool success = 1;
-  optional int64 version = 2;
-}
-
-message RecoverRequest {
-  optional ReplicaId recover_id = 1;
-  optional ReplicaId primary_id = 2;
+  optional int64 term = 2;
   optional int64 version = 3;
 }
 
-message RecoverResponse {
-  optional bool success = 1;
-  optional int64 version = 2;
+message GetFileRequest {
+  optional ReplicaId target_id = 1;
+  optional int64 reader_id = 2;
+  optional string filename = 3;
+  optional int64 count = 4;
+  optional int64 offset = 5;
+  optional bool read_partly = 6;
 }
 
+message GetFileResponse {
+  optional bool eof = 1;
+  optional bytes data = 2;
+  optional int64 readSize = 3;
+}

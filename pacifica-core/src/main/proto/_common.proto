@@ -2,7 +2,7 @@ syntax="proto3";
 
 package jpacifica;
 
-option java_package="com.trs.pacifica";
+option java_package="com.trs.pacifica.proto";
 option java_outer_classname="RpcCommon";
 
 message ReplicaId {

@@ -2,7 +2,7 @@
 // source: _common.proto
 
 // Protobuf Java Version: 3.25.2
-package com.trs.pacifica;
+package com.trs.pacifica.proto;
 
 public final class RpcCommon {
   private RpcCommon() {}
@@ -79,15 +79,15 @@ public final class RpcCommon {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.trs.pacifica.RpcCommon.internal_static_jpacifica_ReplicaId_descriptor;
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_ReplicaId_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.trs.pacifica.RpcCommon.internal_static_jpacifica_ReplicaId_fieldAccessorTable
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_ReplicaId_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.trs.pacifica.RpcCommon.ReplicaId.class, com.trs.pacifica.RpcCommon.ReplicaId.Builder.class);
+              com.trs.pacifica.proto.RpcCommon.ReplicaId.class, com.trs.pacifica.proto.RpcCommon.ReplicaId.Builder.class);
     }
 
     private int bitField0_;
@@ -230,10 +230,10 @@ public final class RpcCommon {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.trs.pacifica.RpcCommon.ReplicaId)) {
+      if (!(obj instanceof com.trs.pacifica.proto.RpcCommon.ReplicaId)) {
         return super.equals(obj);
       }
-      com.trs.pacifica.RpcCommon.ReplicaId other = (com.trs.pacifica.RpcCommon.ReplicaId) obj;
+      com.trs.pacifica.proto.RpcCommon.ReplicaId other = (com.trs.pacifica.proto.RpcCommon.ReplicaId) obj;
 
       if (hasGroupName() != other.hasGroupName()) return false;
       if (hasGroupName()) {
@@ -269,44 +269,44 @@ public final class RpcCommon {
       return hash;
     }
 
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(byte[] data)
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(java.io.InputStream input)
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -314,26 +314,26 @@ public final class RpcCommon {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseDelimitedFrom(java.io.InputStream input)
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseDelimitedFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.trs.pacifica.RpcCommon.ReplicaId parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -346,7 +346,7 @@ public final class RpcCommon {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.trs.pacifica.RpcCommon.ReplicaId prototype) {
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcCommon.ReplicaId prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -367,21 +367,21 @@ public final class RpcCommon {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:jpacifica.ReplicaId)
-        com.trs.pacifica.RpcCommon.ReplicaIdOrBuilder {
+        com.trs.pacifica.proto.RpcCommon.ReplicaIdOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.trs.pacifica.RpcCommon.internal_static_jpacifica_ReplicaId_descriptor;
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_ReplicaId_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.trs.pacifica.RpcCommon.internal_static_jpacifica_ReplicaId_fieldAccessorTable
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_ReplicaId_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.trs.pacifica.RpcCommon.ReplicaId.class, com.trs.pacifica.RpcCommon.ReplicaId.Builder.class);
+                com.trs.pacifica.proto.RpcCommon.ReplicaId.class, com.trs.pacifica.proto.RpcCommon.ReplicaId.Builder.class);
       }
 
-      // Construct using com.trs.pacifica.RpcCommon.ReplicaId.newBuilder()
+      // Construct using com.trs.pacifica.proto.RpcCommon.ReplicaId.newBuilder()
       private Builder() {
 
       }
@@ -403,17 +403,17 @@ public final class RpcCommon {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.trs.pacifica.RpcCommon.internal_static_jpacifica_ReplicaId_descriptor;
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_ReplicaId_descriptor;
       }
 
       @java.lang.Override
-      public com.trs.pacifica.RpcCommon.ReplicaId getDefaultInstanceForType() {
-        return com.trs.pacifica.RpcCommon.ReplicaId.getDefaultInstance();
+      public com.trs.pacifica.proto.RpcCommon.ReplicaId getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcCommon.ReplicaId.getDefaultInstance();
       }
 
       @java.lang.Override
-      public com.trs.pacifica.RpcCommon.ReplicaId build() {
-        com.trs.pacifica.RpcCommon.ReplicaId result = buildPartial();
+      public com.trs.pacifica.proto.RpcCommon.ReplicaId build() {
+        com.trs.pacifica.proto.RpcCommon.ReplicaId result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -421,14 +421,14 @@ public final class RpcCommon {
       }
 
       @java.lang.Override
-      public com.trs.pacifica.RpcCommon.ReplicaId buildPartial() {
-        com.trs.pacifica.RpcCommon.ReplicaId result = new com.trs.pacifica.RpcCommon.ReplicaId(this);
+      public com.trs.pacifica.proto.RpcCommon.ReplicaId buildPartial() {
+        com.trs.pacifica.proto.RpcCommon.ReplicaId result = new com.trs.pacifica.proto.RpcCommon.ReplicaId(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(com.trs.pacifica.RpcCommon.ReplicaId result) {
+      private void buildPartial0(com.trs.pacifica.proto.RpcCommon.ReplicaId result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -476,16 +476,16 @@ public final class RpcCommon {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.trs.pacifica.RpcCommon.ReplicaId) {
-          return mergeFrom((com.trs.pacifica.RpcCommon.ReplicaId)other);
+        if (other instanceof com.trs.pacifica.proto.RpcCommon.ReplicaId) {
+          return mergeFrom((com.trs.pacifica.proto.RpcCommon.ReplicaId)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.trs.pacifica.RpcCommon.ReplicaId other) {
-        if (other == com.trs.pacifica.RpcCommon.ReplicaId.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.ReplicaId other) {
+        if (other == com.trs.pacifica.proto.RpcCommon.ReplicaId.getDefaultInstance()) return this;
         if (other.hasGroupName()) {
           groupName_ = other.groupName_;
           bitField0_ |= 0x00000001;
@@ -723,12 +723,12 @@ public final class RpcCommon {
     }
 
     // @@protoc_insertion_point(class_scope:jpacifica.ReplicaId)
-    private static final com.trs.pacifica.RpcCommon.ReplicaId DEFAULT_INSTANCE;
+    private static final com.trs.pacifica.proto.RpcCommon.ReplicaId DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.trs.pacifica.RpcCommon.ReplicaId();
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcCommon.ReplicaId();
     }
 
-    public static com.trs.pacifica.RpcCommon.ReplicaId getDefaultInstance() {
+    public static com.trs.pacifica.proto.RpcCommon.ReplicaId getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -764,7 +764,7 @@ public final class RpcCommon {
     }
 
     @java.lang.Override
-    public com.trs.pacifica.RpcCommon.ReplicaId getDefaultInstanceForType() {
+    public com.trs.pacifica.proto.RpcCommon.ReplicaId getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -842,15 +842,15 @@ public final class RpcCommon {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.trs.pacifica.RpcCommon.internal_static_jpacifica_LogEntryMeta_descriptor;
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryMeta_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.trs.pacifica.RpcCommon.internal_static_jpacifica_LogEntryMeta_fieldAccessorTable
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryMeta_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.trs.pacifica.RpcCommon.LogEntryMeta.class, com.trs.pacifica.RpcCommon.LogEntryMeta.Builder.class);
+              com.trs.pacifica.proto.RpcCommon.LogEntryMeta.class, com.trs.pacifica.proto.RpcCommon.LogEntryMeta.Builder.class);
     }
 
     private int bitField0_;
@@ -991,10 +991,10 @@ public final class RpcCommon {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.trs.pacifica.RpcCommon.LogEntryMeta)) {
+      if (!(obj instanceof com.trs.pacifica.proto.RpcCommon.LogEntryMeta)) {
         return super.equals(obj);
       }
-      com.trs.pacifica.RpcCommon.LogEntryMeta other = (com.trs.pacifica.RpcCommon.LogEntryMeta) obj;
+      com.trs.pacifica.proto.RpcCommon.LogEntryMeta other = (com.trs.pacifica.proto.RpcCommon.LogEntryMeta) obj;
 
       if (hasVersion() != other.hasVersion()) return false;
       if (hasVersion()) {
@@ -1052,44 +1052,44 @@ public final class RpcCommon {
       return hash;
     }
 
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(byte[] data)
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(java.io.InputStream input)
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1097,26 +1097,26 @@ public final class RpcCommon {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseDelimitedFrom(java.io.InputStream input)
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseDelimitedFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta parseFrom(
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1129,7 +1129,7 @@ public final class RpcCommon {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.trs.pacifica.RpcCommon.LogEntryMeta prototype) {
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcCommon.LogEntryMeta prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1150,21 +1150,21 @@ public final class RpcCommon {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:jpacifica.LogEntryMeta)
-        com.trs.pacifica.RpcCommon.LogEntryMetaOrBuilder {
+        com.trs.pacifica.proto.RpcCommon.LogEntryMetaOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.trs.pacifica.RpcCommon.internal_static_jpacifica_LogEntryMeta_descriptor;
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryMeta_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.trs.pacifica.RpcCommon.internal_static_jpacifica_LogEntryMeta_fieldAccessorTable
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryMeta_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.trs.pacifica.RpcCommon.LogEntryMeta.class, com.trs.pacifica.RpcCommon.LogEntryMeta.Builder.class);
+                com.trs.pacifica.proto.RpcCommon.LogEntryMeta.class, com.trs.pacifica.proto.RpcCommon.LogEntryMeta.Builder.class);
       }
 
-      // Construct using com.trs.pacifica.RpcCommon.LogEntryMeta.newBuilder()
+      // Construct using com.trs.pacifica.proto.RpcCommon.LogEntryMeta.newBuilder()
       private Builder() {
 
       }
@@ -1188,17 +1188,17 @@ public final class RpcCommon {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.trs.pacifica.RpcCommon.internal_static_jpacifica_LogEntryMeta_descriptor;
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryMeta_descriptor;
       }
 
       @java.lang.Override
-      public com.trs.pacifica.RpcCommon.LogEntryMeta getDefaultInstanceForType() {
-        return com.trs.pacifica.RpcCommon.LogEntryMeta.getDefaultInstance();
+      public com.trs.pacifica.proto.RpcCommon.LogEntryMeta getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcCommon.LogEntryMeta.getDefaultInstance();
       }
 
       @java.lang.Override
-      public com.trs.pacifica.RpcCommon.LogEntryMeta build() {
-        com.trs.pacifica.RpcCommon.LogEntryMeta result = buildPartial();
+      public com.trs.pacifica.proto.RpcCommon.LogEntryMeta build() {
+        com.trs.pacifica.proto.RpcCommon.LogEntryMeta result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1206,14 +1206,14 @@ public final class RpcCommon {
       }
 
       @java.lang.Override
-      public com.trs.pacifica.RpcCommon.LogEntryMeta buildPartial() {
-        com.trs.pacifica.RpcCommon.LogEntryMeta result = new com.trs.pacifica.RpcCommon.LogEntryMeta(this);
+      public com.trs.pacifica.proto.RpcCommon.LogEntryMeta buildPartial() {
+        com.trs.pacifica.proto.RpcCommon.LogEntryMeta result = new com.trs.pacifica.proto.RpcCommon.LogEntryMeta(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(com.trs.pacifica.RpcCommon.LogEntryMeta result) {
+      private void buildPartial0(com.trs.pacifica.proto.RpcCommon.LogEntryMeta result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -1269,16 +1269,16 @@ public final class RpcCommon {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.trs.pacifica.RpcCommon.LogEntryMeta) {
-          return mergeFrom((com.trs.pacifica.RpcCommon.LogEntryMeta)other);
+        if (other instanceof com.trs.pacifica.proto.RpcCommon.LogEntryMeta) {
+          return mergeFrom((com.trs.pacifica.proto.RpcCommon.LogEntryMeta)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.trs.pacifica.RpcCommon.LogEntryMeta other) {
-        if (other == com.trs.pacifica.RpcCommon.LogEntryMeta.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.LogEntryMeta other) {
+        if (other == com.trs.pacifica.proto.RpcCommon.LogEntryMeta.getDefaultInstance()) return this;
         if (other.hasVersion()) {
           setVersion(other.getVersion());
         }
@@ -1530,12 +1530,12 @@ public final class RpcCommon {
     }
 
     // @@protoc_insertion_point(class_scope:jpacifica.LogEntryMeta)
-    private static final com.trs.pacifica.RpcCommon.LogEntryMeta DEFAULT_INSTANCE;
+    private static final com.trs.pacifica.proto.RpcCommon.LogEntryMeta DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.trs.pacifica.RpcCommon.LogEntryMeta();
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcCommon.LogEntryMeta();
     }
 
-    public static com.trs.pacifica.RpcCommon.LogEntryMeta getDefaultInstance() {
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryMeta getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1571,7 +1571,7 @@ public final class RpcCommon {
     }
 
     @java.lang.Override
-    public com.trs.pacifica.RpcCommon.LogEntryMeta getDefaultInstanceForType() {
+    public com.trs.pacifica.proto.RpcCommon.LogEntryMeta getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1602,8 +1602,8 @@ public final class RpcCommon {
       "gEntryMeta\022\024\n\007version\030\001 \001(\003H\000\210\001\001\022\025\n\010data" +
       "_len\030\002 \001(\003H\001\210\001\001\022\021\n\004type\030\003 \001(\003H\002\210\001\001\022\025\n\010ch" +
       "ecksum\030\004 \001(\003H\003\210\001\001B\n\n\010_versionB\013\n\t_data_l" +
-      "enB\007\n\005_typeB\013\n\t_checksumB\035\n\020com.trs.paci" +
-      "ficaB\tRpcCommonb\006proto3"
+      "enB\007\n\005_typeB\013\n\t_checksumB#\n\026com.trs.paci" +
+      "fica.protoB\tRpcCommonb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

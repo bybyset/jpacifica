@@ -23,6 +23,8 @@ import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
 import com.trs.pacifica.sender.SenderType;
@@ -34,7 +36,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaService {
+public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOption> {
 
     static final Logger LOGGER = LoggerFactory.getLogger(ReplicaImpl.class);
 
@@ -63,7 +65,6 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
     public ReplicaImpl(ReplicaId replicaId) {
         this.replicaId = replicaId;
     }
-
 
 
     private void initLogManager(ReplicaOption option) {
@@ -149,6 +150,11 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
     }
 
     @Override
+    public boolean isPrimary(boolean block) {
+        return false;
+    }
+
+    @Override
     public void apply(Operation operation) {
 
     }
@@ -184,8 +190,24 @@ public class ReplicaImpl implements Replica, LifeCycle<ReplicaOption>, ReplicaSe
     }
 
     @Override
-    public void handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request) throws PacificaException {
-
-
+    public RpcRequest.AppendEntriesResponse handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback) throws PacificaException {
+        return null;
     }
+
+    @Override
+    public RpcRequest.ReplicaRecoverResponse handleReplicaRecoverRequest(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) throws PacificaException {
+        return null;
+    }
+
+    @Override
+    public RpcRequest.InstallSnapshotResponse handleInstallSnapshotRequest(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback) throws PacificaException {
+        return null;
+    }
+
+    @Override
+    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback) throws PacificaException {
+        return null;
+    }
+
+
 }

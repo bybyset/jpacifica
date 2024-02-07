@@ -17,31 +17,64 @@
 
 package com.trs.pacifica.model;
 
+import com.trs.pacifica.ReConfiguration;
 import com.trs.pacifica.model.ReplicaId;
 
 import java.util.List;
 
+/**
+ * group of replica:
+ * <p>
+ * 1、consisting of a single primary replica and multiple secondary replica. <br>
+ * 2、containing a self-incrementing version number in order to implement a "write request" to replica group <br>
+ *    the "write request" containing "add secondary request","remove secondary request","change primary request"<br>
+ * 3、In order to simplify the complexity of implementation, the concept of "primary term" is designed. <br>
+ *    about "primary term": It will increment when the primary replica changes
+ * </p>
+ */
 public interface ReplicaGroup {
 
 
     /**
      * get name of the replica group
+     *
      * @return
      */
-    public  String getGroupName();
+    public String getGroupName();
 
     /**
+     * get ID of the Primary replica
      *
      * @return
      */
     public ReplicaId getPrimary();
+
+    /**
+     * list ID of the Secondary replica
+     *
+     * @return
+     */
     public List<ReplicaId> listSecondary();
 
+    /**
+     * get current version,
+     * When we send these requests to the "configuration cluster", we carry the version.
+     * requests is them:
+     *
+     * @return
+     * @see ReConfiguration#addSecondary(long, ReplicaId)
+     * @see ReConfiguration#removeSecondary(long, ReplicaId)
+     * @see ReConfiguration#changePrimary(long, ReplicaId)
+     */
     public long getVersion();
 
 
-
-
+    /**
+     * get term of the current primary replica
+     *
+     * @return
+     */
+    public long getPrimaryTerm();
 
 
 }
