@@ -15,31 +15,14 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.async.thread;
+package com.trs.pacifica.async.thread.chooser;
 
-import com.trs.pacifica.async.thread.chooser.ExecutorChooser;
+import com.trs.pacifica.async.thread.SingleThreadExecutor;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
-public interface ExecutorGroup extends Iterable<SingleThreadExecutor>, Executor, ExecutorChooser {
+public interface ExecutorChooser {
 
-    /**
-     * Shortcut method for {@link #shutdownGracefully(long, TimeUnit)} with
-     * sensible default values.
-     *
-     * @return true if success to shutdown
-     */
-    boolean shutdownGracefully();
-
-    /**
-     * Signals all executors that the caller wants them to be shutdown.
-     *
-     * @param timeout the maximum amount of time to wait until the executor
-     *                is shutdown
-     * @param unit    the unit of {@code timeout}
-     * @return true if success to shutdown
-     */
-    boolean shutdownGracefully(final long timeout, final TimeUnit unit);
+    SingleThreadExecutor chooseExecutor();
 
 }

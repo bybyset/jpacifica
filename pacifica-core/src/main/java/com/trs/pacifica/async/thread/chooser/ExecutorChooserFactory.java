@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.async.thread;
+package com.trs.pacifica.async.thread.chooser;
 
-import java.util.concurrent.Executor;
+import com.trs.pacifica.async.thread.SingleThreadExecutor;
 
-public interface ExecutorChooser {
+public interface ExecutorChooserFactory {
 
-    SingleThreadExecutor chooseExecutor();
 
+    /**
+     * Returns a new {@link ExecutorChooser}.
+     */
+    ExecutorChooser newChooser(SingleThreadExecutor[] executors);
 }

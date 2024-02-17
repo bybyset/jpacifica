@@ -15,13 +15,22 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.async.thread;
+package com.trs.pacifica.async.thread.chooser;
 
-public interface ExecutorChooserFactory {
+import com.trs.pacifica.async.thread.SingleThreadExecutor;
 
+public class DefaultExecutorChooserFactory implements ExecutorChooserFactory{
 
-    /**
-     * Returns a new {@link ExecutorChooser}.
-     */
-    ExecutorChooser newChooser(SingleThreadExecutor[] executors);
+    @Override
+    public ExecutorChooser newChooser(SingleThreadExecutor[] executors) {
+        if (isPowerOfTwo(executors.length)) {
+            return new PowerOfTwoExecutorChooser(executors);
+        } else {
+            return new GenericExecutorChooser(executors);
+        }
+    }
+
+    static boolean isPowerOfTwo(final int v) {
+        return (v & (v -1)) == 0;
+    }
 }

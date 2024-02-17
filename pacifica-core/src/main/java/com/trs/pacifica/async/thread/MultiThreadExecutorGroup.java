@@ -17,18 +17,26 @@
 
 package com.trs.pacifica.async.thread;
 
+import com.trs.pacifica.async.thread.chooser.DefaultExecutorChooserFactory;
+import com.trs.pacifica.async.thread.chooser.ExecutorChooser;
+import com.trs.pacifica.async.thread.chooser.ExecutorChooserFactory;
+
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.concurrent.ThreadFactory;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public abstract class MultiThreadExecutorGroup implements ExecutorGroup {
 
-    private final SingleThreadExecutor[] children;
+    protected final SingleThreadExecutor[] children;
 
-    private final ExecutorChooser executorChooser;
+    protected final ExecutorChooser executorChooser;
+
+    protected final Set<SingleThreadExecutor> readOnlyChildren;
 
 
-    protected MultiThreadExecutorGroup(int nThreads, ExecutorChooserFactory executorChooserFactory, Object... args) {
+    protected MultiThreadExecutorGroup(int nThreads, ExecutorChooserFactory executorChooserFactory) {
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
@@ -36,7 +44,7 @@ public abstract class MultiThreadExecutorGroup implements ExecutorGroup {
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
-                children[i] = newChild(args);
+                children[i] = newChild();
                 success = true;
             } catch (Exception e) {
                 throw new IllegalStateException("failed to create a child SingleThreadExecutor", e);
@@ -49,39 +57,68 @@ public abstract class MultiThreadExecutorGroup implements ExecutorGroup {
             }
 
         }
+        if (executorChooserFactory == null) {
+            this.executorChooser = new DefaultExecutorChooserFactory().newChooser(this.children);
+        } else {
+            this.executorChooser = executorChooserFactory.newChooser(this.children);
+        }
+        this.readOnlyChildren = toUnmodifiableSet(this.children);
 
-        this.executorChooser = executorChooserFactory.newChooser(this.children);
+    }
 
+    @Override
+    public SingleThreadExecutor chooseExecutor() {
+        return this.executorChooser.chooseExecutor();
     }
 
     /**
-     * Create a new EventExecutor which will later then accessible via the {@link #next()}  method. This method will be
+     * Create a new SingleThreadExecutor which will later then accessible via the {@link #chooseExecutor()}  method. This method will be
      * called for each thread that will serve this {@link MultiThreadExecutorGroup}.
      */
-    protected abstract SingleThreadExecutor newChild(Object... args) throws Exception;
-
-    @Override
-    public SingleThreadExecutor next() {
-        return null;
-    }
+    protected abstract SingleThreadExecutor newChild() throws Exception;
 
     @Override
     public boolean shutdownGracefully() {
-        return false;
+        boolean success = true;
+        for (final SingleThreadExecutor c : this.children) {
+            if (c != null) {
+                success = success && c.shutdownGracefully();
+            }
+        }
+        return success;
     }
 
     @Override
     public boolean shutdownGracefully(long timeout, TimeUnit unit) {
-        return false;
+        boolean success = true;
+        final long timeoutNanos = unit.toNanos(timeout);
+        final long start = System.nanoTime();
+        for (final SingleThreadExecutor c : this.children) {
+            if (c == null) {
+                continue;
+            }
+            success = success && c.shutdownGracefully(timeout, unit);
+            if (System.nanoTime() - start > timeoutNanos) {
+                success = false;
+                break;
+            }
+        }
+        return success;
     }
 
     @Override
     public Iterator<SingleThreadExecutor> iterator() {
-        return null;
+        return this.readOnlyChildren.iterator();
     }
 
     @Override
     public void execute(Runnable command) {
+        chooseExecutor().execute(command);
+    }
 
+    private static Set<SingleThreadExecutor> toUnmodifiableSet(final SingleThreadExecutor[] children) {
+        final Set<SingleThreadExecutor> tmp = new LinkedHashSet<>();
+        Collections.addAll(tmp, children);
+        return Collections.unmodifiableSet(tmp);
     }
 }
