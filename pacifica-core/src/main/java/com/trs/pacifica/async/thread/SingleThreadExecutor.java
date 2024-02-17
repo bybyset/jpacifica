@@ -18,9 +18,24 @@
 package com.trs.pacifica.async.thread;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
-public interface ExecutorChooser {
+public interface SingleThreadExecutor extends Executor {
 
-    SingleThreadExecutor chooseExecutor();
+    /**
+     * Shortcut method for {@link #shutdownGracefully(long, TimeUnit)} with
+     * sensible default values.
+     * @return true if success to shutdown
+     */
+    boolean shutdownGracefully();
 
+    /**
+     * Signals this executor that the caller wants it to be shutdown.
+     *
+     * @param timeout the maximum amount of time to wait until the executor
+     *                is shutdown
+     * @param unit    the unit of {@code timeout}
+     * @return true if success to shutdown
+     */
+    boolean shutdownGracefully(final long timeout, final TimeUnit unit);
 }

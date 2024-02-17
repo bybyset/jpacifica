@@ -17,10 +17,18 @@
 
 package com.trs.pacifica.async.thread;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
-public interface ExecutorChooser {
+public interface RejectedExecutionHandler {
 
-    SingleThreadExecutor chooseExecutor();
+    /**
+     * Called when someone tried to add a task to {@link SingleThreadExecutor} but
+     * this failed due capacity restrictions.
+     */
+    void rejected(final Runnable task, final SingleThreadExecutor executor);
 
+
+    public static final RejectedExecutionHandler REJECT = (task, executor) -> {
+        throw new RejectedExecutionException();
+    };
 }

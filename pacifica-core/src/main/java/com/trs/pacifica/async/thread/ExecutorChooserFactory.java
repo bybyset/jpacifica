@@ -17,10 +17,11 @@
 
 package com.trs.pacifica.async.thread;
 
-import java.util.concurrent.Executor;
+public interface ExecutorChooserFactory {
 
-public interface ExecutorChooser {
 
-    SingleThreadExecutor chooseExecutor();
-
+    /**
+     * Returns a new {@link ExecutorChooser}.
+     */
+    ExecutorChooser newChooser(SingleThreadExecutor[] executors);
 }
