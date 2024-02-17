@@ -26,4 +26,8 @@ public enum ReplicaState {
     Uninitialized,
     Shutdown;
 
+    public boolean isActive() {
+        return this.ordinal() < Error.ordinal();
+    }
+
 }

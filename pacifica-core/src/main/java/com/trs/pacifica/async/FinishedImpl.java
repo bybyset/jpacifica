@@ -15,32 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.model;
+package com.trs.pacifica.async;
 
-import com.trs.pacifica.async.Callback;
+public class FinishedImpl implements Finished{
 
-import java.nio.ByteBuffer;
+    private final Throwable error;
 
-public class Operation {
-
-
-    private ByteBuffer logData = LogEntry.EMPTY_DATA;
-
-    private Callback onFinish = null;
-
-    public ByteBuffer getLogData() {
-        return logData;
+    public FinishedImpl(Throwable error) {
+        this.error = error;
     }
 
-    public void setLogData(ByteBuffer logData) {
-        this.logData = logData;
+    @Override
+    public Throwable error() {
+        return error;
     }
 
-    public Callback getOnFinish() {
-        return onFinish;
+    public static Finished success() {
+        return new FinishedImpl(null);
     }
 
-    public void setOnFinish(Callback onFinish) {
-        this.onFinish = onFinish;
+    public static Finished failure(Throwable error) {
+        return new FinishedImpl(error);
     }
 }

@@ -36,6 +36,7 @@ dependencies {
     implementation "com.google.protobuf:protobuf-java:$protobuf_version"
     implementation "com.google.guava:guava:$guava_version"
     implementation "org.jctools:jctools-core:$jctools_version"
+    implementation "io.dropwizard.metrics:metrics-core:$metrics_version"
 }
 
 sourceSets {

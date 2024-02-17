@@ -14,33 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.trs.pacifica.util.thread;
 
-package com.trs.pacifica.model;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
-import com.trs.pacifica.async.Callback;
+/**
+ * @author jiachun.fjc
+ */
+public class ThreadPoolMetricRegistry {
 
-import java.nio.ByteBuffer;
+    private static final MetricRegistry metricRegistry = new MetricRegistry();
+    private static final ThreadLocal<Timer.Context> timerThreadLocal = new ThreadLocal<>();
 
-public class Operation {
-
-
-    private ByteBuffer logData = LogEntry.EMPTY_DATA;
-
-    private Callback onFinish = null;
-
-    public ByteBuffer getLogData() {
-        return logData;
+    /**
+     * Return the global registry of metric instances.
+     */
+    public static MetricRegistry metricRegistry() {
+        return metricRegistry;
     }
 
-    public void setLogData(ByteBuffer logData) {
-        this.logData = logData;
-    }
-
-    public Callback getOnFinish() {
-        return onFinish;
-    }
-
-    public void setOnFinish(Callback onFinish) {
-        this.onFinish = onFinish;
+    public static ThreadLocal<Timer.Context> timerThreadLocal() {
+        return timerThreadLocal;
     }
 }

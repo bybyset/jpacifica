@@ -50,4 +50,9 @@ public class ReplicaId {
     public int hashCode() {
         return Objects.hash(groupName, nodeId);
     }
+
+    @Override
+    public String toString() {
+        return this.groupName + "_" + this.nodeId;
+    }
 }

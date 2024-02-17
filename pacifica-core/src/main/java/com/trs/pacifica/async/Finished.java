@@ -26,4 +26,6 @@ public interface Finished {
     }
 
 
+    public static final Finished _OK = () -> {return null;};
+
 }

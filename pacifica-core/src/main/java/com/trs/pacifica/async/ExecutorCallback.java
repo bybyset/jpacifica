@@ -24,6 +24,11 @@ public interface ExecutorCallback extends Callback {
 
     static final Executor _DEFAULT_EXECUTOR = new DirectExecutor();
 
+    /**
+     * Specifies the executor on which the callback will run, default {@link DirectExecutor}
+     * You should rewrite it,  otherwise it will be executed in the current thread
+     * @return
+     */
     default public Executor executor() {
         return _DEFAULT_EXECUTOR;
     }

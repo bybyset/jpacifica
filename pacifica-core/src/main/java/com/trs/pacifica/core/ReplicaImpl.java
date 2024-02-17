@@ -19,7 +19,11 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.async.FinishedImpl;
+import com.trs.pacifica.async.thread.ExecutorGroup;
+import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
@@ -28,9 +32,11 @@ import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
 import com.trs.pacifica.sender.SenderType;
+import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -62,6 +68,10 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private SenderGroup senderGroup;
 
+    private ExecutorGroup executorGroup;
+
+    private SingleThreadExecutor applyExecutor;
+
     public ReplicaImpl(ReplicaId replicaId) {
         this.replicaId = replicaId;
     }
@@ -83,6 +93,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.senderGroup = new SenderGroupImpl(Objects.requireNonNull(this.pacificaClient, "pacificaClient"));
     }
 
+
+    private void initExecutor(ReplicaOption option) {
+        this.executorGroup = Objects.requireNonNull(option.getExecutorGroup(), "executorGroup");
+        this.applyExecutor = Objects.requireNonNull(this.executorGroup.chooseExecutor());
+    }
+
     @Override
     public void init(ReplicaOption option) {
         this.writeLock.lock();
@@ -91,6 +107,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.option = Objects.requireNonNull(option, "require option");
                 this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
                 this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
+                initExecutor(option);
                 initLogManager(option);
                 initSnapshotManager(option);
                 initSenderGroup(option);
@@ -149,6 +166,13 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return Replica.super.getReplicaState();
     }
 
+    private void ensureActive() {
+        final ReplicaState replicaState = this.state;
+        if (!replicaState.isActive()) {
+            throw new IllegalStateException(String.format("replica(%s) is not active, current state is %s.", this.replicaId, replicaState));
+        }
+    }
+
     @Override
     public boolean isPrimary(boolean block) {
         return false;
@@ -156,8 +180,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     @Override
     public void apply(Operation operation) {
+        Objects.requireNonNull(operation, "param: operation is null");
+        ensureActive();
+
+        final OperationContext context = new OperationContext(null);
+
 
     }
+
 
     @Override
     public void snapshot(Callback onFinish) {
@@ -209,5 +239,47 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return null;
     }
 
+    private void doOperation(OperationContext operationContext) {
+
+        this.writeLock.lock();
+        try {
+            final Callback callback = operationContext.callback;
+            //check primary state
+            if (this.state != ReplicaState.Primary) {
+                ThreadUtil.runCallback(callback, FinishedImpl.failure(new IllegalStateException("Is not Primary.")));
+                return;
+            }
+            //initiate ballot to ballotBox
+
+            //log manager append log
+
+
+        } finally {
+            this.writeLock.unlock();
+        }
+
+    }
+
+    /**
+     * TODO recycle
+     */
+    static class OperationContext {
+
+        LogEntry logEntry;
+
+        Callback callback = null;
+
+        int expectedTerm = -1;
+
+        public OperationContext(LogEntry logEntry) {
+            this.logEntry = logEntry;
+        }
+
+
+    }
+
+    static class OperationHandler {
+
+    }
 
 }
