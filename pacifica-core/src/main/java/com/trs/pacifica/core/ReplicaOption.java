@@ -19,6 +19,7 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.ConfigurationClient;
 import com.trs.pacifica.PacificaServiceFactory;
+import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.rpc.client.PacificaClient;
 
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,8 @@ public class ReplicaOption {
     private ConfigurationClient configurationClient;
 
     private PacificaClient pacificaClient;
+
+    private ExecutorGroup executorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
     public int getGracePeriodTimeoutMs() {
         return gracePeriodTimeoutMs;
@@ -98,5 +101,13 @@ public class ReplicaOption {
 
     public void setLogStoragePath(String logStoragePath) {
         this.logStoragePath = logStoragePath;
+    }
+
+    public ExecutorGroup getExecutorGroup() {
+        return executorGroup;
+    }
+
+    public void setExecutorGroup(ExecutorGroup executorGroup) {
+        this.executorGroup = executorGroup;
     }
 }

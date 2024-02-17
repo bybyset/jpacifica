@@ -19,8 +19,8 @@ package com.trs.pacifica.util;
 /**
  * Some useful constants.
  */
-public final class Constants {
-    private Constants() {
+public final class SystemConstants {
+    private SystemConstants() {
     } // can't construct
 
     /**
@@ -99,4 +99,11 @@ public final class Constants {
         }
         JRE_IS_64BIT = is64Bit;
     }
+
+
+
+    public static final String _PACIFICA_AVAILABLE_PROCESSORS = "pacifica.available.processors";
+    public static final int CPUS = SystemPropertyUtil.getInt(_PACIFICA_AVAILABLE_PROCESSORS, Runtime.getRuntime().availableProcessors());
+
+
 }

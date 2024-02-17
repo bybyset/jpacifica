@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.log.dir;
 
-import com.trs.pacifica.util.Constants;
+import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.IOUtils;
 
 import java.io.File;
@@ -57,7 +57,7 @@ public abstract class FsDirectory extends BaseDirectory {
      *
      */
     public static FsDirectory open(Path path) throws IOException {
-        if (Constants.JRE_IS_64BIT && MMapDirectory.UNMAP_SUPPORTED) {
+        if (SystemConstants.JRE_IS_64BIT && MMapDirectory.UNMAP_SUPPORTED) {
             return new MMapDirectory(path);
         } else {
             return new NIOFSDirectory(path);
@@ -184,7 +184,7 @@ public abstract class FsDirectory extends BaseDirectory {
         } catch (NoSuchFileException | FileNotFoundException e) {
             // We were asked to delete a non-existent file:
             pendingDeletes.remove(name);
-            if (isPendingDelete && Constants.WINDOWS) {
+            if (isPendingDelete && SystemConstants.WINDOWS) {
                 // TODO: can we remove this OS-specific hacky logic?  If windows deleteFile is buggy, we
                 // should instead contain this workaround in
                 // a WindowsFSDirectory ...

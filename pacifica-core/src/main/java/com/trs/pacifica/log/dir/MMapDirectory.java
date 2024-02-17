@@ -20,7 +20,7 @@ package com.trs.pacifica.log.dir;
 import com.trs.pacifica.log.io.InOutput;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.MappedByteBufferInputProvider;
-import com.trs.pacifica.util.Constants;
+import com.trs.pacifica.util.SystemConstants;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -231,13 +231,13 @@ public class MMapDirectory extends FsDirectory {
                 originalCause = ioe.getCause();
             }
             final String moreInfo;
-            if (!Constants.JRE_IS_64BIT) {
+            if (!SystemConstants.JRE_IS_64BIT) {
                 moreInfo =
                         "MMapDirectory should only be used on 64bit platforms, because the address space on 32bit operating systems is too small. ";
-            } else if (Constants.WINDOWS) {
+            } else if (SystemConstants.WINDOWS) {
                 moreInfo =
                         "Windows is unfortunately very limited on virtual address space. If your index size is several hundred Gigabytes, consider changing to Linux. ";
-            } else if (Constants.LINUX) {
+            } else if (SystemConstants.LINUX) {
                 moreInfo =
                         "Please review 'ulimit -v', 'ulimit -m' (both should return 'unlimited'), and 'sysctl vm.max_map_count'. ";
             } else {

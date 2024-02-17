@@ -172,7 +172,7 @@ public class IOUtils {
         // If the file is a directory we have to open read-only, for regular files we must open r/w for
         // the fsync to have an effect.
         // See http://blog.httrack.com/blog/2013/11/15/everything-you-always-wanted-to-know-about-fsync/
-        if (isDir && Constants.WINDOWS) {
+        if (isDir && SystemConstants.WINDOWS) {
             // opening a directory on Windows fails, directories can not be fsynced there
             if (Files.exists(fileToSync) == false) {
                 // yet do not suppress trying to fsync directories that do not exist
@@ -186,7 +186,7 @@ public class IOUtils {
                 file.force(true);
             } catch (final IOException e) {
                 if (isDir) {
-                    assert (Constants.LINUX || Constants.MAC_OS_X) == false
+                    assert (SystemConstants.LINUX || SystemConstants.MAC_OS_X) == false
                             : "On Linux and MacOSX fsyncing a directory should not throw IOException, "
                             + "we just don't want to rely on that in production (undocumented). Got: "
                             + e;
