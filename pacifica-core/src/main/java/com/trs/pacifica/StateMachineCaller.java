@@ -17,7 +17,18 @@
 
 package com.trs.pacifica;
 
-public interface StateMachineCall {
+public interface StateMachineCaller {
+
+
+    /**
+     *
+     * @param logIndex
+     * @return
+     */
+    public boolean commitAt(final long logIndex);
+
+
+
 
 
 }

@@ -68,6 +68,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private SenderGroup senderGroup;
 
+    private BallotBoxImpl ballotBox;
+
     private ExecutorGroup executorGroup;
 
     private SingleThreadExecutor applyExecutor;
@@ -99,6 +101,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.applyExecutor = Objects.requireNonNull(this.executorGroup.chooseExecutor());
     }
 
+    private void initBallotBox() {
+
+    }
+
+    private void initStateMachineCall() {
+
+    }
+
     @Override
     public void init(ReplicaOption option) {
         this.writeLock.lock();
@@ -111,8 +121,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 initLogManager(option);
                 initSnapshotManager(option);
                 initSenderGroup(option);
-
-
+                initBallotBox();
+                initStateMachineCall();
                 this.state = ReplicaState.Shutdown;
             }
         } finally {
@@ -250,6 +260,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 return;
             }
             //initiate ballot to ballotBox
+
+
 
             //log manager append log
 
