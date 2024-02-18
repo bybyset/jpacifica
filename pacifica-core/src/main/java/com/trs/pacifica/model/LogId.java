@@ -22,12 +22,12 @@ import java.util.Objects;
 public class LogId {
 
     /**
-     * sequence number of
+     * sequence number of, It starts at 1 and increases.
      */
     private final long index;
 
     /**
-     * term number of primary
+     * term number of primary, It starts at 1 and increases.
      */
     private final long term;
 
