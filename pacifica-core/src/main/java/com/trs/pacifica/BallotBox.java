@@ -59,9 +59,14 @@ public interface BallotBox {
      * @param replicaId
      * @param startLogIndex
      * @param endLogIndex
-     * @return
+     * @throws IllegalArgumentException if startLogIndex > endLogIndex
+     * @return true is success
      */
     public boolean ballotBy(final ReplicaId replicaId, final long startLogIndex, final long endLogIndex);
+
+
+    public boolean
+
 
 
 }

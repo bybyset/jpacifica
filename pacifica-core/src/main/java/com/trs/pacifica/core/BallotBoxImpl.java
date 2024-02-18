@@ -44,11 +44,11 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
 
     private final Lock writeLock = lock.writeLock();
 
-    private long pendingLogIndex = 0;
+    private long pendingLogIndex = 0, lastCommittedLogIndex = 0;
 
     private StateMachineCaller fsmCaller;
 
-    private final Deque<Ballot> ballotQueue = new LinkedList<>();
+    private final LinkedList<Ballot> ballotQueue = new LinkedList<>();
 
     @Override
     public void init(Option option) {
@@ -87,7 +87,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         secondaryList.forEach(replicaId -> ballot.addGranter(replicaId));
 
         this.writeLock.lock();
-        try{
+        try {
             this.ballotQueue.add(ballot);
             return true;
         } finally {
@@ -106,10 +106,55 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     }
 
     @Override
-    public boolean ballotBy(ReplicaId replicaId, long startLogIndex, long endLogIndex) {
-
-
-        return false;
+    public boolean ballotBy(final ReplicaId replicaId, long startLogIndex, long endLogIndex) {
+        assert startLogIndex <= endLogIndex;
+        if (startLogIndex > endLogIndex) {
+            throw new IllegalArgumentException(String.format("startLogIndex(%d) greater than endLogIndex(%d).", startLogIndex, endLogIndex));
+        }
+        this.readLock.lock();
+        long lastCommittedLogIndex = this.lastCommittedLogIndex;
+        try {
+            if (this.ballotQueue.isEmpty()) {
+                return false;
+            }
+            if (this.pendingLogIndex == 0) {
+                return false;
+            }
+            if (endLogIndex < pendingLogIndex) {
+                return true;
+            }
+            startLogIndex = Math.max(this.pendingLogIndex, startLogIndex);
+            endLogIndex = Math.min(endLogIndex, this.pendingLogIndex + this.ballotQueue.size());
+            final int fromIndex = (int) Math.max(0, startLogIndex - pendingLogIndex);
+            final int toIndex = (int) Math.max(1, endLogIndex - pendingLogIndex + 1);
+            List<Ballot> commitList = this.ballotQueue.subList(fromIndex, toIndex);
+            int index = 0;
+            for (Ballot ballot : commitList) {
+                if (ballot.grant(replicaId)) {
+                    lastCommittedLogIndex += index;
+                }
+                index++;
+            }
+            if (lastCommittedLogIndex == this.lastCommittedLogIndex) {
+                return true;
+            }
+        } finally {
+            this.readLock.unlock();
+        }
+        this.writeLock.lock();
+        try {
+            if (lastCommittedLogIndex >= this.lastCommittedLogIndex) {
+                this.lastCommittedLogIndex = lastCommittedLogIndex;
+                this.fsmCaller.commitAt(lastCommittedLogIndex);
+            }
+            while (this.pendingLogIndex <= lastCommittedLogIndex) {
+                this.ballotQueue.poll();
+                this.pendingLogIndex++;
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
+        return true;
     }
 
 
