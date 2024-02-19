@@ -85,7 +85,6 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         final List<ReplicaId> secondaryList = replicaGroup.listSecondary();
         final Ballot ballot = new Ballot(primary);
         secondaryList.forEach(replicaId -> ballot.addGranter(replicaId));
-
         this.writeLock.lock();
         try {
             this.ballotQueue.add(ballot);
@@ -97,12 +96,54 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
 
     @Override
     public boolean cancelBallot(ReplicaId replicaId) {
-        return false;
+        Objects.requireNonNull(replicaId, "replicaId");
+        this.readLock.lock();
+        long lastCommittedLogIndex = this.lastCommittedLogIndex;
+        try {
+            if (this.pendingLogIndex == 0) {
+                return false;
+            }
+            if (this.ballotQueue.isEmpty()) {
+                return true;
+            }
+            int index = 0;
+            for (Ballot ballot : this.ballotQueue) {
+                if (ballot.removeGranter(replicaId) && ballot.isGranted()) {
+                    lastCommittedLogIndex += index;
+                }
+                index++;
+            }
+            if (lastCommittedLogIndex == this.lastCommittedLogIndex) {
+                return true;
+            }
+
+        } finally {
+            this.readLock.unlock();
+        }
+        setLastCommittedLogIndex(lastCommittedLogIndex);
+        return true;
     }
 
     @Override
-    public boolean recoverBallot(ReplicaId replicaId, long startLogIndex) {
-        return false;
+    public boolean recoverBallot(final ReplicaId replicaId, long startLogIndex) {
+        Objects.requireNonNull(replicaId, "replicaId");
+        this.readLock.lock();
+        try {
+            if (startLogIndex < this.pendingLogIndex) {
+                return false;
+            }
+            if (startLogIndex < this.lastCommittedLogIndex) {
+                // has committed
+                return false;
+            }
+            final int fromIndex = (int) Math.max(0, startLogIndex - pendingLogIndex);
+            final int toIndex = this.ballotQueue.size();
+            List<Ballot> recoverList = this.ballotQueue.subList(fromIndex, toIndex);
+            recoverList.forEach(ballot -> ballot.addGranter(replicaId));
+        } finally {
+            this.readLock.unlock();
+        }
+        return true;
     }
 
     @Override
@@ -114,11 +155,11 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         this.readLock.lock();
         long lastCommittedLogIndex = this.lastCommittedLogIndex;
         try {
-            if (this.ballotQueue.isEmpty()) {
-                return false;
-            }
             if (this.pendingLogIndex == 0) {
                 return false;
+            }
+            if (this.ballotQueue.isEmpty()) {
+                return true;
             }
             if (endLogIndex < pendingLogIndex) {
                 return true;
@@ -141,6 +182,11 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         } finally {
             this.readLock.unlock();
         }
+        setLastCommittedLogIndex(lastCommittedLogIndex);
+        return true;
+    }
+
+    private void setLastCommittedLogIndex(final long lastCommittedLogIndex) {
         this.writeLock.lock();
         try {
             if (lastCommittedLogIndex >= this.lastCommittedLogIndex) {
@@ -154,7 +200,12 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         } finally {
             this.writeLock.unlock();
         }
-        return true;
+    }
+
+    public void clear() {
+        this.pendingLogIndex = 0;
+        this.lastCommittedLogIndex = 0;
+        this.ballotQueue.clear();
     }
 
 
@@ -217,6 +268,17 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
             final Granter granter = granters.putIfAbsent(replicaId, new Granter(replicaId));
             if (granter == null) {
                 ATOMIC_QUORUM.incrementAndGet(this);
+            }
+            return true;
+        }
+
+        public boolean removeGranter(final ReplicaId replicaId) {
+            final Granter granter = granters.remove(replicaId);
+            if (granter == null) {
+                return false;
+            }
+            if (granter.grant()) {
+                ATOMIC_QUORUM.decrementAndGet(this);
             }
             return true;
         }
