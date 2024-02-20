@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ReplicaOption {
 
+    static final int DEFAULT_MAX_OPERATION_NUM_PER_BATCH = 16;
     static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
     static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
     static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
@@ -54,6 +55,12 @@ public class ReplicaOption {
     private PacificaClient pacificaClient;
 
     private ExecutorGroup executorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+
+    /**
+     * operation consumer num per batch, The minimum cannot be less than 1
+     */
+    private int maxOperationNumPerBatch = DEFAULT_MAX_OPERATION_NUM_PER_BATCH;
 
     public int getGracePeriodTimeoutMs() {
         return gracePeriodTimeoutMs;
@@ -109,5 +116,13 @@ public class ReplicaOption {
 
     public void setExecutorGroup(ExecutorGroup executorGroup) {
         this.executorGroup = executorGroup;
+    }
+
+    public int getMaxOperationNumPerBatch() {
+        return maxOperationNumPerBatch;
+    }
+
+    public void setMaxOperationNumPerBatch(int maxOperationNumPerBatch) {
+        this.maxOperationNumPerBatch = Math.max(1, maxOperationNumPerBatch);
     }
 }

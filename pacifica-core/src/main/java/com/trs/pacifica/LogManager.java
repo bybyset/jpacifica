@@ -26,32 +26,52 @@ public interface LogManager {
 
 
     /**
-     *
      * @param logEntries
      * @param callback
      */
     public void appendLogEntries(List<LogEntry> logEntries, Callback callback);
 
+    default public void appendLogEntry(final LogEntry logEntry, final Callback callback) {
+        appendLogEntries(List.of(logEntry), callback);
+    }
 
+    /**
+     * get LogEntry at log index
+     * @param logIndex
+     * @return
+     */
+    public LogEntry getLogEntryAt(final long logIndex);
+
+
+    /**
+     * get LogId at commit point
+     * @return
+     */
     public LogId getCommitPoint();
+
+    /**
+     * get first log id
+     * @return
+     */
+    public LogId getFirstLogId();
+
+    /**
+     * get last log id
+     * @return
+     */
+    public LogId getLastLogId();
+
+
 
 
     public void waitNewLog(final long waitLogIndex, final NewLogListener listener);
 
 
-
-
-
     public static interface NewLogListener {
 
+
+
     }
-
-
-
-
-
-
-
 
 
 }

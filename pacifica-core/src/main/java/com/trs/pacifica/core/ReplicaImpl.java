@@ -19,25 +19,26 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.PacificaException;
-import com.trs.pacifica.model.LogEntry;
-import com.trs.pacifica.model.LogId;
-import com.trs.pacifica.model.Operation;
-import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
 import com.trs.pacifica.sender.SenderType;
+import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -56,7 +57,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private ReplicaOption option;
 
+    private Queue<OperationContext> operationContextQueue = QueueUtil.newMpscQueue();
+
     private ReplicaState state = ReplicaState.Uninitialized;
+
+    private ReplicaGroup replicaGroup;
 
     private ConfigurationClient configurationClient;
 
@@ -192,10 +197,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     public void apply(Operation operation) {
         Objects.requireNonNull(operation, "param: operation is null");
         ensureActive();
-
-        final OperationContext context = new OperationContext(null);
-
-
+        final LogEntry logEntry = new LogEntry();
+        logEntry.setLogData(operation.getLogData());
+        final OperationContext context = new OperationContext(logEntry, operation.getOnFinish());
+        if (this.operationContextQueue.offer(context)) {
+            this.applyExecutor.execute(new OperationConsumer());
+        }
     }
 
 
@@ -249,23 +256,37 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return null;
     }
 
-    private void doOperation(OperationContext operationContext) {
-
+    private void applyOperationBatch(List<OperationContext> oneBatch) {
+        assert oneBatch != null;
         this.writeLock.lock();
         try {
-            final Callback callback = operationContext.callback;
             //check primary state
             if (this.state != ReplicaState.Primary) {
-                ThreadUtil.runCallback(callback, FinishedImpl.failure(new IllegalStateException("Is not Primary.")));
+                final Finished result = FinishedImpl.failure(new IllegalStateException("Is not Primary."));
+                oneBatch.forEach(context -> {
+                    ThreadUtil.runCallback(context.getCallback(), result);
+                });
                 return;
             }
-            //initiate ballot to ballotBox
+            final long curPrimaryTerm = this.replicaGroup.getPrimaryTerm();
+            final int count = oneBatch.size();
+            List<LogEntry> logEntries = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                final OperationContext context = oneBatch.get(i);
+                final Callback callback = context.callback;
+                final LogEntry logEntry = context.logEntry;
+                //initiate ballot to ballotBox
+                if (!this.ballotBox.initiateBallot(this.replicaGroup)) {
 
+                    continue;
+                }
 
-
+                logEntry.setType(LogEntry.Type.OP_DATA);
+                logEntry.getLogId().setTerm(curPrimaryTerm);
+                logEntries.add(logEntry);
+            }
             //log manager append log
-
-
+            this.logManager.appendLogEntries(logEntries, null);
         } finally {
             this.writeLock.unlock();
         }
@@ -277,21 +298,52 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
      */
     static class OperationContext {
 
-        LogEntry logEntry;
+        final LogEntry logEntry;
 
-        Callback callback = null;
+        final Callback callback;
 
         int expectedTerm = -1;
 
-        public OperationContext(LogEntry logEntry) {
+        public OperationContext(LogEntry logEntry, Callback callback) {
             this.logEntry = logEntry;
+            this.callback = callback;
+        }
+
+        public LogEntry getLogEntry() {
+            return this.logEntry;
         }
 
 
+        public Callback getCallback() {
+            return callback;
+        }
+
     }
 
-    static class OperationHandler {
+    /**
+     * TODO recycle
+     */
+    class OperationConsumer implements Runnable {
+        private List<OperationContext> buffer = new ArrayList<>(16);
 
+        @Override
+        public void run() {
+            if (ReplicaImpl.this.operationContextQueue.isEmpty()) {
+                return;
+            }
+            final Queue<OperationContext> queue = ReplicaImpl.this.operationContextQueue;
+            final int maxCount = ReplicaImpl.this.option.getMaxOperationNumPerBatch();
+            OperationContext operationContext;
+            while (buffer.size() < maxCount && (operationContext = queue.poll()) != null) {
+                buffer.add(operationContext);
+            }
+            ReplicaImpl.this.applyOperationBatch(buffer);
+            this.rest();
+        }
+
+        void rest() {
+            this.buffer.clear();
+        }
     }
 
 }

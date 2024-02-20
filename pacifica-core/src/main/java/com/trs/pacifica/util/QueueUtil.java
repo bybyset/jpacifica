@@ -29,12 +29,12 @@ public class QueueUtil {
     private static final int MPSC_CHUNK_SIZE = 1024;
     private static final int MIN_MAX_MPSC_CAPACITY = MPSC_CHUNK_SIZE << 1;
 
-    public static Queue<Runnable> newMpscQueue() {
+    public static <T> Queue<T> newMpscQueue() {
         return UnsafeUtil.hasUnsafe() ? new MpscUnboundedArrayQueue<>(MPSC_CHUNK_SIZE)
                 : new MpscUnboundedAtomicArrayQueue<>(MPSC_CHUNK_SIZE);
     }
 
-    public static Queue<Runnable> newMpscQueue(final int maxCapacity) {
+    public static <T> Queue<T> newMpscQueue(final int maxCapacity) {
         final int capacity = Math.max(MIN_MAX_MPSC_CAPACITY, maxCapacity);
         return UnsafeUtil.hasUnsafe() ? new MpscChunkedArrayQueue<>(MPSC_CHUNK_SIZE, capacity)
                 : new MpscGrowableAtomicArrayQueue<>(MPSC_CHUNK_SIZE, capacity);

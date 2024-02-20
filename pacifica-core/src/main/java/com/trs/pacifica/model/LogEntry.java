@@ -17,21 +17,36 @@
 
 package com.trs.pacifica.model;
 
+import com.trs.pacifica.util.Checksum;
+import com.trs.pacifica.util.CrcUtil;
+
 import java.nio.ByteBuffer;
 
-public class LogEntry {
+public class LogEntry implements Checksum {
 
     static final ByteBuffer EMPTY_DATA = ByteBuffer.allocate(0);
 
-    private final LogId logId;
+    private final LogId logId = new LogId(0, 0);
 
     private ByteBuffer logData = EMPTY_DATA;
 
-    public LogEntry(LogId logId) {
-        this.logId = logId;
+    private Type type = Type.NO_OP;
+
+    private long checksum = 0L;
+
+    private boolean hasChecksum = false;
+
+    public LogEntry() {
+
     }
-    public LogEntry(LogId logId, ByteBuffer logData) {
-        this.logId = logId;
+
+    public LogEntry(LogId logId) {
+        this(logId.getIndex(), logId.getTerm(), EMPTY_DATA);
+    }
+
+    public LogEntry(final long logIndex, final long logTerm, ByteBuffer logData) {
+        this.logId.setIndex(logIndex);
+        this.logId.setTerm(logTerm);
         this.logData = logData;
     }
 
@@ -45,5 +60,44 @@ public class LogEntry {
 
     public void setLogData(ByteBuffer logData) {
         this.logData = logData;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public void setChecksum(long checksum) {
+        this.checksum = checksum;
+        this.hasChecksum = true;
+    }
+
+    public long getChecksum() {
+        return checksum;
+    }
+
+    public boolean hasChecksum() {
+        return hasChecksum;
+    }
+
+    public boolean isCorrupted() {
+        return this.hasChecksum && this.checksum != this.checksum();
+    }
+
+    @Override
+    public long checksum() {
+        long c = checksum(this.type.ordinal(), this.logId.checksum());
+        if (this.logData != null && this.logData.hasRemaining()) {
+            c = checksum(c, CrcUtil.crc64(this.logData));
+        }
+        return c;
+    }
+
+    public static enum Type {
+        OP_DATA,
+        NO_OP;
     }
 }

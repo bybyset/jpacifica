@@ -65,8 +65,6 @@ public interface BallotBox {
     public boolean ballotBy(final ReplicaId replicaId, final long startLogIndex, final long endLogIndex);
 
 
-    public boolean
-
 
 
 }

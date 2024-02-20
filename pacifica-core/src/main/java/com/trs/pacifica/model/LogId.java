@@ -17,22 +17,38 @@
 
 package com.trs.pacifica.model;
 
+import com.trs.pacifica.util.Bits;
+import com.trs.pacifica.util.Checksum;
+import com.trs.pacifica.util.Copyable;
+import com.trs.pacifica.util.CrcUtil;
+
 import java.util.Objects;
 
-public class LogId {
+public class LogId implements Checksum, Comparable<LogId>, Copyable<LogId> {
 
     /**
      * sequence number of, It starts at 1 and increases.
      */
-    private final long index;
+    private long index = 0;
 
     /**
      * term number of primary, It starts at 1 and increases.
      */
-    private final long term;
+    private long term = 0;
 
     public LogId(long index, long term) {
         this.index = index;
+        this.term = term;
+    }
+
+    public LogId() {
+    }
+
+    public void setIndex(long index) {
+        this.index = index;
+    }
+
+    public void setTerm(long term) {
         this.term = term;
     }
 
@@ -55,5 +71,35 @@ public class LogId {
     @Override
     public int hashCode() {
         return Objects.hash(index, term);
+    }
+
+
+    @Override
+    public long checksum() {
+        byte[] bs = new byte[16];
+        Bits.putLong(bs, 0, this.index);
+        Bits.putLong(bs, 8, this.term);
+        return CrcUtil.crc64(bs);
+    }
+
+    @Override
+    public int compareTo(LogId o) {
+        // Compare term at first
+        final int c = Long.compare(getTerm(), o.getTerm());
+        if (c == 0) {
+            return Long.compare(getIndex(), o.getIndex());
+        } else {
+            return c;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "LogId [index=" + this.index + ", term=" + this.term + "]";
+    }
+
+    @Override
+    public LogId copy() {
+        return new LogId(this.index, this.term);
     }
 }

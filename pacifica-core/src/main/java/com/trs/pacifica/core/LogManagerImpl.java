@@ -20,41 +20,105 @@ package com.trs.pacifica.core;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.LogStorage;
+import com.trs.pacifica.LogStorageFactory;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Option> {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(LogManagerImpl.class);
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private final Lock readLock = lock.readLock();
+
+    private final Lock writeLock = lock.writeLock();
 
     private Option option;
 
+    private SingleThreadExecutor executor;
+
+    /***  start phase **/
     private LogStorage logStorage;
+
+    private volatile long firstLogIndex;
+    private volatile long lastLogIndex;
+
+
 
     public LogManagerImpl() {
     }
 
     @Override
     public void init(LogManagerImpl.Option option) {
-        this.option = option;
+        this.writeLock.lock();
+        try {
+            this.option = Objects.requireNonNull(option);
+            final ReplicaOption replicaOption = Objects.requireNonNull(option.getReplicaOption());
+            this.executor = replicaOption.getExecutorGroup().chooseExecutor();
+        } finally {
+            this.writeLock.unlock();
+        }
+
 
     }
 
     @Override
     public void startup() {
+        this.writeLock.lock();
+        try {
+            final ReplicaOption replicaOption = Objects.requireNonNull(this.option.getReplicaOption());
+            final LogStorageFactory logStorageFactory = Objects.requireNonNull(replicaOption.getPacificaServiceFactory());
+            this.logStorage = logStorageFactory.newLogStorage(replicaOption.getLogStoragePath());
+        } finally {
+            this.writeLock.unlock();
+        }
 
     }
 
     @Override
     public void shutdown() {
-
+        this.writeLock.lock();
+        try {
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     @Override
     public void appendLogEntries(List<LogEntry> logEntries, Callback callback) {
 
+        this.writeLock.lock();
+        try {
+            // check resolve conflict
+            // fill LogEntry -> LogId
+
+            // fill LogEntry -> checksum
+
+            
+
+            //
+
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+
+
+    @Override
+    public LogEntry getLogEntryAt(long logIndex) {
+        return null;
     }
 
     @Override
@@ -63,15 +127,26 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
-    public void waitNewLog(long waitLogIndex, NewLogListener listener) {
-        
+    public LogId getFirstLogId() {
+        return null;
     }
+
+    @Override
+    public LogId getLastLogId() {
+        return null;
+    }
+
+    @Override
+    public void waitNewLog(long waitLogIndex, NewLogListener listener) {
+
+    }
+
+
 
 
     public static final class Option {
 
         ReplicaOption replicaOption;
-
 
 
         public ReplicaOption getReplicaOption() {
