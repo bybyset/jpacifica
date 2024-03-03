@@ -51,9 +51,17 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     /***  start phase **/
     private LogStorage logStorage;
 
-    private volatile long firstLogIndex;
-    private volatile long lastLogIndex;
+    /**
+     * first log id at disk
+     */
+    private final LogId firstLogId = new LogId(0, 0);
 
+    /**
+     * last log id at disk
+     */
+    private final LogId lastLogId = new LogId(0, 0);
+
+    private volatile long lastLogIndex = 0L;
 
 
     public LogManagerImpl() {
@@ -140,6 +148,27 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     public void waitNewLog(long waitLogIndex, NewLogListener listener) {
 
     }
+
+
+    private void doTruncatePrefix(final long firstLogIndexKept) {
+        this.writeLock.lock();
+        try {
+            if (firstLogIndexKept < this.firstLogId.getIndex()) {
+                return;
+            }
+
+            this.logStorage.truncatePrefix(firstLogIndexKept);
+
+        } finally {
+            this.writeLock.unlock();
+        }
+
+    }
+
+    private void doTruncateSuffix(final long lastLogIndexKept) {
+
+    }
+
 
 
 

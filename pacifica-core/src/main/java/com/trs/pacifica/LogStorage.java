@@ -45,14 +45,14 @@ public interface LogStorage {
      *
      * @return null if nothing
      */
-    LogId getFirstLogIndex();
+    LogId getFirstLogId();
 
     /**
      * get the index of the last log
      *
      * @return null if nothing
      */
-    LogId getLastLogIndex();
+    LogId getLastLogId();
 
 
     /**
@@ -76,14 +76,16 @@ public interface LogStorage {
     /**
      * truncate logs from storage's head, [first_log_index, first_index_kept) will be discarded.
      * @param firstIndexKept
-     * @return
+     * @return first LogId. it is LogId(0 ,0) if nothing
      */
-    boolean truncatePrefix(final long firstIndexKept);
+    LogId truncatePrefix(final long firstIndexKept);
 
     /**
      * truncate logs from storage's tail, (last_index_kept, last_log_index]  will be discarded.
+     * @param lastIndexKept
+     * @return last LogId. it is LogId(0 ,0) if nothing
      */
-    boolean truncateSuffix(final long lastIndexKept);
+    LogId truncateSuffix(final long lastIndexKept);
 
 
     void close();

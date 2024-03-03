@@ -107,14 +107,24 @@ public class FsLogStorage implements LogStorage {
     }
 
     @Override
-    public LogId getFirstLogIndex() {
+    public LogId getFirstLogId() {
+        this.readLock.lock();
+        try {
+            final long firstLogIndex = this.segmentStore.getFirstLogIndex();
+            if (firstLogIndex > 0) {
+                this.indexStore.
+            }
+        } finally {
+            this.readLock.unlock();
+        }
         return null;
     }
 
     @Override
-    public LogId getLastLogIndex() {
+    public LogId getLastLogId() {
         return null;
     }
+
     @Override
     public boolean appendLogEntry(LogEntry logEntry) {
         return appendLogEntries(List.of(logEntry)) == 1;
@@ -131,9 +141,9 @@ public class FsLogStorage implements LogStorage {
             int appendCount = 0;
             for (LogEntry logEntry : logEntries) {
                 final byte[] logEntryBytes = this.logEntryEncoder.encode(logEntry);
-                final long logIndex = logEntry.getLogId().getIndex();
+                final LogId logId = logEntry.getLogId().copy();
                 final boolean isWaitingFlush = appendCount == totalCount - 1;
-                if (doAppendLogEntry(logIndex, logEntryBytes, isWaitingFlush)) {
+                if (doAppendLogEntry(logId, logEntryBytes, isWaitingFlush)) {
                     appendCount++;
                 } else {
                     // flush
@@ -146,26 +156,28 @@ public class FsLogStorage implements LogStorage {
         }
     }
 
-    private boolean doAppendLogEntry(final long logIndex, final byte[] data, final boolean isWaitingFlush) {
+    private boolean doAppendLogEntry(final LogId logId, final byte[] data, final boolean isWaitingFlush) {
+        Objects.requireNonNull(logId, "logId");
         if (this.segmentStore == null || this.indexStore == null) {
             return false;
         }
         try {
+            final long logIndex = logId.getIndex();
             //write segment
             final Tuple2<Integer, Long> segmentResult = this.segmentStore.appendLogData(logIndex, data);
             if (segmentResult.getFirst() < 0 || segmentResult.getSecond() < 0) {
                 return false;
             }
             //write index
-            final Tuple2<Integer, Long> indexResult = this.indexStore.appendLogIndex(logIndex, segmentResult.getFirst());
+            final Tuple2<Integer, Long> indexResult = this.indexStore.appendLogIndex(logId, segmentResult.getFirst());
             if (indexResult.getFirst() < 0 || indexResult.getSecond() < 0) {
                 return false;
             }
             if (isWaitingFlush) {
                 //TODO
             }
-        } catch (Throwable e){
-            LOGGER.error("path={} failed to append LogEntry(index={})", this.storagePath, logIndex);
+        } catch (Throwable e) {
+            LOGGER.error("path={} failed to append LogEntry({})", this.storagePath, logId);
         }
         return false;
     }
@@ -176,13 +188,16 @@ public class FsLogStorage implements LogStorage {
     }
 
     @Override
-    public boolean truncatePrefix(long firstIndexKept) {
-        return false;
+    public LogId truncatePrefix(long firstIndexKept) {
+
+
+        return new LogId(0, 0);
     }
 
     @Override
-    public boolean truncateSuffix(long lastIndexKept) {
-        return false;
+    public LogId truncateSuffix(long lastIndexKept) {
+
+        return new LogId(0, 0);
     }
 
     @Override

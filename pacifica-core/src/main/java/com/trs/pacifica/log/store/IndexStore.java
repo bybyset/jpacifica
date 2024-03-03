@@ -21,6 +21,7 @@ import com.trs.pacifica.log.file.AbstractFile;
 import com.trs.pacifica.log.file.FileHeader;
 import com.trs.pacifica.log.file.IndexFile;
 import com.trs.pacifica.log.file.SegmentFile;
+import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.Tuple2;
 
 import java.io.IOException;
@@ -54,13 +55,14 @@ public class IndexStore extends AbstractStore {
     /**
      * build an index for LogEntry, so that it is easy to read the log bytes through logIndex.
      *
-     * @param logIndex    log index of LogEntry
+     * @param logId    LogId of LogEntry
      * @param logPosition start position in segment file about LogEntry
      * @return two-tuples: (start write position of segment file, expect flush position)
      * @throws IllegalArgumentException we have to submit in the order of log index, otherwise throw
      */
-    public Tuple2<Integer, Long> appendLogIndex(final long logIndex, final int logPosition) throws IOException {
+    public Tuple2<Integer, Long> appendLogIndex(final LogId logId, final int logPosition) throws IOException {
         //TODO How is the order of logIndex guaranteed for concurrency, or do we not need to consider the order?
+        final long logIndex = logId.getIndex();
         final long lastLogIndex = getLastLogIndex();
         if (logIndex != lastLogIndex + 1) {
             throw new IllegalArgumentException("expect logIndex=" + lastLogIndex + 1 + ", but logIndex=" + logIndex);
@@ -68,7 +70,7 @@ public class IndexStore extends AbstractStore {
         final int minFreeByteSize = IndexFile.getWriteByteSize();
         final AbstractFile lastFile = getLastFile(minFreeByteSize, true);
         if (lastFile != null && lastFile instanceof IndexFile) {
-            final int startWritePos = ((IndexFile) lastFile).appendIndexData(logIndex, logPosition);
+            final int startWritePos = ((IndexFile) lastFile).appendIndexData(logId, logPosition);
             final long expectFlushPos = lastFile.getStartOffset() + startWritePos + minFreeByteSize;
             return Tuple2.of(startWritePos, expectFlushPos);
         }
