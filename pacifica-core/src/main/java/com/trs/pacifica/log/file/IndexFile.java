@@ -19,6 +19,7 @@ package com.trs.pacifica.log.file;
 
 import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.store.IndexStore;
+import com.trs.pacifica.model.LogId;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,19 +38,29 @@ public class IndexFile extends AbstractFile {
     }
 
 
-    public int appendIndexData(final long logIndex, final int logPosition) throws IOException {
+    public int appendIndexData(final LogId logId, final int logPosition) throws IOException {
+        final long logIndex = logId.getIndex();
         final byte[] indexEntry = encodeData(toRelativeOffset(logIndex), logPosition);
         return doAppendData(logIndex, indexEntry);
     }
 
     /**
      * lookup position of the log in segment file
+     *
      * @param logIndex
      * @return
      */
-    public int lookupPositionAt(final long logIndex) {
+    public IndexEntry lookupIndexEntry(final long logIndex) {
+        //calculating position
+        int position = calculatingPosition(logIndex);
+        //read bytes
 
-        return AbstractFile._NOT_FOUND;
+        return null;
+    }
+
+    private int calculatingPosition(final long logIndex) {
+        // header size + offset * size_per_entry
+        return FileHeader.getBytesSize() + toRelativeOffset(logIndex) * getWriteByteSize();
     }
 
 
@@ -80,6 +91,41 @@ public class IndexFile extends AbstractFile {
     public static int getWriteByteSize() {
         return _INDEX_ENTRY_BYTE_SIZE;
     }
+
+
+    public static class IndexEntry {
+
+        private final LogId logId;
+
+        private final int position;
+
+        public IndexEntry(LogId logId, int position) {
+            this.logId = logId;
+            this.position = position;
+        }
+
+
+        public LogId getLogId() {
+            return logId;
+        }
+
+        public int getPosition() {
+            return position;
+        }
+    }
+
+    public static class IndexEntryHeader {
+
+    }
+
+    public static interface IndexEntryCodec {
+
+        byte[] encode();
+
+        IndexEntry decode(ByteBuffer byteBuffer);
+
+    }
+
 
 
 }

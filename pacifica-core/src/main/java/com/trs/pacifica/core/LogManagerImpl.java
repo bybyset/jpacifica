@@ -60,10 +60,18 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     /***  start phase **/
     private LogStorage logStorage;
 
-    private volatile long firstLogIndex;
-    private volatile long lastLogIndex;
+    /**
+     * first log id at disk
+     */
+    private final LogId firstLogId = new LogId(0, 0);
 
     private LogId committedPoint = new LogId(0, 0);
+    /**
+     * last log id at disk
+     */
+    private final LogId lastLogId = new LogId(0, 0);
+
+    private volatile long lastLogIndex = 0L;
 
     public LogManagerImpl() {
     }
@@ -204,6 +212,11 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
+    public long getLogTermAt(long logIndex) {
+        return 0;
+    }
+
+    @Override
     public LogId getCommitPoint() {
         return null;
     }
@@ -299,10 +312,6 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         this.executor.execute(new TruncatePrefixEvent(firstIndexKept));
     }
 
-    private void doTruncatePrefix(final long firstIndexKept) {
-        this.logStorage.truncatePrefix(firstIndexKept);
-    }
-
     class StoreLogEntriesEvent implements Runnable {
 
         private final List<LogEntry> logEntries;
@@ -369,7 +378,20 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             return Long.compare(expectedLastLogIndex, o.expectedLastLogIndex);
         }
     }
+    private void doTruncatePrefix(final long firstLogIndexKept) {
+        this.writeLock.lock();
+        try {
+            if (firstLogIndexKept < this.firstLogId.getIndex()) {
+                return;
+            }
 
+            this.logStorage.truncatePrefix(firstLogIndexKept);
+
+        } finally {
+            this.writeLock.unlock();
+        }
+
+    }
 
     public static final class Option {
 
