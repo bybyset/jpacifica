@@ -10,9 +10,14 @@ message ReplicaId {
   optional string node_id = 2;
 }
 
+enum LogEntryType {
+  OP_DATA = 0;
+  NO_OP = 1;
+}
+
 message LogEntryMeta {
-  optional int64 version = 1;
-  optional int64 data_len = 2;
-  optional int64 type = 3;
+  optional int64 log_term = 1;
+  optional int32 data_len = 2;
+  optional LogEntryType type = 3;
   optional int64 checksum = 4;
 }

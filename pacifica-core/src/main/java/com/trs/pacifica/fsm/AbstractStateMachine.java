@@ -17,41 +17,29 @@
 
 package com.trs.pacifica.fsm;
 
-import com.trs.pacifica.Replica;
+import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.Callback;
-import com.trs.pacifica.model.Operation;
 
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 
-/**
- * TODO optimize ByteBuffer, or BytesArray??
- */
-public interface OperationIterator extends Iterator<ByteBuffer> {
+public abstract class AbstractStateMachine implements StateMachine {
 
+    @Override
+    public void onApply(OperationIterator iterator) {
 
-    /**
-     * Return the data whose content is the same as what was passed to {@link Replica#apply } in the primary replica.
-     * @return
-     */
-    public ByteBuffer getLogData();
+        while (iterator.hasNext()) {
 
-    /**
-     * get current index of op log
-     * @return
-     */
-    public long getLogIndex();
-
-    /**
-     * get current term of op log
-     * @return
-     */
-    public long getLogTerm();
+            final ByteBuffer logData = iterator.getLogData();
+            final long logIndex = iterator.getLogIndex();
+            final long logTerm = iterator.getLogTerm();
+            final Callback callback = iterator.getCallback();
 
 
-    /**
-     * get current callback of {@link Operation#getOnFinish()}}, to see {@link Replica#apply(Operation)}
-     * @return
-     */
-    public Callback getCallback();
+            //do something
+
+            iterator.next();
+        }
+
+
+    }
 }

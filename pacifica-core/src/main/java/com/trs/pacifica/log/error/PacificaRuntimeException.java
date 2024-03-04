@@ -15,13 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.core;
+package com.trs.pacifica.log.error;
 
-import com.trs.pacifica.StateMachineCaller;
+public class PacificaRuntimeException extends RuntimeException{
 
-public class StateMachineCallerImpl implements StateMachineCaller {
-    @Override
-    public boolean commitAt(long logIndex) {
-        return false;
+    public PacificaRuntimeException() {
+    }
+
+    public PacificaRuntimeException(String message) {
+        super(message);
+    }
+
+    public PacificaRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PacificaRuntimeException(Throwable cause) {
+        super(cause);
+    }
+
+    public PacificaRuntimeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

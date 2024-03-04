@@ -70,6 +70,14 @@ public class LogEntry implements Checksum {
         this.type = type;
     }
 
+    public void setLogIndex(final long logIndex) {
+        this.logId.setIndex(logIndex);
+    }
+
+    public void setLogTerm(final long logTerm) {
+        this.logId.setTerm(logTerm);
+    }
+
     public void setChecksum(long checksum) {
         this.checksum = checksum;
         this.hasChecksum = true;

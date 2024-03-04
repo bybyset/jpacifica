@@ -15,6 +15,114 @@ public final class RpcCommon {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
+  /**
+   * Protobuf enum {@code jpacifica.LogEntryType}
+   */
+  public enum LogEntryType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>OP_DATA = 0;</code>
+     */
+    OP_DATA(0),
+    /**
+     * <code>NO_OP = 1;</code>
+     */
+    NO_OP(1),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>OP_DATA = 0;</code>
+     */
+    public static final int OP_DATA_VALUE = 0;
+    /**
+     * <code>NO_OP = 1;</code>
+     */
+    public static final int NO_OP_VALUE = 1;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static LogEntryType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static LogEntryType forNumber(int value) {
+      switch (value) {
+        case 0: return OP_DATA;
+        case 1: return NO_OP;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<LogEntryType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        LogEntryType> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<LogEntryType>() {
+            public LogEntryType findValueByNumber(int number) {
+              return LogEntryType.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.trs.pacifica.proto.RpcCommon.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final LogEntryType[] VALUES = values();
+
+    public static LogEntryType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private LogEntryType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:jpacifica.LogEntryType)
+  }
+
   public interface ReplicaIdOrBuilder extends
       // @@protoc_insertion_point(interface_extends:jpacifica.ReplicaId)
       com.google.protobuf.MessageOrBuilder {
@@ -775,37 +883,42 @@ public final class RpcCommon {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional int64 version = 1;</code>
-     * @return Whether the version field is set.
+     * <code>optional int64 log_term = 1;</code>
+     * @return Whether the logTerm field is set.
      */
-    boolean hasVersion();
+    boolean hasLogTerm();
     /**
-     * <code>optional int64 version = 1;</code>
-     * @return The version.
+     * <code>optional int64 log_term = 1;</code>
+     * @return The logTerm.
      */
-    long getVersion();
+    long getLogTerm();
 
     /**
-     * <code>optional int64 data_len = 2;</code>
+     * <code>optional int32 data_len = 2;</code>
      * @return Whether the dataLen field is set.
      */
     boolean hasDataLen();
     /**
-     * <code>optional int64 data_len = 2;</code>
+     * <code>optional int32 data_len = 2;</code>
      * @return The dataLen.
      */
-    long getDataLen();
+    int getDataLen();
 
     /**
-     * <code>optional int64 type = 3;</code>
+     * <code>optional .jpacifica.LogEntryType type = 3;</code>
      * @return Whether the type field is set.
      */
     boolean hasType();
     /**
-     * <code>optional int64 type = 3;</code>
+     * <code>optional .jpacifica.LogEntryType type = 3;</code>
+     * @return The enum numeric value on the wire for type.
+     */
+    int getTypeValue();
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 3;</code>
      * @return The type.
      */
-    long getType();
+    com.trs.pacifica.proto.RpcCommon.LogEntryType getType();
 
     /**
      * <code>optional int64 checksum = 4;</code>
@@ -831,6 +944,7 @@ public final class RpcCommon {
       super(builder);
     }
     private LogEntryMeta() {
+      type_ = 0;
     }
 
     @java.lang.Override
@@ -854,29 +968,29 @@ public final class RpcCommon {
     }
 
     private int bitField0_;
-    public static final int VERSION_FIELD_NUMBER = 1;
-    private long version_ = 0L;
+    public static final int LOG_TERM_FIELD_NUMBER = 1;
+    private long logTerm_ = 0L;
     /**
-     * <code>optional int64 version = 1;</code>
-     * @return Whether the version field is set.
+     * <code>optional int64 log_term = 1;</code>
+     * @return Whether the logTerm field is set.
      */
     @java.lang.Override
-    public boolean hasVersion() {
+    public boolean hasLogTerm() {
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
-     * <code>optional int64 version = 1;</code>
-     * @return The version.
+     * <code>optional int64 log_term = 1;</code>
+     * @return The logTerm.
      */
     @java.lang.Override
-    public long getVersion() {
-      return version_;
+    public long getLogTerm() {
+      return logTerm_;
     }
 
     public static final int DATA_LEN_FIELD_NUMBER = 2;
-    private long dataLen_ = 0L;
+    private int dataLen_ = 0;
     /**
-     * <code>optional int64 data_len = 2;</code>
+     * <code>optional int32 data_len = 2;</code>
      * @return Whether the dataLen field is set.
      */
     @java.lang.Override
@@ -884,31 +998,37 @@ public final class RpcCommon {
       return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>optional int64 data_len = 2;</code>
+     * <code>optional int32 data_len = 2;</code>
      * @return The dataLen.
      */
     @java.lang.Override
-    public long getDataLen() {
+    public int getDataLen() {
       return dataLen_;
     }
 
     public static final int TYPE_FIELD_NUMBER = 3;
-    private long type_ = 0L;
+    private int type_ = 0;
     /**
-     * <code>optional int64 type = 3;</code>
+     * <code>optional .jpacifica.LogEntryType type = 3;</code>
      * @return Whether the type field is set.
      */
-    @java.lang.Override
-    public boolean hasType() {
+    @java.lang.Override public boolean hasType() {
       return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional int64 type = 3;</code>
+     * <code>optional .jpacifica.LogEntryType type = 3;</code>
+     * @return The enum numeric value on the wire for type.
+     */
+    @java.lang.Override public int getTypeValue() {
+      return type_;
+    }
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 3;</code>
      * @return The type.
      */
-    @java.lang.Override
-    public long getType() {
-      return type_;
+    @java.lang.Override public com.trs.pacifica.proto.RpcCommon.LogEntryType getType() {
+      com.trs.pacifica.proto.RpcCommon.LogEntryType result = com.trs.pacifica.proto.RpcCommon.LogEntryType.forNumber(type_);
+      return result == null ? com.trs.pacifica.proto.RpcCommon.LogEntryType.UNRECOGNIZED : result;
     }
 
     public static final int CHECKSUM_FIELD_NUMBER = 4;
@@ -945,13 +1065,13 @@ public final class RpcCommon {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeInt64(1, version_);
+        output.writeInt64(1, logTerm_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeInt64(2, dataLen_);
+        output.writeInt32(2, dataLen_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, type_);
+        output.writeEnum(3, type_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(4, checksum_);
@@ -967,15 +1087,15 @@ public final class RpcCommon {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(1, version_);
+          .computeInt64Size(1, logTerm_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, dataLen_);
+          .computeInt32Size(2, dataLen_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, type_);
+          .computeEnumSize(3, type_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
@@ -996,10 +1116,10 @@ public final class RpcCommon {
       }
       com.trs.pacifica.proto.RpcCommon.LogEntryMeta other = (com.trs.pacifica.proto.RpcCommon.LogEntryMeta) obj;
 
-      if (hasVersion() != other.hasVersion()) return false;
-      if (hasVersion()) {
-        if (getVersion()
-            != other.getVersion()) return false;
+      if (hasLogTerm() != other.hasLogTerm()) return false;
+      if (hasLogTerm()) {
+        if (getLogTerm()
+            != other.getLogTerm()) return false;
       }
       if (hasDataLen() != other.hasDataLen()) return false;
       if (hasDataLen()) {
@@ -1008,8 +1128,7 @@ public final class RpcCommon {
       }
       if (hasType() != other.hasType()) return false;
       if (hasType()) {
-        if (getType()
-            != other.getType()) return false;
+        if (type_ != other.type_) return false;
       }
       if (hasChecksum() != other.hasChecksum()) return false;
       if (hasChecksum()) {
@@ -1027,20 +1146,18 @@ public final class RpcCommon {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasVersion()) {
-        hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      if (hasLogTerm()) {
+        hash = (37 * hash) + LOG_TERM_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getVersion());
+            getLogTerm());
       }
       if (hasDataLen()) {
         hash = (37 * hash) + DATA_LEN_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getDataLen());
+        hash = (53 * hash) + getDataLen();
       }
       if (hasType()) {
         hash = (37 * hash) + TYPE_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getType());
+        hash = (53 * hash) + type_;
       }
       if (hasChecksum()) {
         hash = (37 * hash) + CHECKSUM_FIELD_NUMBER;
@@ -1178,9 +1295,9 @@ public final class RpcCommon {
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
-        version_ = 0L;
-        dataLen_ = 0L;
-        type_ = 0L;
+        logTerm_ = 0L;
+        dataLen_ = 0;
+        type_ = 0;
         checksum_ = 0L;
         return this;
       }
@@ -1217,7 +1334,7 @@ public final class RpcCommon {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.version_ = version_;
+          result.logTerm_ = logTerm_;
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
@@ -1279,8 +1396,8 @@ public final class RpcCommon {
 
       public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.LogEntryMeta other) {
         if (other == com.trs.pacifica.proto.RpcCommon.LogEntryMeta.getDefaultInstance()) return this;
-        if (other.hasVersion()) {
-          setVersion(other.getVersion());
+        if (other.hasLogTerm()) {
+          setLogTerm(other.getLogTerm());
         }
         if (other.hasDataLen()) {
           setDataLen(other.getDataLen());
@@ -1318,17 +1435,17 @@ public final class RpcCommon {
                 done = true;
                 break;
               case 8: {
-                version_ = input.readInt64();
+                logTerm_ = input.readInt64();
                 bitField0_ |= 0x00000001;
                 break;
               } // case 8
               case 16: {
-                dataLen_ = input.readInt64();
+                dataLen_ = input.readInt32();
                 bitField0_ |= 0x00000002;
                 break;
               } // case 16
               case 24: {
-                type_ = input.readInt64();
+                type_ = input.readEnum();
                 bitField0_ |= 0x00000004;
                 break;
               } // case 24
@@ -1354,49 +1471,49 @@ public final class RpcCommon {
       }
       private int bitField0_;
 
-      private long version_ ;
+      private long logTerm_ ;
       /**
-       * <code>optional int64 version = 1;</code>
-       * @return Whether the version field is set.
+       * <code>optional int64 log_term = 1;</code>
+       * @return Whether the logTerm field is set.
        */
       @java.lang.Override
-      public boolean hasVersion() {
+      public boolean hasLogTerm() {
         return ((bitField0_ & 0x00000001) != 0);
       }
       /**
-       * <code>optional int64 version = 1;</code>
-       * @return The version.
+       * <code>optional int64 log_term = 1;</code>
+       * @return The logTerm.
        */
       @java.lang.Override
-      public long getVersion() {
-        return version_;
+      public long getLogTerm() {
+        return logTerm_;
       }
       /**
-       * <code>optional int64 version = 1;</code>
-       * @param value The version to set.
+       * <code>optional int64 log_term = 1;</code>
+       * @param value The logTerm to set.
        * @return This builder for chaining.
        */
-      public Builder setVersion(long value) {
+      public Builder setLogTerm(long value) {
 
-        version_ = value;
+        logTerm_ = value;
         bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 version = 1;</code>
+       * <code>optional int64 log_term = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearVersion() {
+      public Builder clearLogTerm() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        version_ = 0L;
+        logTerm_ = 0L;
         onChanged();
         return this;
       }
 
-      private long dataLen_ ;
+      private int dataLen_ ;
       /**
-       * <code>optional int64 data_len = 2;</code>
+       * <code>optional int32 data_len = 2;</code>
        * @return Whether the dataLen field is set.
        */
       @java.lang.Override
@@ -1404,19 +1521,19 @@ public final class RpcCommon {
         return ((bitField0_ & 0x00000002) != 0);
       }
       /**
-       * <code>optional int64 data_len = 2;</code>
+       * <code>optional int32 data_len = 2;</code>
        * @return The dataLen.
        */
       @java.lang.Override
-      public long getDataLen() {
+      public int getDataLen() {
         return dataLen_;
       }
       /**
-       * <code>optional int64 data_len = 2;</code>
+       * <code>optional int32 data_len = 2;</code>
        * @param value The dataLen to set.
        * @return This builder for chaining.
        */
-      public Builder setDataLen(long value) {
+      public Builder setDataLen(int value) {
 
         dataLen_ = value;
         bitField0_ |= 0x00000002;
@@ -1424,52 +1541,72 @@ public final class RpcCommon {
         return this;
       }
       /**
-       * <code>optional int64 data_len = 2;</code>
+       * <code>optional int32 data_len = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearDataLen() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        dataLen_ = 0L;
+        dataLen_ = 0;
         onChanged();
         return this;
       }
 
-      private long type_ ;
+      private int type_ = 0;
       /**
-       * <code>optional int64 type = 3;</code>
+       * <code>optional .jpacifica.LogEntryType type = 3;</code>
        * @return Whether the type field is set.
        */
-      @java.lang.Override
-      public boolean hasType() {
+      @java.lang.Override public boolean hasType() {
         return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional int64 type = 3;</code>
-       * @return The type.
+       * <code>optional .jpacifica.LogEntryType type = 3;</code>
+       * @return The enum numeric value on the wire for type.
        */
-      @java.lang.Override
-      public long getType() {
+      @java.lang.Override public int getTypeValue() {
         return type_;
       }
       /**
-       * <code>optional int64 type = 3;</code>
-       * @param value The type to set.
+       * <code>optional .jpacifica.LogEntryType type = 3;</code>
+       * @param value The enum numeric value on the wire for type to set.
        * @return This builder for chaining.
        */
-      public Builder setType(long value) {
-
+      public Builder setTypeValue(int value) {
         type_ = value;
         bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 type = 3;</code>
+       * <code>optional .jpacifica.LogEntryType type = 3;</code>
+       * @return The type.
+       */
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.LogEntryType getType() {
+        com.trs.pacifica.proto.RpcCommon.LogEntryType result = com.trs.pacifica.proto.RpcCommon.LogEntryType.forNumber(type_);
+        return result == null ? com.trs.pacifica.proto.RpcCommon.LogEntryType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 3;</code>
+       * @param value The type to set.
+       * @return This builder for chaining.
+       */
+      public Builder setType(com.trs.pacifica.proto.RpcCommon.LogEntryType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000004;
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearType() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        type_ = 0L;
+        type_ = 0;
         onChanged();
         return this;
       }
@@ -1598,12 +1735,14 @@ public final class RpcCommon {
     java.lang.String[] descriptorData = {
       "\n\r_common.proto\022\tjpacifica\"U\n\tReplicaId\022" +
       "\027\n\ngroup_name\030\001 \001(\tH\000\210\001\001\022\024\n\007node_id\030\002 \001(" +
-      "\tH\001\210\001\001B\r\n\013_group_nameB\n\n\010_node_id\"\224\001\n\014Lo" +
-      "gEntryMeta\022\024\n\007version\030\001 \001(\003H\000\210\001\001\022\025\n\010data" +
-      "_len\030\002 \001(\003H\001\210\001\001\022\021\n\004type\030\003 \001(\003H\002\210\001\001\022\025\n\010ch" +
-      "ecksum\030\004 \001(\003H\003\210\001\001B\n\n\010_versionB\013\n\t_data_l" +
-      "enB\007\n\005_typeB\013\n\t_checksumB#\n\026com.trs.paci" +
-      "fica.protoB\tRpcCommonb\006proto3"
+      "\tH\001\210\001\001B\r\n\013_group_nameB\n\n\010_node_id\"\257\001\n\014Lo" +
+      "gEntryMeta\022\025\n\010log_term\030\001 \001(\003H\000\210\001\001\022\025\n\010dat" +
+      "a_len\030\002 \001(\005H\001\210\001\001\022*\n\004type\030\003 \001(\0162\027.jpacifi" +
+      "ca.LogEntryTypeH\002\210\001\001\022\025\n\010checksum\030\004 \001(\003H\003" +
+      "\210\001\001B\013\n\t_log_termB\013\n\t_data_lenB\007\n\005_typeB\013" +
+      "\n\t_checksum*&\n\014LogEntryType\022\013\n\007OP_DATA\020\000" +
+      "\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacifica.protoB\tR" +
+      "pcCommonb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1620,7 +1759,7 @@ public final class RpcCommon {
     internal_static_jpacifica_LogEntryMeta_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_LogEntryMeta_descriptor,
-        new java.lang.String[] { "Version", "DataLen", "Type", "Checksum", });
+        new java.lang.String[] { "LogTerm", "DataLen", "Type", "Checksum", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

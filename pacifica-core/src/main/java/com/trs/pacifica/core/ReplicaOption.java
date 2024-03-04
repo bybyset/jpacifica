@@ -19,6 +19,7 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.ConfigurationClient;
 import com.trs.pacifica.PacificaServiceFactory;
+import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.rpc.client.PacificaClient;
 
@@ -30,6 +31,8 @@ public class ReplicaOption {
     static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
     static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
     static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
+
+    static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
 
 
     /**
@@ -55,6 +58,14 @@ public class ReplicaOption {
     private PacificaClient pacificaClient;
 
     private ExecutorGroup executorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+    private ExecutorGroup logManagerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+    private ExecutorGroup fsmCallerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+    private boolean enableLogEntryChecksum = DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM;
+
+    private StateMachine stateMachine;
 
 
     /**
@@ -124,5 +135,37 @@ public class ReplicaOption {
 
     public void setMaxOperationNumPerBatch(int maxOperationNumPerBatch) {
         this.maxOperationNumPerBatch = Math.max(1, maxOperationNumPerBatch);
+    }
+
+    public boolean isEnableLogEntryChecksum() {
+        return enableLogEntryChecksum;
+    }
+
+    public void setEnableLogEntryChecksum(boolean enableLogEntryChecksum) {
+        this.enableLogEntryChecksum = enableLogEntryChecksum;
+    }
+
+    public StateMachine getStateMachine() {
+        return stateMachine;
+    }
+
+    public void setStateMachine(StateMachine stateMachine) {
+        this.stateMachine = stateMachine;
+    }
+
+    public ExecutorGroup getLogManagerExecutorGroup() {
+        return logManagerExecutorGroup;
+    }
+
+    public void setLogManagerExecutorGroup(ExecutorGroup logManagerExecutorGroup) {
+        this.logManagerExecutorGroup = logManagerExecutorGroup;
+    }
+
+    public ExecutorGroup getFsmCallerExecutorGroup() {
+        return fsmCallerExecutorGroup;
+    }
+
+    public void setFsmCallerExecutorGroup(ExecutorGroup fsmCallerExecutorGroup) {
+        this.fsmCallerExecutorGroup = fsmCallerExecutorGroup;
     }
 }

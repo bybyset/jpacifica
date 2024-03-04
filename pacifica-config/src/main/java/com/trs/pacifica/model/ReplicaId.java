@@ -55,4 +55,8 @@ public class ReplicaId {
     public String toString() {
         return this.groupName + "_" + this.nodeId;
     }
+
+    public static ReplicaId from(final String groupName, final String nodeId) {
+        return new ReplicaId(groupName, nodeId);
+    }
 }

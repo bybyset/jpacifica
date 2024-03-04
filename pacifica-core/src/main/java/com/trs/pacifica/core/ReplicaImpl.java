@@ -31,6 +31,8 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
 import com.trs.pacifica.sender.SenderType;
 import com.trs.pacifica.util.QueueUtil;
+import com.trs.pacifica.util.RpcUtil;
+import com.trs.pacifica.util.TimeUtils;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +80,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     private ExecutorGroup executorGroup;
 
     private SingleThreadExecutor applyExecutor;
+
+    /**
+     * last timestamp receive heartbeat request from primary
+     */
+    private volatile long lastPrimaryVisit = TimeUtils.monotonicMs();
 
     public ReplicaImpl(ReplicaId replicaId) {
         this.replicaId = replicaId;
@@ -238,6 +245,53 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     @Override
     public RpcRequest.AppendEntriesResponse handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback) throws PacificaException {
+        // Secondary or Candidate received AppendEntriesRequest from Primary
+        this.writeLock.lock();
+        try {
+            if (!this.state.isActive()) {
+                //TODO
+
+                return null;
+            }
+            final ReplicaId toReplicaId = RpcUtil.toReplicaId(request.getTargetId());
+            if (!this.replicaId.equals(toReplicaId)) {
+                //TODO
+                return null;
+            }
+
+            if (this.replicaGroup.getVersion() < request.getVersion()) {
+                // TODO refresh replica group
+
+            }
+            if (this.replicaGroup.getPrimaryTerm() > request.getTerm()) {
+                //TODO
+                return null;
+            }
+            final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
+            if (!this.replicaGroup.getPrimary().equals(fromReplicaId)) {
+                //TODO
+                return null;
+            }
+            updateLastPrimaryVisit();
+            final long prevLogIndex = request.getPrevLogIndex();
+            final long prevLogTerm = request.getPrevLogTerm();
+            final long localPrevLogTerm = this.logManager.getLogTermAt(prevLogIndex);
+            if (prevLogTerm != localPrevLogTerm) {
+                // TODO
+                return null;
+            }
+            if (request.getLogMetaCount() == 0) {
+
+                return null;
+            }
+
+            final List<LogEntry> logEntries = RpcUtil.parseLogEntries(prevLogIndex, request.getLogMetaList(), request.getLogData());
+            final SecondaryAppendLogEntriesCallback secondaryAppendLogEntriesCallback = new SecondaryAppendLogEntriesCallback();
+            this.logManager.appendLogEntries(logEntries, secondaryAppendLogEntriesCallback);
+        } finally {
+            this.writeLock.unlock();
+        }
+
         return null;
     }
 
@@ -281,16 +335,42 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                     continue;
                 }
 
+
                 logEntry.setType(LogEntry.Type.OP_DATA);
                 logEntry.getLogId().setTerm(curPrimaryTerm);
                 logEntries.add(logEntry);
             }
             //log manager append log
-            this.logManager.appendLogEntries(logEntries, null);
+            this.logManager.appendLogEntries(logEntries, new PrimaryAppendLogEntriesCallback());
         } finally {
             this.writeLock.unlock();
         }
 
+    }
+
+    public void updateLastPrimaryVisit() {
+        this.setLastPrimaryVisit(TimeUtils.monotonicMs());
+    }
+
+    public void setLastPrimaryVisit(long lastPrimaryVisit) {
+        this.lastPrimaryVisit = lastPrimaryVisit;
+    }
+
+    /**
+     *
+     * @param monotonicNowMs
+     * @return
+     */
+    private boolean isWithinGracePeriod(long monotonicNowMs) {
+        return monotonicNowMs - this.lastPrimaryVisit < this.option.getGracePeriodTimeoutMs();
+    }
+
+    /**
+     *
+     * @return
+     */
+    private boolean isCurrentPrimaryValid() {
+        return isWithinGracePeriod(TimeUtils.monotonicMs());
     }
 
     /**
@@ -318,6 +398,34 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             return callback;
         }
 
+    }
+
+    class PrimaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {
+
+        @Override
+        public void run(Finished finished) {
+            if (finished.isOk()) {
+                //success
+                final long startLogIndex = this.getFirstLogIndex();
+                final long endLogIndex = startLogIndex + this.getAppendCount() - 1;
+                ReplicaImpl.this.ballotBox.ballotBy(replicaId, startLogIndex, endLogIndex);
+            } else {
+                //failure
+
+            }
+        }
+    }
+
+    class SecondaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {
+
+        @Override
+        public void run(Finished finished) {
+            if (finished.isOk()) {
+                //success
+            } else {
+                //failure
+            }
+        }
     }
 
     /**

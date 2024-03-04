@@ -29,9 +29,9 @@ public interface LogManager {
      * @param logEntries
      * @param callback
      */
-    public void appendLogEntries(List<LogEntry> logEntries, Callback callback);
+    public void appendLogEntries(List<LogEntry> logEntries, AppendLogEntriesCallback callback);
 
-    default public void appendLogEntry(final LogEntry logEntry, final Callback callback) {
+    default public void appendLogEntry(final LogEntry logEntry, final AppendLogEntriesCallback callback) {
         appendLogEntries(List.of(logEntry), callback);
     }
 
@@ -42,6 +42,12 @@ public interface LogManager {
      */
     public LogEntry getLogEntryAt(final long logIndex);
 
+    /**
+     *
+     * @param logIndex
+     * @return
+     */
+    public long getLogTermAt(final long logIndex);
 
     /**
      * get LogId at commit point
@@ -64,15 +70,59 @@ public interface LogManager {
 
 
 
-    public void waitNewLog(final long waitLogIndex, final NewLogListener listener);
+    /**
+     * if expectedLastLogIndex <= lastLogIndexOnDisk will run newLogCallback and return -1L
+     * @param expectedLastLogIndex
+     * @param newLogWaiter
+     * @return waiterId for remove the waiter.
+     * @throws NullPointerException if newLogCallback is null
+     */
+    public long waitNewLog(final long expectedLastLogIndex, final NewLogWaiter newLogWaiter);
 
+    /**
+     *
+     * @param waiterId
+     * @return true if success
+     */
+    public boolean removeWaiter(final long waiterId);
 
-    public static interface NewLogListener {
+    public static abstract class NewLogWaiter implements Callback {
 
+        private long newLogIndex = 0L;
 
+        public long getNewLogIndex() {
+            return newLogIndex;
+        }
 
+        public void setNewLogIndex(long newLogIndex) {
+            this.newLogIndex = newLogIndex;
+        }
     }
 
+
+
+    public static abstract class AppendLogEntriesCallback implements Callback {
+
+        private long firstLogIndex;
+
+        private int appendCount;
+
+        public long getFirstLogIndex() {
+            return firstLogIndex;
+        }
+
+        public void setFirstLogIndex(long firstLogIndex) {
+            this.firstLogIndex = firstLogIndex;
+        }
+
+        public int getAppendCount() {
+            return appendCount;
+        }
+
+        public void setAppendCount(int appendCount) {
+            this.appendCount = appendCount;
+        }
+    }
 
 }
 

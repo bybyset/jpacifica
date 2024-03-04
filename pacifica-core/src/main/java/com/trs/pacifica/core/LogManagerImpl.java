@@ -22,14 +22,20 @@ import com.trs.pacifica.LogManager;
 import com.trs.pacifica.LogStorage;
 import com.trs.pacifica.LogStorageFactory;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -44,6 +50,9 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
     private final Lock writeLock = lock.writeLock();
 
+    private final Map<Long, NewLogContext> newLogWaiterContainer = new ConcurrentHashMap<>();
+
+    private final AtomicLong waiterIdAllocator = new AtomicLong();
     private Option option;
 
     private SingleThreadExecutor executor;
@@ -54,7 +63,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     private volatile long firstLogIndex;
     private volatile long lastLogIndex;
 
-
+    private LogId committedPoint = new LogId(0, 0);
 
     public LogManagerImpl() {
     }
@@ -95,25 +104,98 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         }
     }
 
+    private long unsafeGetLogTermAt(final long index) {
+
+        return 0L;
+    }
+
+    private boolean checkAndResolveConflict(final List<LogEntry> logEntries, Callback callback) {
+
+        assert logEntries.isEmpty() == false;
+        final LogEntry firstLogEntry = logEntries.get(0);
+        boolean primary = firstLogEntry.getLogId().getIndex() == 0;
+        if (primary) {
+            // fill LogEntry -> LogId.index
+            logEntries.forEach(logEntry -> {
+                logEntry.getLogId().setIndex(++this.lastLogIndex);
+            });
+            return true;
+        } else {
+            //first
+            if (firstLogEntry.getLogId().getIndex() > this.lastLogIndex + 1) {
+                //discontinuous
+                ThreadUtil.runCallback(callback, null);
+                return false;
+            }
+            final LogEntry lastLogEntry = logEntries.get(logEntries.size() - 1);
+            if (lastLogEntry.getLogId().getIndex() <= this.committedPoint.getIndex()) {
+                //has been committed
+                ThreadUtil.runCallback(callback, null);
+                return false;
+            }
+
+            if (firstLogEntry.getLogId().getIndex() != this.lastLogIndex + 1) {
+                // resolve conflict
+                // 1、find conflict LogEntry
+                int conflictingIndex = 0;
+                for (; conflictingIndex < logEntries.size(); conflictingIndex++) {
+                    final LogEntry curLogEntry = logEntries.get(conflictingIndex);
+                    if (unsafeGetLogTermAt(curLogEntry.getLogId().getIndex()) != curLogEntry.getLogId().getTerm()) {
+                        break;
+                    }
+                }
+                if (conflictingIndex != logEntries.size()) {
+                    final LogEntry conflictingLogEntry = logEntries.get(conflictingIndex);
+                    if (conflictingLogEntry.getLogId().getIndex() <= this.lastLogIndex) {
+                        //has conflict log: truncate suffix
+                        truncateSuffix(conflictingLogEntry.getLogId().getIndex() - 1, null);
+                    }
+                }
+                if (conflictingIndex > 0) {
+                    //remove duplication
+                    logEntries.subList(0, conflictingIndex).clear();
+                }
+            }
+            this.lastLogIndex = lastLogEntry.getLogId().getIndex();
+            return true;
+
+        }
+    }
+
     @Override
-    public void appendLogEntries(List<LogEntry> logEntries, Callback callback) {
+    public void appendLogEntries(List<LogEntry> logEntries, AppendLogEntriesCallback callback) {
 
         this.writeLock.lock();
         try {
+            if (logEntries.isEmpty()) {
+
+            }
+
+
             // check resolve conflict
-            // fill LogEntry -> LogId
+            checkAndResolveConflict(logEntries, callback);
 
+            if (logEntries.isEmpty()) {
+                //TODO
+
+            }
+            final LogEntry firstLogEntry = logEntries.get(0);
             // fill LogEntry -> checksum
+            final boolean enableLogEntryChecksum = this.option.getReplicaOption().isEnableLogEntryChecksum();
+            if (enableLogEntryChecksum) {
+                logEntries.forEach(logEntry -> {
+                    if (logEntry.hasChecksum() == false) {
+                        logEntry.setChecksum(logEntry.checksum());
+                    }
+                });
+            }
 
-            
-
-            //
-
+            // store log entries
+            storeLogEntries(logEntries, callback);
         } finally {
             this.writeLock.unlock();
         }
     }
-
 
 
     @Override
@@ -137,11 +219,156 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
-    public void waitNewLog(long waitLogIndex, NewLogListener listener) {
+    public long waitNewLog(final long expectedLastLogIndex, final NewLogWaiter newLogWaiter) {
+        Objects.requireNonNull(newLogWaiter, "newLogWaiter");
+        this.readLock.lock();
+        try {
+            final long lastLogIndexOnDisk = getLastLogIndexOnDisk();
+            if (expectedLastLogIndex <= lastLogIndexOnDisk) {
+                newLogWaiter.setNewLogIndex(lastLogIndexOnDisk);
+                ThreadUtil.runCallback(newLogWaiter, null);
+                return -1L;
+            } else {
+                final NewLogContext onNewLog = new NewLogContext(expectedLastLogIndex, newLogWaiter);
+                final long waiterId = this.waiterIdAllocator.incrementAndGet();
+                this.newLogWaiterContainer.putIfAbsent(waiterId, onNewLog);
+                return waiterId;
+            }
+        } finally {
+            this.readLock.unlock();
+        }
 
     }
 
+    @Override
+    public boolean removeWaiter(long waiterId) {
+        return this.newLogWaiterContainer.remove(waiterId) != null;
+    }
 
+    long getLastLogIndexOnDisk() {
+        return 0L;
+    }
+
+    private void notifyNewLog() {
+        this.readLock.lock();
+        final long lastLogIndexOnDisk = getLastLogIndexOnDisk();
+        try {
+            List<Long> notifyWaiterIds = new ArrayList<>();
+            //find
+            this.newLogWaiterContainer.forEach((waiterId, newLogWaiter) -> {
+                if (newLogWaiter.expectedLastLogIndex <= lastLogIndexOnDisk) {
+                    notifyWaiterIds.add(waiterId);
+                }
+            });
+            //run
+            notifyWaiterIds.forEach(waiterId -> {
+                NewLogContext newLogContext = newLogWaiterContainer.remove(waiterId);
+                if (newLogContext != null) {
+                    ThreadUtil.runCallback(newLogContext.newLogCallback, Finished._OK);
+                }
+            });
+        } finally {
+            this.readLock.unlock();
+        }
+    }
+
+    void storeLogEntries(final List<LogEntry> logEntries, final AppendLogEntriesCallback callback) {
+        this.executor.execute(new StoreLogEntriesEvent(logEntries, callback));
+    }
+
+    private void doStoreLogEntries(final List<LogEntry> logEntries) {
+
+        final int storedNum = this.logStorage.appendLogEntries(logEntries);
+        if (storedNum > 0) {
+
+        }
+
+    }
+
+    void truncateSuffix(final long lastIndexKept, final Callback callback) {
+        this.executor.execute(new TruncateSuffixEvent(lastIndexKept));
+    }
+
+    private void doTruncateSuffix(final long lastIndexKept) {
+
+        this.logStorage.truncateSuffix(lastIndexKept);
+
+    }
+
+    void truncatePrefix(final long firstIndexKept, final Callback callback) {
+        this.executor.execute(new TruncatePrefixEvent(firstIndexKept));
+    }
+
+    private void doTruncatePrefix(final long firstIndexKept) {
+        this.logStorage.truncatePrefix(firstIndexKept);
+    }
+
+    class StoreLogEntriesEvent implements Runnable {
+
+        private final List<LogEntry> logEntries;
+
+        private final AppendLogEntriesCallback callback;
+
+        StoreLogEntriesEvent(List<LogEntry> logEntries, AppendLogEntriesCallback callback) {
+            this.logEntries = logEntries;
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    class TruncateSuffixEvent implements Runnable {
+
+        private final long lastIndexKept;
+
+        TruncateSuffixEvent(final long lastIndexKept) {
+            this.lastIndexKept = lastIndexKept;
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    class TruncatePrefixEvent implements Runnable {
+
+
+        private final long firstIndexKept;
+
+        TruncatePrefixEvent(final long firstIndexKept) {
+            this.firstIndexKept = firstIndexKept;
+        }
+
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    private static class NewLogContext implements Comparable<NewLogContext> {
+
+        private final long expectedLastLogIndex;
+
+        private final NewLogWaiter newLogCallback;
+
+        NewLogContext(final long expectedLastLogIndex, NewLogWaiter newLogCallback) {
+            this.expectedLastLogIndex = expectedLastLogIndex;
+            this.newLogCallback = newLogCallback;
+        }
+
+        @Override
+        public int compareTo(NewLogContext o) {
+            if (o == null) {
+                return 1;
+            }
+            return Long.compare(expectedLastLogIndex, o.expectedLastLogIndex);
+        }
+    }
 
 
     public static final class Option {
