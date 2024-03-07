@@ -19,14 +19,18 @@ package com.trs.pacifica.sender;
 
 import com.trs.pacifica.model.ReplicaId;
 
+/**
+ * Only called by Primary.
+ *
+ */
 public interface SenderGroup {
 
 
     /**
      * add Sender
      * @param replicaId
-     * @param senderType
-     * @param checkConnection
+     * @param senderType  to see {@link SenderType}
+     * @param checkConnection  check connect
      * @return
      */
     public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);

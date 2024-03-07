@@ -284,9 +284,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
                 return null;
             }
-
             final List<LogEntry> logEntries = RpcUtil.parseLogEntries(prevLogIndex, request.getLogMetaList(), request.getLogData());
-            final SecondaryAppendLogEntriesCallback secondaryAppendLogEntriesCallback = new SecondaryAppendLogEntriesCallback();
+            final SecondaryAppendLogEntriesCallback secondaryAppendLogEntriesCallback = new SecondaryAppendLogEntriesCallback(callback);
             this.logManager.appendLogEntries(logEntries, secondaryAppendLogEntriesCallback);
         } finally {
             this.writeLock.unlock();
@@ -418,12 +417,25 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     class SecondaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {
 
+        private final RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcCallback;
+
+
+        public SecondaryAppendLogEntriesCallback(RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcCallback) {
+            this.rpcCallback = rpcCallback;
+        }
+
         @Override
         public void run(Finished finished) {
+
             if (finished.isOk()) {
                 //success
+                //1、set commit point
+
+                //2、send response
+                this.rpcCallback.setRpcResponse(null);
             } else {
                 //failure
+                ThreadUtil.runCallback(rpcCallback, finished);
             }
         }
     }

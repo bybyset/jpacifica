@@ -17,28 +17,53 @@
 
 package com.trs.pacifica.core;
 
+import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroup;
 import com.trs.pacifica.sender.SenderType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class SenderGroupImpl implements SenderGroup {
+public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.Option> {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(SenderGroupImpl.class);
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private final Lock readLock = lock.readLock();
+
+    private final Lock writeLock = lock.writeLock();
 
     private final PacificaClient pacificaClient;
 
     private final Map<ReplicaId, Sender> senderContainer = new ConcurrentHashMap<>();
+
 
     public SenderGroupImpl(PacificaClient pacificaClient) {
         this.pacificaClient = pacificaClient;
     }
 
     @Override
-    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection) {
+    public boolean addSenderTo(final ReplicaId replicaId, SenderType senderType, boolean checkConnection) {
+        Objects.requireNonNull(replicaId, "replicaId");
+        this.readLock.lock();
+        try {
+            Sender sender = this.senderContainer.get(replicaId);
+        } finally {
+            this.readLock.unlock();
+        }
+
+
+
         return false;
     }
 
@@ -57,7 +82,24 @@ public class SenderGroupImpl implements SenderGroup {
 
     }
 
-    
+
+    @Override
+    public void init(SenderGroupImpl.Option option) {
+
+    }
+
+    @Override
+    public void startup() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
 
 
+    public static class Option {
+
+    }
 }

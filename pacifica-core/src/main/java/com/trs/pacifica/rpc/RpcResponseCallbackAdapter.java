@@ -15,31 +15,17 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.sender;
+package com.trs.pacifica.rpc;
 
-import com.trs.pacifica.model.ReplicaId;
+import com.google.protobuf.Message;
+import com.trs.pacifica.async.Finished;
 
-/**
- * implement:
- * <li>Maintain the heartbeat of the Primary to other replica</li>
- * <li>Primary copies op log to other replica </li>
- *
- */
-public interface Sender {
+public abstract class RpcResponseCallbackAdapter<T extends Message> implements RpcResponseCallback<T>{
 
+    private T response;
 
-    /**
-     * Check if the peer-to-peer heartbeat is alive
-     * @return true if alive
-     */
-    public boolean isAlive();
-
-
-    /**
-     * get SenderType
-     * @return
-     */
-    public SenderType getType();
-
-
+    @Override
+    public void setRpcResponse(T response) {
+        this.response = response;
+    }
 }

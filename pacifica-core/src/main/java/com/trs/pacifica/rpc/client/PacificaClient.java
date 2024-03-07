@@ -18,15 +18,32 @@
 package com.trs.pacifica.rpc.client;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.RpcRequest;
-import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ReplicaConnection;
+import com.trs.pacifica.rpc.RpcResponseCallback;
 
 public interface PacificaClient extends ReplicaConnection {
 
 
-    Message appendLogEntries(RpcRequest.AppendEntriesRequest request, Callback done);
+    static final int DEFAULT_TIMEOUT_MS = 60 * 1000;
+
+    /**
+     *
+     * @param request
+     * @param callback
+     * @return
+     */
+    default Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback ) {
+        return appendLogEntries(request, callback, DEFAULT_TIMEOUT_MS);
+    }
+
+    Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback, int timeoutMs);
 
 
+    default Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback) {
+        return installSnapshot(request, callback, DEFAULT_TIMEOUT_MS);
+    }
+
+    Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs);
 
 }

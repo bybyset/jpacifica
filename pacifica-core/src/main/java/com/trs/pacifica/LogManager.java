@@ -37,41 +37,44 @@ public interface LogManager {
 
     /**
      * get LogEntry at log index
+     *
      * @param logIndex
      * @return
      */
     public LogEntry getLogEntryAt(final long logIndex);
 
     /**
-     *
      * @param logIndex
-     * @return
+     * @return term of LogId at logIndex.
+     * @return 0 if logIndex <= 0 or not found LogEntry.
      */
     public long getLogTermAt(final long logIndex);
 
     /**
      * get LogId at commit point
+     *
      * @return
      */
     public LogId getCommitPoint();
 
     /**
      * get first log id
-     * @return
+     *
+     * @return LogId(0, 0) if nothing
      */
     public LogId getFirstLogId();
 
     /**
      * get last log id
-     * @return
+     *
+     * @return LogId(0, 0) if nothing
      */
     public LogId getLastLogId();
 
 
-
-
     /**
      * if expectedLastLogIndex <= lastLogIndexOnDisk will run newLogCallback and return -1L
+     *
      * @param expectedLastLogIndex
      * @param newLogWaiter
      * @return waiterId for remove the waiter.
@@ -80,7 +83,6 @@ public interface LogManager {
     public long waitNewLog(final long expectedLastLogIndex, final NewLogWaiter newLogWaiter);
 
     /**
-     *
      * @param waiterId
      * @return true if success
      */
@@ -98,7 +100,6 @@ public interface LogManager {
             this.newLogIndex = newLogIndex;
         }
     }
-
 
 
     public static abstract class AppendLogEntriesCallback implements Callback {

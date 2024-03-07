@@ -41,6 +41,14 @@ public class RpcUtil {
         return null;
     }
 
+    public static RpcCommon.ReplicaId protoReplicaId(ReplicaId replicaId) {
+        RpcCommon.ReplicaId protoReplicaId = RpcCommon.ReplicaId.newBuilder()
+                .setGroupName(replicaId.getGroupName())//
+                .setNodeId(replicaId.getNodeId())//
+                .build();
+        return protoReplicaId;
+    }
+
 
     public static List<LogEntry> parseLogEntries(long prevLogIndex, final List<RpcCommon.LogEntryMeta> logEntryMetas, final ByteString logEntriesData) {
         if (logEntriesData == null || logEntryMetas == null || logEntryMetas.isEmpty()) {
@@ -82,6 +90,17 @@ public class RpcUtil {
                 return LogEntry.Type.OP_DATA;
             case NO_OP:
                 return LogEntry.Type.NO_OP;
+            default:
+                return null;
+        }
+    }
+
+    public static RpcCommon.LogEntryType protoLogEntryType(final LogEntry.Type type) {
+        switch (type) {
+            case OP_DATA:
+                return RpcCommon.LogEntryType.OP_DATA;
+            case NO_OP:
+                return RpcCommon.LogEntryType.NO_OP;
             default:
                 return null;
         }

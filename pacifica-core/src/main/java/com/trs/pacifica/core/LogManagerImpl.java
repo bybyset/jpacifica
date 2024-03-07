@@ -213,6 +213,15 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
     @Override
     public long getLogTermAt(long logIndex) {
+        if (logIndex <= 0) {
+            return 0L;
+        }
+        this.readLock.lock();
+        try {
+
+        } finally {
+            this.readLock.unlock();
+        }
         return 0;
     }
 
