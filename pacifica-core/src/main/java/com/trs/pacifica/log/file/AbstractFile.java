@@ -21,8 +21,10 @@ import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -109,6 +111,46 @@ public abstract class AbstractFile {
             output.writeBytes(bytes);
             this.currentPosition.getAndAdd(bytes.length);
         }
+    }
+
+    int readBytes(@Nonnull final byte[] bytes, final int position) throws IOException {
+        return readBytes(bytes, position, bytes.length);
+    }
+
+    /**
+     * Reads up to len bytes of data from the input stream into an array of bytes.
+     * An attempt is made to read as many as len bytes, but a smaller number may be read.
+     * The number of bytes actually read is returned as an integer.
+     * If len is zero, then no bytes are read and 0 is returned;
+     * otherwise, there is an attempt to read at least one byte.
+     * If no byte is available because the stream is at end of file, the value -1 is returned;
+     * otherwise, at least one byte is read and stored into bytes.
+     * @param bytes
+     * @param position
+     * @param len
+     * @return
+     * @throws IOException
+     */
+    int readBytes(@Nonnull final byte[] bytes, final int position, final int len) throws IOException {
+        Objects.checkFromIndexSize(0, len, bytes.length);
+        if (len == 0) {
+            return 0;
+        }
+        this.readLock.lock();
+        try{
+            if (position < this.currentFlushPosition.get()) {
+                return -1;
+            }
+            try(Input input = this.parentDir.openInOutput(this.filename)) {
+                input.seek(position);
+                input.readBytes(bytes, len);
+            }
+
+        } finally {
+            this.readLock.unlock();
+        }
+
+        return -1;
     }
 
     /**

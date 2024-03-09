@@ -20,6 +20,8 @@ package com.trs.pacifica.log;
 import com.trs.pacifica.LogStorage;
 import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
+import com.trs.pacifica.log.file.AbstractFile;
+import com.trs.pacifica.log.file.IndexFile;
 import com.trs.pacifica.log.store.IndexStore;
 import com.trs.pacifica.log.store.SegmentStore;
 import com.trs.pacifica.model.LogEntry;
@@ -88,7 +90,6 @@ public class FsLogStorage implements LogStorage {
         //validate
 
         //look index  at IndexStore
-
         final int logPosition = this.indexStore.lookupPositionAt(index);
 
         //look LogEntry bytes at SegmentStore
@@ -103,6 +104,7 @@ public class FsLogStorage implements LogStorage {
 
     @Override
     public LogId getLogIdAt(int index) {
+
         return null;
     }
 
@@ -112,8 +114,16 @@ public class FsLogStorage implements LogStorage {
         try {
             final long firstLogIndex = this.segmentStore.getFirstLogIndex();
             if (firstLogIndex > 0) {
-                this.indexStore.
+                final IndexFile indexFile = (IndexFile) this.indexStore.lookupFile(firstLogIndex);
+                if (indexFile != null) {
+                    final IndexFile.IndexEntry indexEntry = indexFile.lookupIndexEntry(firstLogIndex);
+                    if (indexEntry != null) {
+                        return indexEntry.getLogId();
+                    }
+                }
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             this.readLock.unlock();
         }
@@ -122,6 +132,8 @@ public class FsLogStorage implements LogStorage {
 
     @Override
     public LogId getLastLogId() {
+
+
         return null;
     }
 
@@ -189,14 +201,24 @@ public class FsLogStorage implements LogStorage {
 
     @Override
     public LogId truncatePrefix(long firstIndexKept) {
-
+        this.writeLock.lock();
+        try {
+            this.segmentStore.truncatePrefix(firstIndexKept);
+        } finally {
+            this.writeLock.unlock();
+        }
 
         return new LogId(0, 0);
     }
 
     @Override
     public LogId truncateSuffix(long lastIndexKept) {
+        this.writeLock.lock();
+        try {
 
+        } finally {
+            this.writeLock.unlock();
+        }
         return new LogId(0, 0);
     }
 

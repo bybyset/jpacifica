@@ -20,12 +20,15 @@ package com.trs.pacifica.log.store;
 import com.trs.pacifica.log.dir.BaseDirectory;
 import com.trs.pacifica.log.dir.FsDirectory;
 import com.trs.pacifica.log.file.AbstractFile;
+import com.trs.pacifica.model.LogId;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -83,6 +86,13 @@ public abstract class AbstractStore {
         return doAllocateFile(nextFilename);
     }
 
+    /**
+     * get the file of last write
+     * @param minFreeByteSize    minimum number of free bytes of a file
+     * @param createIfNecessary  create
+     * @return
+     * @throws IOException
+     */
     public AbstractFile getLastFile(final int minFreeByteSize, final boolean createIfNecessary) throws IOException {
         AbstractFile lastFile = null;
         this.readLock.lock();
@@ -114,10 +124,38 @@ public abstract class AbstractStore {
 
     /**
      * lookup a file that contains the specified logIndex
-     * @param logIndex sequence number of log
+     * @param logIndex sequence number of log, must be greater than 0, otherwise return null
      * @return null if not found
      */
     public AbstractFile lookupFile(final long logIndex) {
+        if (logIndex <= 0) {
+            return null;
+        }
+        this.readLock.lock();
+        try {
+            if (this.files.isEmpty()) {
+                return null;
+            }
+            if (this.files.size() == 1) {
+                return this.files.peekFirst();
+            }
+            AbstractFile[] fileArray = new AbstractFile[this.files.size()];
+            this.files.toArray(fileArray);
+            int lo = 0, hi = fileArray.length - 1;
+            while (lo <= hi) {
+                int mid = (lo + hi) >>> 1;
+                final AbstractFile file = fileArray[mid];
+                if (file.getLastLogIndex() < logIndex) {
+                    lo = mid + 1;
+                } else if (file.getFirstLogIndex() > logIndex) {
+                    hi = mid - 1;
+                } else {
+                    return file;
+                }
+            }
+        } finally {
+            this.readLock.unlock();
+        }
         return null;
     }
 
@@ -158,6 +196,23 @@ public abstract class AbstractStore {
         return -1L;
     }
 
+    public boolean truncatePrefix(final long firstIndexKept) {
+        this.writeLock.lock();
+        try {
+            List<AbstractFile> removed = new ArrayList<>();
+            AbstractFile topFile = this.files.peekFirst();
+            if (topFile != null && topFile.getLastLogIndex() < firstIndexKept) {
+
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
+        return false;
+    }
+
+    public boolean truncateSuffix(long lastIndexKept) {
+        return false;
+    }
 
 
 }

@@ -63,7 +63,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private volatile State state = State.UNINITIALIZED;
 
-    
+
 
 
     public SenderImpl(ReplicaId fromId, ReplicaId toId, SenderType type) {

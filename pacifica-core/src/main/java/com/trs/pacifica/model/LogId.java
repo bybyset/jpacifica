@@ -17,10 +17,7 @@
 
 package com.trs.pacifica.model;
 
-import com.trs.pacifica.util.Bits;
-import com.trs.pacifica.util.Checksum;
-import com.trs.pacifica.util.Copyable;
-import com.trs.pacifica.util.CrcUtil;
+import com.trs.pacifica.util.*;
 
 import java.util.Objects;
 
@@ -77,8 +74,8 @@ public class LogId implements Checksum, Comparable<LogId>, Copyable<LogId> {
     @Override
     public long checksum() {
         byte[] bs = new byte[16];
-        Bits.putLong(bs, 0, this.index);
-        Bits.putLong(bs, 8, this.term);
+        BitUtil.putLong(bs, 0, this.index);
+        BitUtil.putLong(bs, 8, this.term);
         return CrcUtil.crc64(bs);
     }
 
