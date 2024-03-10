@@ -204,6 +204,8 @@ public class FsLogStorage implements LogStorage {
         this.writeLock.lock();
         try {
             this.segmentStore.truncatePrefix(firstIndexKept);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             this.writeLock.unlock();
         }

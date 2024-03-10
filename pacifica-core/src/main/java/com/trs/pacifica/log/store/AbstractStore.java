@@ -196,13 +196,13 @@ public abstract class AbstractStore {
         return -1L;
     }
 
-    public boolean truncatePrefix(final long firstIndexKept) {
+    public boolean truncatePrefix(final long firstIndexKept) throws IOException {
         this.writeLock.lock();
         try {
             List<AbstractFile> removed = new ArrayList<>();
             AbstractFile topFile = this.files.peekFirst();
             if (topFile != null && topFile.getLastLogIndex() < firstIndexKept) {
-
+                deleteFile(topFile);
             }
         } finally {
             this.writeLock.unlock();
@@ -214,5 +214,18 @@ public abstract class AbstractStore {
         return false;
     }
 
+
+    public boolean deleteFile(final AbstractFile file) throws IOException{
+        this.writeLock.lock();
+        try {
+            if (this.files.remove(file)) {
+                this.directory.deleteFile(file.getFilename());
+                return true;
+            }
+            return false;
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
 
 }

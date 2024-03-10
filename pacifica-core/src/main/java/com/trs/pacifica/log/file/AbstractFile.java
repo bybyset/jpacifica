@@ -22,6 +22,7 @@ import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 
 import javax.annotation.Nonnull;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -30,7 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public abstract class AbstractFile {
+public abstract class AbstractFile implements Closeable {
 
     public static int _NOT_FOUND = Integer.MIN_VALUE;
 
@@ -247,4 +248,12 @@ public abstract class AbstractFile {
         }
     }
 
+    public String getFilename() {
+        return filename;
+    }
+
+    @Override
+    public void close() throws IOException {
+
+    }
 }
