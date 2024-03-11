@@ -199,18 +199,37 @@ public abstract class AbstractStore {
     public boolean truncatePrefix(final long firstIndexKept) throws IOException {
         this.writeLock.lock();
         try {
-            List<AbstractFile> removed = new ArrayList<>();
-            AbstractFile topFile = this.files.peekFirst();
-            if (topFile != null && topFile.getLastLogIndex() < firstIndexKept) {
+            do {
+                AbstractFile topFile = this.files.peekFirst();
+                if (topFile == null || topFile.getLastLogIndex() >= firstIndexKept) {
+                    return true;
+                }
                 deleteFile(topFile);
-            }
+            } while (true);
+
         } finally {
             this.writeLock.unlock();
         }
-        return false;
     }
 
     public boolean truncateSuffix(long lastIndexKept) {
+        this.writeLock.lock();
+        try {
+            if (this.getLastLogIndex() <= lastIndexKept) {
+                return true;
+            }
+            do {
+                AbstractFile topFile = this.files.peekFirst();
+                if (topFile == null || topFile.getLastLogIndex() >= lastIndexKept) {
+                    return true;
+                }
+
+            } while (true);
+
+
+        } finally {
+            this.writeLock.unlock();
+        }
         return false;
     }
 
