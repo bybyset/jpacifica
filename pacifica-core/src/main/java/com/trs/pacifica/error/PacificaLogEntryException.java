@@ -15,38 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.error;
 
-import com.trs.pacifica.error.PacificaException;
+public class PacificaLogEntryException extends PacificaException{
 
-public interface StateMachineCaller {
+    public PacificaLogEntryException() {
+    }
 
+    public PacificaLogEntryException(String message) {
+        super(message);
+    }
 
-    /**
-     * commit
-     * @param logIndex
-     * @return
-     */
-    public boolean commitAt(final long logIndex);
+    public PacificaLogEntryException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
+    public PacificaLogEntryException(Throwable cause) {
+        super(cause);
+    }
 
-    /**
-     * get commit point
-     * @return 0 if nothing commit,
-     */
-    public long getCommitPoint();
-
-    public boolean snapshotLoad();
-
-    public boolean snapshotSave();
-
-
-    /**
-     * Called when error happens.
-     * @param error PacificaException
-     */
-    public void onError(final PacificaException error);
-
-
-
+    public PacificaLogEntryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

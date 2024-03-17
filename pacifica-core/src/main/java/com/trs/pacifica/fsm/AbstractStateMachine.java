@@ -27,18 +27,21 @@ public abstract class AbstractStateMachine implements StateMachine {
     @Override
     public void onApply(OperationIterator iterator) {
 
-        while (iterator.hasNext()) {
+        try {
+            while (iterator.hasNext()) {
+                iterator.next();
+                final ByteBuffer logData = iterator.getLogData();
+                final long logIndex = iterator.getLogIndex();
+                final long logTerm = iterator.getLogTerm();
+                final Callback callback = iterator.getCallback();
+                //do something
 
-            final ByteBuffer logData = iterator.getLogData();
-            final long logIndex = iterator.getLogIndex();
-            final long logTerm = iterator.getLogTerm();
-            final Callback callback = iterator.getCallback();
 
-
-            //do something
-
-            iterator.next();
+            }
+        } catch (Throwable throwable) {
+            iterator.interrupt(throwable);
         }
+
 
 
     }

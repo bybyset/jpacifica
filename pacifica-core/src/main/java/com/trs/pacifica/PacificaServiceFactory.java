@@ -17,9 +17,7 @@
 
 package com.trs.pacifica;
 
-public interface PacificaServiceFactory extends LogStorageFactory{
-
-    SnapshotStorage newSnapshotStorage();
+public interface PacificaServiceFactory extends LogStorageFactory, SnapshotStorageFactory{
 
 
 }

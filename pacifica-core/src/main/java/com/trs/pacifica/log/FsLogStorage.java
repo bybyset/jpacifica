@@ -18,9 +18,10 @@
 package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
+import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.error.PacificaLogEntryException;
 import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.log.file.AbstractFile;
 import com.trs.pacifica.log.file.IndexFile;
 import com.trs.pacifica.log.store.IndexStore;
 import com.trs.pacifica.log.store.SegmentStore;
@@ -32,9 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
@@ -103,7 +102,7 @@ public class FsLogStorage implements LogStorage {
     }
 
     @Override
-    public LogId getLogIdAt(int index) {
+    public LogId getLogIdAt(final long index) {
 
         return null;
     }
@@ -138,12 +137,12 @@ public class FsLogStorage implements LogStorage {
     }
 
     @Override
-    public boolean appendLogEntry(LogEntry logEntry) {
+    public boolean appendLogEntry(LogEntry logEntry) throws PacificaException {
         return appendLogEntries(List.of(logEntry)) == 1;
     }
 
     @Override
-    public int appendLogEntries(List<LogEntry> logEntries) {
+    public int appendLogEntries(List<LogEntry> logEntries) throws PacificaException {
         if (logEntries == null || logEntries.isEmpty()) {
             return 0;
         }
@@ -163,33 +162,31 @@ public class FsLogStorage implements LogStorage {
                 }
             }
             return appendCount;
+        } catch (IOException e) {
+            throw new PacificaLogEntryException(String.format("store_path=%s append log entries(first_log_index=%d, count=%d) encountered an ", this.storagePath, logEntries.get(0).getLogId().getIndex(), logEntries.size()), e);
         } finally {
             this.readLock.unlock();
         }
     }
 
-    private boolean doAppendLogEntry(final LogId logId, final byte[] data, final boolean isWaitingFlush) {
+    private boolean doAppendLogEntry(final LogId logId, final byte[] data, final boolean isWaitingFlush) throws IOException {
         Objects.requireNonNull(logId, "logId");
         if (this.segmentStore == null || this.indexStore == null) {
             return false;
         }
-        try {
-            final long logIndex = logId.getIndex();
-            //write segment
-            final Tuple2<Integer, Long> segmentResult = this.segmentStore.appendLogData(logIndex, data);
-            if (segmentResult.getFirst() < 0 || segmentResult.getSecond() < 0) {
-                return false;
-            }
-            //write index
-            final Tuple2<Integer, Long> indexResult = this.indexStore.appendLogIndex(logId, segmentResult.getFirst());
-            if (indexResult.getFirst() < 0 || indexResult.getSecond() < 0) {
-                return false;
-            }
-            if (isWaitingFlush) {
-                //TODO
-            }
-        } catch (Throwable e) {
-            LOGGER.error("path={} failed to append LogEntry({})", this.storagePath, logId);
+        final long logIndex = logId.getIndex();
+        //write segment
+        final Tuple2<Integer, Long> segmentResult = this.segmentStore.appendLogData(logIndex, data);
+        if (segmentResult.getFirst() < 0 || segmentResult.getSecond() < 0) {
+            return false;
+        }
+        //write index
+        final Tuple2<Integer, Long> indexResult = this.indexStore.appendLogIndex(logId, segmentResult.getFirst());
+        if (indexResult.getFirst() < 0 || indexResult.getSecond() < 0) {
+            return false;
+        }
+        if (isWaitingFlush) {
+            //TODO
         }
         return false;
     }
@@ -204,6 +201,7 @@ public class FsLogStorage implements LogStorage {
         this.writeLock.lock();
         try {
             this.segmentStore.truncatePrefix(firstIndexKept);
+            this.indexStore.truncatePrefix(firstIndexKept);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
@@ -217,7 +215,8 @@ public class FsLogStorage implements LogStorage {
     public LogId truncateSuffix(long lastIndexKept) {
         this.writeLock.lock();
         try {
-
+            this.segmentStore.truncateSuffix(lastIndexKept);
+            this.indexStore.truncateSuffix(lastIndexKept);
         } finally {
             this.writeLock.unlock();
         }

@@ -17,6 +17,7 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 
@@ -38,7 +39,7 @@ public interface LogStorage {
      * @param index
      * @return null if it does not exist
      */
-    LogId getLogIdAt(int index);
+    LogId getLogIdAt(final long index);
 
     /**
      * get the index of the first log
@@ -59,8 +60,9 @@ public interface LogStorage {
      * append LogEntry
      * @param logEntry
      * @return true if success
+     * @throws PacificaException
      */
-    boolean appendLogEntry(final LogEntry logEntry);
+    boolean appendLogEntry(final LogEntry logEntry) throws PacificaException;;
 
 
     /**
@@ -69,8 +71,9 @@ public interface LogStorage {
      * and the failed logs will break and return the number of successfully appended logEntries
      * @param logEntries
      * @return number of success
+     * @throws PacificaException
      */
-    int appendLogEntries(final List<LogEntry> logEntries);
+    int appendLogEntries(final List<LogEntry> logEntries) throws PacificaException;
 
 
     /**
@@ -87,6 +90,9 @@ public interface LogStorage {
      */
     LogId truncateSuffix(final long lastIndexKept);
 
+
+
+    void open();
 
     void close();
 

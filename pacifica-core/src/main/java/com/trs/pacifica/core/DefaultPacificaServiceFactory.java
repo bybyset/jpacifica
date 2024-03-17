@@ -28,7 +28,7 @@ public class DefaultPacificaServiceFactory implements PacificaServiceFactory {
     }
 
     @Override
-    public SnapshotStorage newSnapshotStorage() {
+    public SnapshotStorage newSnapshotStorage(final String path) {
         return null;
     }
 }

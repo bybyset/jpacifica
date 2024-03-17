@@ -24,16 +24,17 @@ import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
-import com.trs.pacifica.sender.SenderType;
 import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
 import com.trs.pacifica.util.thread.ThreadUtil;
+import com.trs.pacifica.util.timer.RepeatedTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,9 +60,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private ReplicaOption option;
 
-    private Queue<OperationContext> operationContextQueue = QueueUtil.newMpscQueue();
+    private final Queue<OperationContext> operationContextQueue = QueueUtil.newMpscQueue();
 
-    private ReplicaState state = ReplicaState.Uninitialized;
+    private final PendingQueue<Callback> callbackPendingQueue = new PendingQueueImpl<>();
+
+    private volatile ReplicaState state = ReplicaState.Uninitialized;
 
     private ReplicaGroup replicaGroup;
 
@@ -69,17 +72,28 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private PacificaClient pacificaClient;
 
+
+    private StateMachineCallerImpl stateMachineCaller;
+
     private LogManagerImpl logManager;
 
     private SnapshotManagerImpl snapshotManager;
 
-    private SenderGroup senderGroup;
+    private SenderGroupImpl senderGroup;
 
     private BallotBoxImpl ballotBox;
 
     private ExecutorGroup executorGroup;
 
     private SingleThreadExecutor applyExecutor;
+
+    private RepeatedTimer gracePeriodTimer;
+
+    private RepeatedTimer leasePeriodTimer;
+
+    private RepeatedTimer snapshotTimer;
+
+    private RepeatedTimer recoverTimer;
 
     /**
      * last timestamp receive heartbeat request from primary
@@ -92,32 +106,89 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
 
     private void initLogManager(ReplicaOption option) {
+        final ExecutorGroup logExecutorGroup = Objects.requireNonNull(option.getLogManagerExecutorGroup(), "LogManagerExecutorGroup");
         final PacificaServiceFactory pacificaServiceFactory = Objects.requireNonNull(option.getPacificaServiceFactory(), "pacificaServiceFactory");
         final String logStoragePath = Objects.requireNonNull(option.getLogStoragePath(), "logStoragePath");
-        final LogStorage logStorage = pacificaServiceFactory.newLogStorage(logStoragePath);
         this.logManager = new LogManagerImpl();
+        final LogManagerImpl.Option logManagerOption = new LogManagerImpl.Option();
+        logManagerOption.setReplicaOption(option);
+        logManagerOption.setLogStoragePath(logStoragePath);
+        logManagerOption.setLogStorageFactory(pacificaServiceFactory);
+        logManagerOption.setLogManagerExecutor(logExecutorGroup.chooseExecutor());
+        logManagerOption.setStateMachineCaller(this.stateMachineCaller);
+        this.logManager.init(logManagerOption);
 
     }
 
     private void initSnapshotManager(ReplicaOption option) {
 
+        this.snapshotManager = new SnapshotManagerImpl();
+
     }
 
     private void initSenderGroup(ReplicaOption option) {
+
+        final SenderGroupImpl.Option senderGroupOption = new SenderGroupImpl.Option();
+        senderGroupOption.setLogManager(Objects.requireNonNull(this.logManager));
+        senderGroupOption.setStateMachineCaller(Objects.requireNonNull(stateMachineCaller));
         this.senderGroup = new SenderGroupImpl(Objects.requireNonNull(this.pacificaClient, "pacificaClient"));
+        this.senderGroup.init(senderGroupOption);
     }
 
 
-    private void initExecutor(ReplicaOption option) {
-        this.executorGroup = Objects.requireNonNull(option.getExecutorGroup(), "executorGroup");
+    private void initApplyExecutor(ReplicaOption option) {
+        this.executorGroup = Objects.requireNonNull(option.getApplyExecutorGroup(), "executorGroup");
         this.applyExecutor = Objects.requireNonNull(this.executorGroup.chooseExecutor());
     }
 
-    private void initBallotBox() {
-
+    private void initBallotBox(ReplicaOption option) {
+        this.ballotBox = new BallotBoxImpl();
+        final BallotBoxImpl.Option ballotBoxOption = new BallotBoxImpl.Option();
+        ballotBoxOption.setFsmCaller(Objects.requireNonNull(this.stateMachineCaller));
+        ballotBox.init(ballotBoxOption);
     }
 
-    private void initStateMachineCall() {
+    private void initStateMachineCall(ReplicaOption option) {
+        final StateMachine stateMachine = Objects.requireNonNull(option.getStateMachine(), "state machine");
+        this.stateMachineCaller = new StateMachineCallerImpl();
+        final StateMachineCallerImpl.Option fsmOption = new StateMachineCallerImpl.Option();
+        fsmOption.setStateMachine(stateMachine);
+        fsmOption.setLogManager(Objects.requireNonNull(this.logManager));
+        final ExecutorGroup fsmExecutorGroup = Objects.requireNonNull(option.getFsmCallerExecutorGroup(), "fsm executor group");
+        fsmOption.setExecutor(Objects.requireNonNull(fsmExecutorGroup.chooseExecutor(), "fsm executor"));
+        fsmOption.setCallbackPendingQueue(this.callbackPendingQueue);
+        this.stateMachineCaller.init(fsmOption);
+    }
+
+    private void initRepeatedTimers(ReplicaOption option) {
+        this.gracePeriodTimer = new RepeatedTimer("Grace_Period_Timer_" + this.replicaId.getGroupName(), option.getGracePeriodTimeoutMs()) {
+            @Override
+            protected void onTrigger() {
+                handleGracePeriodTimeout();
+            }
+        };
+
+        this.leasePeriodTimer = new RepeatedTimer("Lease_Period_Timer_" + this.replicaId.getGroupName(), option.getLeasePeriodTimeoutRatio()) {
+            @Override
+            protected void onTrigger() {
+                handleLeasePeriodTimeout();
+            }
+        };
+
+        this.snapshotTimer = new RepeatedTimer("Snapshot_Timer_" + this.replicaId.getGroupName(), option.getSnapshotTimeoutMs()) {
+            @Override
+            protected void onTrigger() {
+                handleSnapshotTimeout();
+            }
+        };
+
+        this.recoverTimer = new RepeatedTimer("Replica_Recover_Timer_" + this.replicaId.getGroupName(), option.getRecoverTimeoutMs()) {
+            @Override
+            protected void onTrigger() {
+                handleRecoverTimeout();
+            }
+        };
+
 
     }
 
@@ -129,12 +200,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.option = Objects.requireNonNull(option, "require option");
                 this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
                 this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
-                initExecutor(option);
+                initApplyExecutor(option);
                 initLogManager(option);
+                initStateMachineCall(option);
                 initSnapshotManager(option);
+                initBallotBox(option);
                 initSenderGroup(option);
-                initBallotBox();
-                initStateMachineCall();
+
+                initRepeatedTimers(option);
                 this.state = ReplicaState.Shutdown;
             }
         } finally {
@@ -309,6 +382,10 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return null;
     }
 
+    /**
+     * apply batch operation only by primary
+     * @param oneBatch
+     */
     private void applyOperationBatch(List<OperationContext> oneBatch) {
         assert oneBatch != null;
         this.writeLock.lock();
@@ -330,17 +407,20 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 final LogEntry logEntry = context.logEntry;
                 //initiate ballot to ballotBox
                 if (!this.ballotBox.initiateBallot(this.replicaGroup)) {
-
+                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to initiate ballot", this.replicaId))));
                     continue;
                 }
-
-
+                if (!this.callbackPendingQueue.add(callback)) {
+                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to append callback", this.replicaId))));
+                    continue;
+                }
                 logEntry.setType(LogEntry.Type.OP_DATA);
                 logEntry.getLogId().setTerm(curPrimaryTerm);
                 logEntries.add(logEntry);
             }
             //log manager append log
             this.logManager.appendLogEntries(logEntries, new PrimaryAppendLogEntriesCallback());
+
         } finally {
             this.writeLock.unlock();
         }
@@ -370,6 +450,23 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
      */
     private boolean isCurrentPrimaryValid() {
         return isWithinGracePeriod(TimeUtils.monotonicMs());
+    }
+
+
+    private void handleGracePeriodTimeout() {
+
+    }
+
+    private void handleLeasePeriodTimeout() {
+
+    }
+
+    private void handleSnapshotTimeout() {
+
+    }
+
+    private void handleRecoverTimeout() {
+
     }
 
     /**
@@ -410,7 +507,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 ReplicaImpl.this.ballotBox.ballotBy(replicaId, startLogIndex, endLogIndex);
             } else {
                 //failure
-
+                LOGGER.error("Primary replica append log entries failed. first_log_index={}, log_count={}", this.getFirstLogIndex(), this.getAppendCount(), e);
+                //TODO may be call callback??
             }
         }
     }
@@ -451,14 +549,17 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (ReplicaImpl.this.operationContextQueue.isEmpty()) {
                 return;
             }
-            final Queue<OperationContext> queue = ReplicaImpl.this.operationContextQueue;
-            final int maxCount = ReplicaImpl.this.option.getMaxOperationNumPerBatch();
-            OperationContext operationContext;
-            while (buffer.size() < maxCount && (operationContext = queue.poll()) != null) {
-                buffer.add(operationContext);
+            try {
+                final Queue<OperationContext> queue = ReplicaImpl.this.operationContextQueue;
+                final int maxCount = ReplicaImpl.this.option.getMaxOperationNumPerBatch();
+                OperationContext operationContext;
+                while (buffer.size() < maxCount && (operationContext = queue.poll()) != null) {
+                    buffer.add(operationContext);
+                }
+                ReplicaImpl.this.applyOperationBatch(buffer);
+            } finally {
+                this.rest();
             }
-            ReplicaImpl.this.applyOperationBatch(buffer);
-            this.rest();
         }
 
         void rest() {

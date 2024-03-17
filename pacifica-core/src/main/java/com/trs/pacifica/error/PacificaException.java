@@ -17,6 +17,27 @@
 
 package com.trs.pacifica.error;
 
-public class PacificaException extends Exception {
+public class PacificaException extends RuntimeException {
+
+    public PacificaException() {
+    }
+
+    public PacificaException(String message) {
+        super(message);
+    }
+
+    public PacificaException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PacificaException(Throwable cause) {
+        super(cause);
+    }
+
+    public PacificaException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+
 
 }

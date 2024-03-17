@@ -54,4 +54,7 @@ public interface OperationIterator extends Iterator<ByteBuffer> {
      * @return
      */
     public Callback getCallback();
+
+
+    public void interrupt(Throwable throwable);
 }

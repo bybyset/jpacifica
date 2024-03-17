@@ -17,36 +17,8 @@
 
 package com.trs.pacifica;
 
-import com.trs.pacifica.error.PacificaException;
-
-public interface StateMachineCaller {
+public interface SnapshotStorageFactory {
 
 
-    /**
-     * commit
-     * @param logIndex
-     * @return
-     */
-    public boolean commitAt(final long logIndex);
-
-
-    /**
-     * get commit point
-     * @return 0 if nothing commit,
-     */
-    public long getCommitPoint();
-
-    public boolean snapshotLoad();
-
-    public boolean snapshotSave();
-
-
-    /**
-     * Called when error happens.
-     * @param error PacificaException
-     */
-    public void onError(final PacificaException error);
-
-
-
+    SnapshotStorage newSnapshotStorage(final String path);
 }

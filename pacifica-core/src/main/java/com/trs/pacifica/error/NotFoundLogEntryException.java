@@ -15,38 +15,30 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.error;
 
-import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.log.error.PacificaRuntimeException;
 
-public interface StateMachineCaller {
+/**
+ * not found LogEntry
+ */
+public class NotFoundLogEntryException extends PacificaException {
+    public NotFoundLogEntryException() {
+    }
 
+    public NotFoundLogEntryException(String message) {
+        super(message);
+    }
 
-    /**
-     * commit
-     * @param logIndex
-     * @return
-     */
-    public boolean commitAt(final long logIndex);
+    public NotFoundLogEntryException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
+    public NotFoundLogEntryException(Throwable cause) {
+        super(cause);
+    }
 
-    /**
-     * get commit point
-     * @return 0 if nothing commit,
-     */
-    public long getCommitPoint();
-
-    public boolean snapshotLoad();
-
-    public boolean snapshotSave();
-
-
-    /**
-     * Called when error happens.
-     * @param error PacificaException
-     */
-    public void onError(final PacificaException error);
-
-
-
+    public NotFoundLogEntryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

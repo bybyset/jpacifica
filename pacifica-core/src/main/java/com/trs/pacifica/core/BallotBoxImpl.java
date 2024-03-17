@@ -17,9 +17,7 @@
 
 package com.trs.pacifica.core;
 
-import com.trs.pacifica.BallotBox;
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.*;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import org.slf4j.Logger;
@@ -44,18 +42,23 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
 
     private final Lock writeLock = lock.writeLock();
 
-    private long pendingLogIndex = 0, lastCommittedLogIndex = 0;
+    private long pendingLogIndex = 0; //pendingLogIndex = last_log_index + 1
+    private long lastCommittedLogIndex = 0; //lastCommittedLogIndex
 
     private StateMachineCaller fsmCaller;
 
+    private LogManager logManager;
+
     private final LinkedList<Ballot> ballotQueue = new LinkedList<>();
+
+    private final PendingQueue<Ballot> ballotPendingQueue = new PendingQueueImpl<>();
 
     @Override
     public void init(Option option) {
         this.writeLock.lock();
         try {
             this.fsmCaller = Objects.requireNonNull(option.getFsmCaller(), "option.getFsmCaller()");
-
+            this.logManager = Objects.requireNonNull(option.getLogManager(), "option.getLogManager()");
         } finally {
             this.writeLock.unlock();
         }
@@ -65,6 +68,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     public void startup() {
         this.writeLock.lock();
         try {
+            this.pendingLogIndex = this.logManager.getLastLogId().getIndex();
         } finally {
             this.writeLock.unlock();
         }
@@ -74,6 +78,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     public void shutdown() {
         this.writeLock.lock();
         try {
+            reset();
         } finally {
             this.writeLock.unlock();
         }
@@ -202,7 +207,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         }
     }
 
-    public void clear() {
+    void reset() {
         this.pendingLogIndex = 0;
         this.lastCommittedLogIndex = 0;
         this.ballotQueue.clear();
@@ -213,12 +218,21 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
 
         private StateMachineCaller fsmCaller;
 
+        private LogManager logManager;
+
         public StateMachineCaller getFsmCaller() {
             return fsmCaller;
         }
-
         public void setFsmCaller(StateMachineCaller fsmCaller) {
             this.fsmCaller = fsmCaller;
+        }
+
+        public LogManager getLogManager() {
+            return logManager;
+        }
+
+        public void setLogManager(LogManager logManager) {
+            this.logManager = logManager;
         }
     }
 
@@ -226,7 +240,6 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
 
         static final int DEFAULT_GRANTER_NUM = 3;
         static final AtomicIntegerFieldUpdater<Ballot> ATOMIC_QUORUM = AtomicIntegerFieldUpdater.newUpdater(Ballot.class, "quorum");
-
         private volatile int quorum = 0;
 
         private Map<ReplicaId, Granter> granters = Collections.synchronizedMap(new HashMap<>(DEFAULT_GRANTER_NUM));

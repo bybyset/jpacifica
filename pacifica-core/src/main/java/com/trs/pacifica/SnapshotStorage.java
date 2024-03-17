@@ -18,4 +18,7 @@
 package com.trs.pacifica;
 
 public interface SnapshotStorage {
+
+
+
 }

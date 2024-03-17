@@ -24,16 +24,21 @@ import java.nio.ByteBuffer;
 
 public class OperationIteratorWrapper implements OperationIterator {
 
-
     private final OperationIteratorImpl wrapper;
+
+    private LogEntry currentLogEntry = null;
+
+    private Callback currentCallback = null;
+    private LogEntry nextLogEntry = null;
 
     public OperationIteratorWrapper(OperationIteratorImpl wrapper) {
         this.wrapper = wrapper;
+        this.nextLogEntry = wrapper.logEntry();
     }
 
     @Override
     public ByteBuffer getLogData() {
-        final LogEntry logEntry = wrapper.next();
+        final LogEntry logEntry = this.currentLogEntry;
         if (logEntry != null) {
             return logEntry.getLogData();
         }
@@ -42,7 +47,7 @@ public class OperationIteratorWrapper implements OperationIterator {
 
     @Override
     public long getLogIndex() {
-        final LogEntry logEntry = wrapper.next();
+        final LogEntry logEntry = this.currentLogEntry;
         if (logEntry != null) {
             return logEntry.getLogId().getIndex();
         }
@@ -51,7 +56,7 @@ public class OperationIteratorWrapper implements OperationIterator {
 
     @Override
     public long getLogTerm() {
-        final LogEntry logEntry = wrapper.next();
+        final LogEntry logEntry = this.currentLogEntry;
         if (logEntry != null) {
             return logEntry.getLogId().getTerm();
         }
@@ -64,16 +69,27 @@ public class OperationIteratorWrapper implements OperationIterator {
     }
 
     @Override
+    public void interrupt(Throwable throwable) {
+
+    }
+
+    @Override
     public boolean hasNext() {
-        return wrapper.hasNext() && LogEntry.Type.OP_DATA == wrapper.logEntry().getType();
+        return this.nextLogEntry != null && LogEntry.Type.OP_DATA == nextLogEntry.getType();
     }
 
     @Override
     public ByteBuffer next() {
-        final LogEntry logEntry = wrapper.next();
-        if (logEntry != null) {
-            return logEntry.getLogData();
+        this.currentLogEntry = this.nextLogEntry;
+        this.currentCallback = this.wrapper.callback();
+        this.nextLogEntry = null;
+        if (this.wrapper.hasNext()) {
+            this.nextLogEntry = this.wrapper.next();
         }
-        return null;
+        return this.currentLogEntry.getLogData();
+    }
+
+    public LogEntry getNextLogEntry() {
+        return this.nextLogEntry;
     }
 }

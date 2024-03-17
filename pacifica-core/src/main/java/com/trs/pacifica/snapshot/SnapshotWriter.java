@@ -15,38 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.snapshot;
 
-import com.trs.pacifica.error.PacificaException;
-
-public interface StateMachineCaller {
-
-
-    /**
-     * commit
-     * @param logIndex
-     * @return
-     */
-    public boolean commitAt(final long logIndex);
-
-
-    /**
-     * get commit point
-     * @return 0 if nothing commit,
-     */
-    public long getCommitPoint();
-
-    public boolean snapshotLoad();
-
-    public boolean snapshotSave();
-
-
-    /**
-     * Called when error happens.
-     * @param error PacificaException
-     */
-    public void onError(final PacificaException error);
-
-
-
+public interface SnapshotWriter {
 }

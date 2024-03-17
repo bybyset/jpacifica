@@ -28,4 +28,13 @@ public interface Finished {
 
     public static final Finished _OK = () -> {return null;};
 
+    public static Finished failure(final Throwable error) {
+        return new Finished() {
+            @Override
+            public Throwable error() {
+                return error;
+            }
+        };
+    }
+
 }

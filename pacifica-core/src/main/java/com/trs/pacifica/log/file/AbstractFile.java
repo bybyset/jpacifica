@@ -252,6 +252,32 @@ public abstract class AbstractFile implements Closeable {
         return filename;
     }
 
+    public void restFile(int position) {
+        this.writeLock.lock();
+        try {
+            this.rest(position);
+            if (position == 0) {
+                this.restHeader();
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    private void rest(final int position) {
+        this.currentPosition.set(position);
+        this.currentFlushPosition.set(position);
+    }
+
+    private void restHeader() {
+        this.header.rest();
+        try(Output output = this.parentDir.openInOutput(this.filename)) {
+
+        } catch (IOException e) {
+
+        }
+    }
+
     @Override
     public void close() throws IOException {
 

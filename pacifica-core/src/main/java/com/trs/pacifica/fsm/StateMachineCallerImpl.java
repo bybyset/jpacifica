@@ -17,15 +17,16 @@
 
 package com.trs.pacifica.fsm;
 
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.LogManager;
-import com.trs.pacifica.StateMachine;
-import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.*;
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -33,8 +34,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<StateMachineCallerImpl.Option> {
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(StateMachineCallerImpl.class);
 
     private static final byte _STATE_UNINITIALIZED = 0;
@@ -49,16 +48,28 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     private final Lock writeLock = lock.writeLock();
     private byte state = _STATE_UNINITIALIZED;
 
+    /**
+     * committing log index
+     */
     private final AtomicLong committingLogIndex = new AtomicLong(0);
 
+    /**
+     * last committed log index
+     */
     private volatile long lastCommittedLogIndex = 0;
+
+
 
 
     private StateMachine stateMachine;
 
     private LogManager logManager;
 
-    private SingleThreadExecutor executor;
+    private SingleThreadExecutor eventExecutor;
+
+    private PacificaException error = null;
+
+    private PendingQueue<Callback> callbackPendingQueue = null;
 
 
     @Override
@@ -67,7 +78,8 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
         try {
             if (state == _STATE_UNINITIALIZED) {
                 this.stateMachine = Objects.requireNonNull(option.getStateMachine(), "stateMachine");
-                this.executor = Objects.requireNonNull(option.getExecutor(), "executor");
+                this.eventExecutor = Objects.requireNonNull(option.getExecutor(), "executor");
+                this.callbackPendingQueue = Objects.requireNonNull(option.getCallbackPendingQueue(), "callbackPendingQueue");
                 this.state = _STAT_SHUTDOWN;
             }
         } finally {
@@ -110,11 +122,10 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
             if (logIndex <= this.lastCommittedLogIndex) {
                 return false;
             }
-            this.executor.execute(new CommitEvent(logIndex));
+            this.eventExecutor.execute(new CommitEvent(logIndex));
         } finally {
             this.readLock.unlock();
         }
-
         return true;
     }
 
@@ -133,32 +144,59 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
         return false;
     }
 
-    private void unsafeCommitAt(final long commitLogIndex) {
-        if (commitLogIndex > this.lastCommittedLogIndex) {
+    @Override
+    public void onError(PacificaException error) {
 
-            final OperationIteratorImpl iterator = new OperationIteratorImpl(this.logManager, commitLogIndex, this.committingLogIndex);
-            while (iterator.hasNext()) {
-                final LogEntry logEntry = iterator.next();
-                if (logEntry == null) {
-                    //TODO
+    }
+
+    private void unsafeCommitAt(final long commitLogIndex) {
+        if (commitLogIndex <= this.lastCommittedLogIndex) {
+            return;
+        }
+
+        final List<Callback> callbackList = new ArrayList<>();
+        pollCallback(callbackList, commitLogIndex);
+        final OperationIteratorImpl iterator = new OperationIteratorImpl(this.logManager, commitLogIndex, this.committingLogIndex, callbackList);
+
+        LogEntry logEntry = iterator.hasNext() ? iterator.next() : null;
+        while (logEntry != null) {
+            if (iterator.hasError()) {
+                //
+                setError(iterator.getError());
+                break;
+            }
+            final LogEntry.Type type = logEntry.getType();
+            switch (type) {
+                case OP_DATA: {
+                    final OperationIteratorWrapper wrapper = new OperationIteratorWrapper(iterator);
+                    this.stateMachine.onApply(wrapper);
+                    logEntry = wrapper.getNextLogEntry();
                     break;
                 }
-                final LogEntry.Type type = logEntry.getType();
-                switch (type) {
-                    case OP_DATA:{
-                        final OperationIteratorWrapper wrapper = new OperationIteratorWrapper(iterator);
-                        this.stateMachine.onApply(wrapper);
-                        break;
-                    }
-                    case NO_OP:
-                    default:
+                case NO_OP:
+                default: {
+                    logEntry = iterator.hasNext() ? iterator.next() : null;// next
+                    break;
                 }
             }
 
-            this.lastCommittedLogIndex = commitLogIndex;
+        }
+        if (iterator.hasError()) {
+            setError(iterator.getError());
+        }
+        this.lastCommittedLogIndex = commitLogIndex;
+    }
+
+    private void pollCallback(List<Callback> callbackList, final long commitPoint) {
+        final List<Callback> callbacks = this.callbackPendingQueue.pollUntil(commitPoint);
+        if (callbacks != null && !callbacks.isEmpty()) {
+            callbackList.addAll(callbacks);
         }
     }
 
+    private void setError(PacificaException error) {
+
+    }
 
 
     class CommitEvent implements Runnable {
@@ -197,9 +235,10 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     public static class Option {
 
         private StateMachine stateMachine;
-
         private LogManager logManager;
         private SingleThreadExecutor executor;
+
+        private PendingQueue<Callback> callbackPendingQueue;
 
         public StateMachine getStateMachine() {
             return stateMachine;
@@ -223,6 +262,14 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
         public void setExecutor(SingleThreadExecutor executor) {
             this.executor = executor;
+        }
+
+        public PendingQueue<Callback> getCallbackPendingQueue() {
+            return callbackPendingQueue;
+        }
+
+        public void setCallbackPendingQueue(PendingQueue<Callback> callbackPendingQueue) {
+            this.callbackPendingQueue = callbackPendingQueue;
         }
     }
 }

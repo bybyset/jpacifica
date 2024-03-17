@@ -18,6 +18,8 @@
 package com.trs.pacifica.core;
 
 import com.trs.pacifica.LifeCycle;
+import com.trs.pacifica.LogManager;
+import com.trs.pacifica.StateMachineCaller;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.Sender;
@@ -100,6 +102,24 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
 
     public static class Option {
+        private LogManager logManager;
 
+        private StateMachineCaller stateMachineCaller;
+
+        public LogManager getLogManager() {
+            return logManager;
+        }
+
+        public void setLogManager(LogManager logManager) {
+            this.logManager = logManager;
+        }
+
+        public StateMachineCaller getStateMachineCaller() {
+            return stateMachineCaller;
+        }
+
+        public void setStateMachineCaller(StateMachineCaller stateMachineCaller) {
+            this.stateMachineCaller = stateMachineCaller;
+        }
     }
 }

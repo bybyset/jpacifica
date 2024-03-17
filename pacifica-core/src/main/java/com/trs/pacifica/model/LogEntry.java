@@ -104,6 +104,16 @@ public class LogEntry implements Checksum {
         return c;
     }
 
+    @Override
+    public String toString() {
+        return "LogEntry{" +
+                "logId=" + logId +
+                ", type=" + type +
+                ", checksum=" + checksum +
+                ", hasChecksum=" + hasChecksum +
+                '}';
+    }
+
     public static enum Type {
         OP_DATA,
         NO_OP;

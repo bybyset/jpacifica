@@ -92,4 +92,8 @@ public class FileHeader {
         return _HEADER_BYTE_SIZE;
     }
 
+    public void rest() {
+        this.firstLogIndex = _BLANK_TAG;
+    }
+
 }

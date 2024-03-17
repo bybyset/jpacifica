@@ -17,8 +17,11 @@
 package com.trs.pacifica;
 
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.error.LogEntryCorruptedException;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.snapshot.SnapshotMeta;
 
 import java.util.List;
 
@@ -40,8 +43,9 @@ public interface LogManager {
      *
      * @param logIndex
      * @return
+     * @throws LogEntryCorruptedException if the LogEntry corrupted
      */
-    public LogEntry getLogEntryAt(final long logIndex);
+    public LogEntry getLogEntryAt(final long logIndex) throws PacificaException;
 
     /**
      * @param logIndex
@@ -55,7 +59,7 @@ public interface LogManager {
      *
      * @return
      */
-    public LogId getCommitPoint();
+    public LogId getCommittedPoint();
 
     /**
      * get first log id
@@ -81,6 +85,17 @@ public interface LogManager {
      * @throws NullPointerException if newLogCallback is null
      */
     public long waitNewLog(final long expectedLastLogIndex, final NewLogWaiter newLogWaiter);
+
+
+    /**
+     * called when snapshot be saved or load
+     * @param snapshotLogIndex log index at snapshot
+     * @param snapshotLogTerm  log term at snapshot
+     */
+    public void onSnapshot(final long snapshotLogIndex, final long snapshotLogTerm);
+
+
+    public void onCommitted(final long committedLogIndex, final long committedLogTerm);
 
     /**
      * @param waiterId

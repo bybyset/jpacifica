@@ -15,28 +15,29 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.error;
+package com.trs.pacifica;
 
-/**
- * not found LogEntry
- */
-public class NotFoundLogEntryException extends PacificaRuntimeException{
-    public NotFoundLogEntryException() {
-    }
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Queue;
 
-    public NotFoundLogEntryException(String message) {
-        super(message);
-    }
+public interface PendingQueue<E> extends Iterable<E>{
 
-    public NotFoundLogEntryException(String message, Throwable cause) {
-        super(message, cause);
-    }
 
-    public NotFoundLogEntryException(Throwable cause) {
-        super(cause);
-    }
+    public long getPendingIndex();
 
-    public NotFoundLogEntryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
+    public void resetPendingIndex(final long pendIndex);
+
+    public boolean add(@Nullable E e);
+
+    public @Nullable E poll();
+
+    public List<E> pollUntil(final long endIndex);
+
+    public @Nullable E peek();
+
+    public int size();
+
+    public boolean isEmpty();
+
 }

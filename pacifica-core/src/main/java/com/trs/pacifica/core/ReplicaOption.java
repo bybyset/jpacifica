@@ -32,6 +32,10 @@ public class ReplicaOption {
     static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
     static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
 
+    static final int DEFAULT_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(3);
+
+    static final int DEFAULT_RECOVER_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(10);
+
     static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
 
 
@@ -47,6 +51,16 @@ public class ReplicaOption {
     private int leasePeriodTimeoutRatio = 80;
 
     /**
+     * snapshot timeout ms
+     */
+    private int snapshotTimeoutMs = DEFAULT_SNAPSHOT_TIMEOUT_MS;
+
+
+    private int recoverTimeoutMs = DEFAULT_RECOVER_TIMEOUT_MS;
+
+    private int snapshotLogIndexReserved = 10;
+
+    /**
      * path of the log storage
      */
     private String logStoragePath;
@@ -57,7 +71,7 @@ public class ReplicaOption {
 
     private PacificaClient pacificaClient;
 
-    private ExecutorGroup executorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+    private ExecutorGroup applyExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
     private ExecutorGroup logManagerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
@@ -87,6 +101,22 @@ public class ReplicaOption {
 
     public void setLeasePeriodTimeoutRatio(int leasePeriodTimeoutRatio) {
         this.leasePeriodTimeoutRatio = leasePeriodTimeoutRatio;
+    }
+
+    public int getSnapshotTimeoutMs() {
+        return snapshotTimeoutMs;
+    }
+
+    public void setSnapshotTimeoutMs(int snapshotTimeoutMs) {
+        this.snapshotTimeoutMs = snapshotTimeoutMs;
+    }
+
+    public int getRecoverTimeoutMs() {
+        return recoverTimeoutMs;
+    }
+
+    public void setRecoverTimeoutMs(int recoverTimeoutMs) {
+        this.recoverTimeoutMs = recoverTimeoutMs;
     }
 
     public ConfigurationClient getConfigurationClient() {
@@ -121,12 +151,12 @@ public class ReplicaOption {
         this.logStoragePath = logStoragePath;
     }
 
-    public ExecutorGroup getExecutorGroup() {
-        return executorGroup;
+    public ExecutorGroup getApplyExecutorGroup() {
+        return applyExecutorGroup;
     }
 
-    public void setExecutorGroup(ExecutorGroup executorGroup) {
-        this.executorGroup = executorGroup;
+    public void setApplyExecutorGroup(ExecutorGroup applyExecutorGroup) {
+        this.applyExecutorGroup = applyExecutorGroup;
     }
 
     public int getMaxOperationNumPerBatch() {
@@ -167,5 +197,13 @@ public class ReplicaOption {
 
     public void setFsmCallerExecutorGroup(ExecutorGroup fsmCallerExecutorGroup) {
         this.fsmCallerExecutorGroup = fsmCallerExecutorGroup;
+    }
+
+    public int getSnapshotLogIndexReserved() {
+        return snapshotLogIndexReserved;
+    }
+
+    public void setSnapshotLogIndexReserved(int snapshotLogIndexReserved) {
+        this.snapshotLogIndexReserved = snapshotLogIndexReserved;
     }
 }

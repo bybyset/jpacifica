@@ -21,6 +21,8 @@ import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 
+import javax.annotation.Nullable;
+
 /**
  * ballot box, managed by primary replica.
  */
@@ -33,7 +35,6 @@ public interface BallotBox {
      * @return true if success
      */
     public boolean initiateBallot(final ReplicaGroup replicaGroup);
-
 
     /**
      * cancel ballot of the replicaId

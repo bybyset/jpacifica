@@ -18,4 +18,10 @@
 package com.trs.pacifica;
 
 public interface SnapshotManager {
+
+
+    SnapshotStorage getSnapshotStorage();
+
+    void doSnapshot();
+
 }

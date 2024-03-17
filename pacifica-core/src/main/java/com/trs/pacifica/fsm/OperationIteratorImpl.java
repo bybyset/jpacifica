@@ -19,10 +19,12 @@ package com.trs.pacifica.fsm;
 
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.async.Callback;
-import com.trs.pacifica.log.error.NotFoundLogEntryException;
+import com.trs.pacifica.error.NotFoundLogEntryException;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 class OperationIteratorImpl implements Iterator<LogEntry> {
@@ -31,18 +33,20 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
     private final long startLogIndex;
     private final long endLogIndex;
     private final AtomicLong committingIndex;
+    private final List<Callback> callbackList;
 
-
+    private Callback curCallback = null;
     private LogEntry curLogEntry = null;
 
-    private Throwable error = null;
+    private PacificaException error = null;
 
 
-    OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong committingIndex) {
+    OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong committingIndex, List<Callback> callbackList) {
         this.logManager = logManager;
         this.startLogIndex = committingIndex.get() + 1;
         this.endLogIndex = endLogIndex;
         this.committingIndex = committingIndex;
+        this.callbackList = callbackList;
     }
 
 
@@ -55,11 +59,15 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
     }
 
     Callback callback() {
-        return null;
+        return this.curCallback;
     }
 
     public boolean hasError() {
         return this.error != null;
+    }
+
+    public PacificaException getError() {
+        return this.error;
     }
 
     @Override
@@ -71,6 +79,7 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
     @Override
     public LogEntry next() {
         this.curLogEntry = null;
+        this.curCallback = null;
         final long prevLogIndex = this.committingIndex.get();
         if (prevLogIndex < this.endLogIndex) {
             final long currentLogIndex = prevLogIndex + 1;
@@ -78,17 +87,20 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
                 try {
                     this.curLogEntry = this.logManager.getLogEntryAt(currentLogIndex);
                     if (curLogEntry == null) {
-                        this.committingIndex.set(prevLogIndex);
-                        this.error = new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
+                        throw new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
                     }
+                    this.curCallback = this.callbackList.get((int)(currentLogIndex - startLogIndex));
                 } catch (Throwable e) {
                     this.committingIndex.set(prevLogIndex);
-                    this.error = e;
+                    if (e instanceof PacificaException pacificaException) {
+                        this.error = pacificaException;
+                    } else {
+                        this.error = new PacificaException("failed to get LogEntry at logIndex=" + currentLogIndex, e);
+                    }
                 }
             }
         }
         return this.curLogEntry;
     }
-
 
 }

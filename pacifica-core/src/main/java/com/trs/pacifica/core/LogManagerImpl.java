@@ -17,13 +17,14 @@
 
 package com.trs.pacifica.core;
 
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.LogManager;
-import com.trs.pacifica.LogStorage;
-import com.trs.pacifica.LogStorageFactory;
+import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.error.LogEntryCorruptedException;
+import com.trs.pacifica.error.PacificaCodeException;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.thread.ThreadUtil;
@@ -52,26 +53,38 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
     private final Map<Long, NewLogContext> newLogWaiterContainer = new ConcurrentHashMap<>();
 
-    private final AtomicLong waiterIdAllocator = new AtomicLong();
+    private final AtomicLong waiterIdAllocator = new AtomicLong(0);
     private Option option;
-
     private SingleThreadExecutor executor;
-
-    /***  start phase **/
     private LogStorage logStorage;
 
-    /**
-     * first log id at disk
-     */
-    private final LogId firstLogId = new LogId(0, 0);
+    private StateMachineCaller stateMachineCaller;
 
-    private LogId committedPoint = new LogId(0, 0);
     /**
-     * last log id at disk
+     * first log index
      */
-    private final LogId lastLogId = new LogId(0, 0);
+    private volatile long firstLogIndex = 0;
 
+    /**
+     * last log index
+     */
     private volatile long lastLogIndex = 0L;
+
+    /**
+     * log id at committed point
+     */
+    private LogId committedPoint = new LogId(0, 0);
+
+    /**
+     * last log id on disk
+     */
+    private LogId lastLogIdOnDisk = new LogId(0, 0);
+
+    /**
+     * last log id on snapshot save
+     */
+    private LogId lastSnapshotLogId = new LogId(0, 0);
+
 
     public LogManagerImpl() {
     }
@@ -81,8 +94,10 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         this.writeLock.lock();
         try {
             this.option = Objects.requireNonNull(option);
-            final ReplicaOption replicaOption = Objects.requireNonNull(option.getReplicaOption());
-            this.executor = replicaOption.getExecutorGroup().chooseExecutor();
+            this.executor = Objects.requireNonNull(option.getLogManagerExecutor());
+            final LogStorageFactory logStorageFactory = Objects.requireNonNull(option.getLogStorageFactory(), "log storage factory");
+            this.logStorage = Objects.requireNonNull(logStorageFactory.newLogStorage(option.getLogStoragePath()), "log storage");
+            this.stateMachineCaller = Objects.requireNonNull(option.getStateMachineCaller(), "stateMachineCaller");
         } finally {
             this.writeLock.unlock();
         }
@@ -94,9 +109,17 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     public void startup() {
         this.writeLock.lock();
         try {
-            final ReplicaOption replicaOption = Objects.requireNonNull(this.option.getReplicaOption());
-            final LogStorageFactory logStorageFactory = Objects.requireNonNull(replicaOption.getPacificaServiceFactory());
-            this.logStorage = logStorageFactory.newLogStorage(replicaOption.getLogStoragePath());
+            this.logStorage.open();
+
+            final LogId firstLogId = this.logStorage.getFirstLogId();
+            if (firstLogId != null) {
+                this.firstLogIndex = firstLogId.getIndex();
+            }
+            final LogId lastLogId = this.logStorage.getLastLogId();
+            if (lastLogId != null) {
+                this.lastLogIdOnDisk = lastLogId;
+                this.lastLogIndex = lastLogId.getIndex();
+            }
         } finally {
             this.writeLock.unlock();
         }
@@ -107,38 +130,41 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     public void shutdown() {
         this.writeLock.lock();
         try {
+            this.firstLogIndex = 0L;
+            this.lastLogIndex = 0L;
+            this.committedPoint = new LogId(0, 0);
+            this.lastLogIdOnDisk = new LogId(0, 0);
+            this.lastSnapshotLogId = new LogId(0, 0);
         } finally {
             this.writeLock.unlock();
         }
     }
 
-    private long unsafeGetLogTermAt(final long index) {
 
-        return 0L;
-    }
 
     private boolean checkAndResolveConflict(final List<LogEntry> logEntries, Callback callback) {
-
         assert logEntries.isEmpty() == false;
         final LogEntry firstLogEntry = logEntries.get(0);
-        boolean primary = firstLogEntry.getLogId().getIndex() == 0;
+        final boolean primary = firstLogEntry.getLogId().getIndex() == 0;
         if (primary) {
             // fill LogEntry -> LogId.index
             logEntries.forEach(logEntry -> {
                 logEntry.getLogId().setIndex(++this.lastLogIndex);
             });
-            return true;
         } else {
             //first
-            if (firstLogEntry.getLogId().getIndex() > this.lastLogIndex + 1) {
+            final long firstLogIndex = firstLogEntry.getLogId().getIndex();
+            if (firstLogIndex > this.lastLogIndex + 1) {
                 //discontinuous
-                ThreadUtil.runCallback(callback, null);
+                final String errorMsg = String.format("there's gap between first_index=%d and last_log_index=%d", firstLogIndex, this.lastLogIndex);
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
                 return false;
             }
             final LogEntry lastLogEntry = logEntries.get(logEntries.size() - 1);
             if (lastLogEntry.getLogId().getIndex() <= this.committedPoint.getIndex()) {
                 //has been committed
-                ThreadUtil.runCallback(callback, null);
+                final String errorMsg = String.format("The received logEntries(last_log_index=%d) have all been committed(commit_point=%d), and we keep them unchanged", lastLogEntry.getLogId().getIndex(), committedPoint.getIndex());
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
                 return false;
             }
 
@@ -148,7 +174,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                 int conflictingIndex = 0;
                 for (; conflictingIndex < logEntries.size(); conflictingIndex++) {
                     final LogEntry curLogEntry = logEntries.get(conflictingIndex);
-                    if (unsafeGetLogTermAt(curLogEntry.getLogId().getIndex()) != curLogEntry.getLogId().getTerm()) {
+                    if (getLogTermAt(curLogEntry.getLogId().getIndex()) != curLogEntry.getLogId().getTerm()) {
                         break;
                     }
                 }
@@ -164,30 +190,29 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                     logEntries.subList(0, conflictingIndex).clear();
                 }
             }
+            if (logEntries.isEmpty()) {
+                final String errorMsg = String.format("The received logEntries([first_log_index=%d, last_log_index=%d]) have all been append(last_log_index=%d), and we keep them unchanged", firstLogIndex, lastLogEntry.getLogId().getIndex(), this.lastLogIndex);
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
+                return false;
+            }
             this.lastLogIndex = lastLogEntry.getLogId().getIndex();
-            return true;
-
         }
+        return true;
     }
 
     @Override
-    public void appendLogEntries(List<LogEntry> logEntries, AppendLogEntriesCallback callback) {
-
+    public void appendLogEntries(final List<LogEntry> logEntries, AppendLogEntriesCallback callback) {
+        if (logEntries == null || logEntries.isEmpty()) {
+            ThreadUtil.runCallback(callback, Finished.failure(new IllegalArgumentException("empty logEntries")));
+            return;
+        }
         this.writeLock.lock();
         try {
-            if (logEntries.isEmpty()) {
-
-            }
-
-
             // check resolve conflict
-            checkAndResolveConflict(logEntries, callback);
-
-            if (logEntries.isEmpty()) {
-                //TODO
-
+            if (!checkAndResolveConflict(logEntries, callback)) {
+                return;
             }
-            final LogEntry firstLogEntry = logEntries.get(0);
+            assert !logEntries.isEmpty();
             // fill LogEntry -> checksum
             final boolean enableLogEntryChecksum = this.option.getReplicaOption().isEnableLogEntryChecksum();
             if (enableLogEntryChecksum) {
@@ -197,7 +222,9 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                     }
                 });
             }
-
+            final LogEntry firstLogEntry = logEntries.get(0);
+            callback.setFirstLogIndex(firstLogEntry.getLogId().getIndex());
+            callback.setAppendCount(logEntries.size());
             // store log entries
             storeLogEntries(logEntries, callback);
         } finally {
@@ -207,8 +234,20 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
 
     @Override
-    public LogEntry getLogEntryAt(long logIndex) {
-        return null;
+    public LogEntry getLogEntryAt(final long logIndex) {
+        if (logIndex < this.firstLogIndex || logIndex > this.lastLogIndex ) {
+            return null;
+        }
+        this.readLock.lock();
+        try {
+            final LogEntry logEntry = this.logStorage.getLogEntry(logIndex);
+            if (logEntry != null && this.option.getReplicaOption().isEnableLogEntryChecksum() && logEntry.isCorrupted()) {
+                throw new LogEntryCorruptedException(String.format("corrupted LogEntry(%s), actual_checksum=%d", logEntry, logEntry.checksum()));
+            }
+            return logEntry;
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
@@ -218,16 +257,34 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         }
         this.readLock.lock();
         try {
-
+            if (this.lastSnapshotLogId.getIndex() == logIndex) {
+                return this.lastSnapshotLogId.getTerm();
+            }
+            if (logIndex < this.firstLogIndex || logIndex > this.lastLogIdOnDisk.getIndex()) {
+                return 0L;
+            }
+            return getLogTermFromStorage(logIndex);
         } finally {
             this.readLock.unlock();
         }
-        return 0;
+    }
+
+    private long getLogTermFromStorage(final long logIndex) {
+        final LogId logId = this.logStorage.getLogIdAt(logIndex);
+        if (logId != null) {
+            return logId.getTerm();
+        }
+        return 0L;
     }
 
     @Override
-    public LogId getCommitPoint() {
-        return null;
+    public LogId getCommittedPoint() {
+        this.readLock.lock();
+        try {
+            return this.committedPoint.copy();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
@@ -263,6 +320,54 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
+    public void onSnapshot(final long snapshotLogIndex, final long snapshotLogTerm) {
+        this.writeLock.lock();
+        try {
+            if (snapshotLogIndex <= this.lastSnapshotLogId.getIndex()) {
+                return;
+            }
+            final long localSnapshotLogTerm = getLogTermAt(snapshotLogIndex);
+            this.lastSnapshotLogId = new LogId(snapshotLogIndex, snapshotLogTerm);
+            if (this.lastSnapshotLogId.compareTo(this.committedPoint) > 0) {
+                // lastSnapshotLogId cannot be greater than committedPoint, so we rest committedPoint
+                this.committedPoint = this.lastSnapshotLogId.copy();
+            }
+            if (localSnapshotLogTerm == 0) {
+                //out of range LogEntry Queue
+                truncatePrefix(snapshotLogIndex + 1, null);
+            } else if (localSnapshotLogTerm == snapshotLogTerm) {
+                // truncate prefix and reserved
+                final long firstIndexKept = Math.max(0, snapshotLogIndex - this.option.getReplicaOption().getSnapshotLogIndexReserved());
+                if (firstIndexKept > 0) {
+                    truncatePrefix(firstIndexKept, null);
+                }
+            } else {
+                // if in range log queue but conflicting op log at snapshotLogIndex, we need rest
+
+
+
+            }
+
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    @Override
+    public void onCommitted(long committedLogIndex, long committedLogTerm) {
+        final LogId committedPoint = new LogId(committedLogIndex, committedLogTerm);
+        this.writeLock.lock();
+        try {
+            if (committedPoint.compareTo(this.committedPoint) < 0) {
+                return;
+            }
+            this.committedPoint = committedPoint;
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    @Override
     public boolean removeWaiter(long waiterId) {
         return this.newLogWaiterContainer.remove(waiterId) != null;
     }
@@ -271,39 +376,67 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         return 0L;
     }
 
+
     private void notifyNewLog() {
+        long lastLogIndexOnDisk = 0L;
         this.readLock.lock();
-        final long lastLogIndexOnDisk = getLastLogIndexOnDisk();
         try {
-            List<Long> notifyWaiterIds = new ArrayList<>();
-            //find
-            this.newLogWaiterContainer.forEach((waiterId, newLogWaiter) -> {
-                if (newLogWaiter.expectedLastLogIndex <= lastLogIndexOnDisk) {
-                    notifyWaiterIds.add(waiterId);
-                }
-            });
-            //run
-            notifyWaiterIds.forEach(waiterId -> {
-                NewLogContext newLogContext = newLogWaiterContainer.remove(waiterId);
-                if (newLogContext != null) {
-                    ThreadUtil.runCallback(newLogContext.newLogCallback, Finished._OK);
-                }
-            });
+            lastLogIndexOnDisk = getLastLogIndexOnDisk();
         } finally {
             this.readLock.unlock();
         }
+        notifyNewLog(lastLogIndexOnDisk);
+    }
+
+    private void notifyNewLog(final long newLogIndex) {
+
+        List<Long> notifyWaiterIds = new ArrayList<>();
+        //find
+        this.newLogWaiterContainer.forEach((waiterId, newLogWaiter) -> {
+            if (newLogWaiter.expectedLastLogIndex <= newLogIndex) {
+                notifyWaiterIds.add(waiterId);
+            }
+        });
+        //run
+        notifyWaiterIds.forEach(waiterId -> {
+            NewLogContext newLogContext = newLogWaiterContainer.remove(waiterId);
+            if (newLogContext != null) {
+                ThreadUtil.runCallback(newLogContext.newLogCallback, Finished._OK);
+            }
+        });
     }
 
     void storeLogEntries(final List<LogEntry> logEntries, final AppendLogEntriesCallback callback) {
         this.executor.execute(new StoreLogEntriesEvent(logEntries, callback));
     }
 
+    /**
+     * @param logEntries
+     */
     private void doStoreLogEntries(final List<LogEntry> logEntries) {
+        assert !logEntries.isEmpty();
+        assert logEntries.get(0).getLogId().getIndex() == this.lastLogIdOnDisk.getIndex() + 1;
 
-        final int storedNum = this.logStorage.appendLogEntries(logEntries);
-        if (storedNum > 0) {
-
+        LogId lastLogId = null;
+        this.writeLock.lock();
+        try {
+            int count = this.logStorage.appendLogEntries(logEntries);
+            this.lastLogIdOnDisk = lastLogId = logEntries.get(count - 1).getLogId().copy();
+        } catch (PacificaException e) {
+            reportError(e);
+            throw e;
+        } finally {
+            this.writeLock.unlock();
         }
+        //on new log event
+        if (lastLogId != null) {
+            notifyNewLog(lastLogId.getIndex());
+        }
+    }
+
+    private void reportError(PacificaException error) {
+
+        this.stateMachineCaller.onError(error);
 
     }
 
@@ -312,13 +445,47 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     private void doTruncateSuffix(final long lastIndexKept) {
-
-        this.logStorage.truncateSuffix(lastIndexKept);
-
+        this.writeLock.lock();
+        try {
+            if (lastIndexKept > this.lastLogIndex) {
+                return;
+            }
+            if (lastIndexKept < this.committedPoint.getIndex()) {
+                return;
+            }
+            final LogId lastLogId = this.logStorage.truncateSuffix(lastIndexKept);
+            if (lastLogId != null && lastLogId.getIndex() > this.lastLogIndex) {
+                this.lastLogIdOnDisk = lastLogId.copy();
+                this.lastLogIndex = this.lastLogIdOnDisk.getIndex();
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     void truncatePrefix(final long firstIndexKept, final Callback callback) {
+
         this.executor.execute(new TruncatePrefixEvent(firstIndexKept));
+    }
+
+    private void doTruncatePrefix(final long firstLogIndexKept) {
+        this.writeLock.lock();
+        try {
+            if (firstLogIndexKept < this.firstLogIndex) {
+                return;
+            }
+            if (firstLogIndexKept > this.lastLogIndex) {
+                // out of range log queue
+                this.lastLogIndex = firstLogIndexKept;
+            }
+            final LogId firstLogId = this.logStorage.truncatePrefix(firstLogIndexKept);
+            if (firstLogId != null && firstLogId.getIndex() > this.firstLogIndex) {
+                this.firstLogIndex = firstLogId.getIndex();
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
+
     }
 
     class StoreLogEntriesEvent implements Runnable {
@@ -334,7 +501,12 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
         @Override
         public void run() {
-
+            try {
+                doStoreLogEntries(logEntries);
+                ThreadUtil.runCallback(callback, Finished._OK);
+            } catch (Throwable e) {
+                ThreadUtil.runCallback(callback, Finished.failure(e));
+            }
         }
     }
 
@@ -348,13 +520,11 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
         @Override
         public void run() {
-
+            doTruncateSuffix(lastIndexKept);
         }
     }
 
     class TruncatePrefixEvent implements Runnable {
-
-
         private final long firstIndexKept;
 
         TruncatePrefixEvent(final long firstIndexKept) {
@@ -364,7 +534,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
         @Override
         public void run() {
-
+            doTruncatePrefix(firstIndexKept);
         }
     }
 
@@ -387,25 +557,42 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             return Long.compare(expectedLastLogIndex, o.expectedLastLogIndex);
         }
     }
-    private void doTruncatePrefix(final long firstLogIndexKept) {
-        this.writeLock.lock();
-        try {
-            if (firstLogIndexKept < this.firstLogId.getIndex()) {
-                return;
-            }
-
-            this.logStorage.truncatePrefix(firstLogIndexKept);
-
-        } finally {
-            this.writeLock.unlock();
-        }
-
-    }
 
     public static final class Option {
 
         ReplicaOption replicaOption;
 
+        String logStoragePath;
+
+        SingleThreadExecutor logManagerExecutor;
+
+        LogStorageFactory logStorageFactory;
+
+        StateMachineCaller stateMachineCaller;
+
+        public SingleThreadExecutor getLogManagerExecutor() {
+            return logManagerExecutor;
+        }
+
+        public void setLogManagerExecutor(SingleThreadExecutor logManagerExecutor) {
+            this.logManagerExecutor = logManagerExecutor;
+        }
+
+        public LogStorageFactory getLogStorageFactory() {
+            return logStorageFactory;
+        }
+
+        public void setLogStorageFactory(LogStorageFactory logStorageFactory) {
+            this.logStorageFactory = logStorageFactory;
+        }
+
+        public String getLogStoragePath() {
+            return logStoragePath;
+        }
+
+        public void setLogStoragePath(String logStoragePath) {
+            this.logStoragePath = logStoragePath;
+        }
 
         public ReplicaOption getReplicaOption() {
             return replicaOption;
@@ -414,5 +601,16 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         public void setReplicaOption(ReplicaOption replicaOption) {
             this.replicaOption = replicaOption;
         }
+
+        public StateMachineCaller getStateMachineCaller() {
+            return stateMachineCaller;
+        }
+
+        public void setStateMachineCaller(StateMachineCaller stateMachineCaller) {
+            this.stateMachineCaller = stateMachineCaller;
+        }
+
     }
+
+
 }

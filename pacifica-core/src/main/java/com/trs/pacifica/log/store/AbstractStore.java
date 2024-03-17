@@ -219,18 +219,22 @@ public abstract class AbstractStore {
                 return true;
             }
             do {
-                AbstractFile topFile = this.files.peekFirst();
-                if (topFile == null || topFile.getLastLogIndex() >= lastIndexKept) {
+                AbstractFile tailFile = this.files.peekLast();
+                if (tailFile == null || tailFile.getLastLogIndex() <= lastIndexKept) {
                     return true;
+                }
+                if (tailFile.getFirstLogIndex() < lastIndexKept) {
+                    // rest file at 0
+                    tailFile.restFile(0);
+                } else {
+                    // rest file at position of lastIndexKept
+
                 }
 
             } while (true);
-
-
         } finally {
             this.writeLock.unlock();
         }
-        return false;
     }
 
 
