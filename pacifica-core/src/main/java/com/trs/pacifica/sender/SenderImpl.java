@@ -98,6 +98,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         return this.type;
     }
 
+    @Override
+    public boolean continueSendLogEntries(long endLogIndex) {
+        // TODO if wait more log
+        if (endLogIndex >= this.nextLogIndex) {
+            sendLogEntries();
+            return true;
+        }
+        return false;
+    }
+
 
     @Override
     public synchronized void init(Option option) {
@@ -121,7 +131,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             this.updateLastResponseTime();
             this.heartbeatTimer.start();
             this.sendProbeRequest();
-            this.state = State.STARTED;
         }
     }
 
@@ -148,33 +157,34 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         requestBuilder.setVersion(this.option.replicaGroup.getVersion());
 
         final RpcRequest.InstallSnapshotRequest request = requestBuilder.build();
+        final RpcContext rpcContext = new RpcContext(RpcType.INSTALL_SNAPSHOT, request);
+        this.flyingRpcQueue.add(rpcContext);
+        try {
+            this.option.getPacificaClient().installSnapshot(request, new ResponseCallback<RpcRequest.InstallSnapshotResponse>(executor) {
 
-        this.option.getPacificaClient().installSnapshot(request, new ResponseCallback<RpcRequest.InstallSnapshotResponse>() {
+                @Override
+                protected void doRun(Finished finished) {
+                    onRpcResponse(rpcContext, finished, getRpcResponse());
 
-            @Override
-            protected void doRun(Finished finished) {
-
-            }
-        });
-
-
-
+                }
+            });
+        } catch (Throwable e) {
+            onRpcResponse(rpcContext, Finished.failure(e), null);
+        }
     }
 
 
-    private void sendProbeRequest() {
+    private void doSendProbeRequest() {
         sendEmptyLogEntries(false);
     }
 
     private void handleHeartbeatTimeout() {
         if (isStarted() && this.state != State.APPEND_LOGENTRIES) {
-            sendHeartbeat();
+            doSendHeartbeat();
         }
     }
 
-    private void sendHeartbeat() {
-        sendEmptyLogEntries(true);
-    }
+
 
 
     private void sendEmptyLogEntries(final boolean isHeartbeatRequest) {
@@ -211,30 +221,60 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
 
     }
+    private void doSendHeartbeat() {
+        sendEmptyLogEntries(true);
+    }
 
-    private void sendLogEntries(final long nextSendingLogIndex) {
+
+    private void sendProbeRequest() {
+        this.executor.execute(() -> {
+            doSendProbeRequest();
+        });
+    }
+
+
+    private void sendLogEntries() {
+        //
+        this.executor.execute(() -> {
+            doSendLogEntries(nextLogIndex);
+        });
+    }
+
+    /**
+     *
+     * @param nextSendingLogIndex
+     * @return true if continue to send or else false
+     */
+    private boolean doSendLogEntries(final long nextSendingLogIndex) {
         final RpcRequest.AppendEntriesRequest.Builder requestBuilder = RpcRequest.AppendEntriesRequest.newBuilder();
         if (!fillCommonRequest(requestBuilder, nextSendingLogIndex - 1, false)) {
             //not found LogEntry, we will install snapshot
             installSnapshot();
-            return;
+            return false;
         }
         // fill meta and log data
         final List<ByteString> allData = new ArrayList<>();
         final int maxSendLogEntryNum = this.option.getMaxSendLogEntryNum();
         final int maxSendLogEntryBytes = this.option.getMaxSendLogEntryBytes();
+        boolean continueSend = true;
         int logEntryNum = 0;
         int logEntryBytes = 0;
         do {
             final RpcCommon.LogEntryMeta.Builder metaBuilder = RpcCommon.LogEntryMeta.newBuilder();
             if (!prepareLogEntry(nextSendingLogIndex + logEntryNum, metaBuilder, allData)) {
-                //wait more log entry
+                //There are no more logs
+                continueSend = false;
                 break;
             }
             logEntryNum++;
-            logEntryBytes += 0;
+            logEntryBytes += metaBuilder.getDataLen();
             requestBuilder.addLogMeta(metaBuilder.build());
         } while (logEntryNum < maxSendLogEntryNum && logEntryBytes < maxSendLogEntryBytes);
+        if (logEntryNum == 0) {
+            // wait more log entry
+            return false;
+        }
+
         ByteString logData = ByteString.copyFrom(allData);
         requestBuilder.setLogData(logData);
 
@@ -251,7 +291,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         } catch (Throwable e) {
             onRpcResponse(context, Finished.failure(e), null);
         }
-        return;
+        return continueSend;
     }
 
     private boolean prepareLogEntry(final long logIndex, final RpcCommon.LogEntryMeta.Builder metaBuilder, final List<ByteString> allData) {
@@ -368,19 +408,18 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 }
             }
             this.sendProbeRequest();
-
             return;
         }
         //success
         final int appendCount = request.getLogMetaCount();
-
         if (appendCount > 0) {
             if (this.type.isSecondary()) {
-                this.option.getBallotBox().ballotBy()
+                final long endLogIndex = this.nextLogIndex + appendCount - 1;
+                this.option.getBallotBox().ballotBy(this.toId, this.nextLogIndex, endLogIndex);
             }
-
         }
 
+        this.sendLogEntries();
     }
 
     private void handleInstallSnapshotResponse(Finished finished, RpcRequest.InstallSnapshotResponse response) {
@@ -452,6 +491,8 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
 
     public static enum State {
+        PROBE,
+        WAIT_MORE_LOG_ENTRY,
         APPEND_LOGENTRIES,
         INSTALL_SNAPSHOT,
         STARTED,

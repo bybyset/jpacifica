@@ -43,4 +43,7 @@ public interface Sender {
     public SenderType getType();
 
 
+    public boolean continueSendLogEntries(final long endLogIndex);
+
+
 }
