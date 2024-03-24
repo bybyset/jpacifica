@@ -18,4 +18,8 @@
 package com.trs.pacifica.snapshot;
 
 public interface SnapshotWriter {
+
+
+
+
 }

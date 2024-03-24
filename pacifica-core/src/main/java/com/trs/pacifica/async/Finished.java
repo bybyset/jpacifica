@@ -37,4 +37,8 @@ public interface Finished {
         };
     }
 
+    public static Finished success() {
+        return _OK;
+    }
+
 }

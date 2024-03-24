@@ -44,7 +44,20 @@ public interface SenderGroup {
     public boolean isAlive(ReplicaId replicaId);
 
 
+    /**
+     *
+     * @param logIndex
+     * @return
+     */
+    public boolean continueAppendLogEntry(final long logIndex);
+
+
     public Sender removeSender(ReplicaId replicaId);
 
+
+
     public void clear();
+
+
+
 }

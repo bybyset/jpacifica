@@ -17,15 +17,18 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fsm.OperationIterator;
+import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.snapshot.SnapshotWriter;
 
 public interface StateMachine {
 
     public void onApply(OperationIterator iterator);
 
-    public boolean onSnapshotLoad();
+    public void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException;
 
-    public boolean onSnapshotSave();
+    public void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException;
 
     public void onShutdown();
 

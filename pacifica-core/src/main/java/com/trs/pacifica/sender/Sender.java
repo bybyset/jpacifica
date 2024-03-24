@@ -30,9 +30,10 @@ public interface Sender {
 
     /**
      * Check if the peer-to-peer heartbeat is alive
+     * @param leasePeriodTimeOutMs 
      * @return true if alive
      */
-    public boolean isAlive();
+    public boolean isAlive(final int leasePeriodTimeOutMs);
 
 
     /**

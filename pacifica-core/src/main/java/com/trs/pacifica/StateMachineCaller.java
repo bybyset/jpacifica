@@ -17,7 +17,11 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.snapshot.SnapshotWriter;
 
 public interface StateMachineCaller {
 
@@ -31,14 +35,27 @@ public interface StateMachineCaller {
 
 
     /**
-     * get commit point
-     * @return 0 if nothing commit,
+     * get commit point (last log entry index to apply state machine)
+     * @return LogId(0, 0) if nothing commit,
      */
-    public long getCommitPoint();
+    public LogId getCommitPoint();
 
-    public boolean snapshotLoad();
 
-    public boolean snapshotSave();
+    /**
+     * get committing log index
+     * @return
+     */
+    public long getCommittingLogIndex();
+
+    /**
+     * get committed log index
+     * @return
+     */
+    public long getCommittedLogIndex();
+
+    public boolean onSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback);
+
+    public boolean onSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback);
 
 
     /**
@@ -48,5 +65,16 @@ public interface StateMachineCaller {
     public void onError(final PacificaException error);
 
 
+
+    public static interface SnapshotLoadCallback extends Callback {
+
+        SnapshotReader getSnapshotReader();
+
+    }
+
+    public static interface SnapshotSaveCallback extends Callback {
+        SnapshotWriter getSnapshotWriter();
+
+    }
 
 }

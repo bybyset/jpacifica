@@ -19,15 +19,23 @@ package com.trs.pacifica.fsm;
 
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.core.ReplicaImpl;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.snapshot.SnapshotMeta;
+import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -41,6 +49,8 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     private static final byte _STAT_SHUTTING = 2;
     private static final byte _STAT_SHUTDOWN = 3;
 
+    private final ReplicaImpl replica;
+
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private final Lock readLock = lock.readLock();
@@ -49,17 +59,17 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     private byte state = _STATE_UNINITIALIZED;
 
     /**
+     * last committed log index
+     */
+    private volatile long lastCommitLogIndex = 0;
+
+    /**
      * committing log index
      */
     private final AtomicLong committingLogIndex = new AtomicLong(0);
 
-    /**
-     * last committed log index
-     */
-    private volatile long lastCommittedLogIndex = 0;
 
-
-
+    private LogId commitPoint = new LogId(0, 0);
 
     private StateMachine stateMachine;
 
@@ -71,6 +81,10 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     private PendingQueue<Callback> callbackPendingQueue = null;
 
+
+    public StateMachineCallerImpl(ReplicaImpl replica) {
+        this.replica = replica;
+    }
 
     @Override
     public void init(Option option) {
@@ -117,11 +131,11 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     @Override
     public boolean commitAt(final long logIndex) {
+        if (logIndex <= this.lastCommitLogIndex) {
+            return false;
+        }
         this.readLock.lock();
         try {
-            if (logIndex <= this.lastCommittedLogIndex) {
-                return false;
-            }
             this.eventExecutor.execute(new CommitEvent(logIndex));
         } finally {
             this.readLock.unlock();
@@ -130,18 +144,34 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     }
 
     @Override
-    public long getCommitPoint() {
-        return 0;
+    public LogId getCommitPoint() {
+        this.readLock.lock();
+        try {
+            return this.commitPoint.copy();
+        } finally {
+            this.readLock.unlock();
+        }
+
     }
 
     @Override
-    public boolean snapshotLoad() {
-        return false;
+    public long getCommittingLogIndex() {
+        return this.committingLogIndex.get();
     }
 
     @Override
-    public boolean snapshotSave() {
-        return false;
+    public long getCommittedLogIndex() {
+        return this.committingLogIndex.get() - 1;
+    }
+
+    @Override
+    public boolean onSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback) {
+        return submitEvent(new SnapshotLoadEvent(snapshotLoadCallback));
+    }
+
+    @Override
+    public boolean onSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback) {
+        return submitEvent(new SnapshotSaveEvent(snapshotSaveCallback));
     }
 
     @Override
@@ -149,10 +179,22 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     }
 
+    private boolean submitEvent(final Runnable run) {
+        assert run != null;
+        try {
+            this.eventExecutor.execute(run);
+        } catch (RejectedExecutionException e) {
+            LOGGER.warn("{} reject to submit event.", this.replica.getReplicaId(), e);
+            return false;
+        }
+        return true;
+    }
+
     private void unsafeCommitAt(final long commitLogIndex) {
-        if (commitLogIndex <= this.lastCommittedLogIndex) {
+        if (commitLogIndex <= this.lastCommitLogIndex) {
             return;
         }
+        this.lastCommitLogIndex = commitLogIndex;
 
         final List<Callback> callbackList = new ArrayList<>();
         pollCallback(callbackList, commitLogIndex);
@@ -184,7 +226,8 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
         if (iterator.hasError()) {
             setError(iterator.getError());
         }
-        this.lastCommittedLogIndex = commitLogIndex;
+        final long commitLogTerm = this.logManager.getLogTermAt(commitLogIndex);
+        this.commitPoint = new LogId(commitLogIndex, commitLogTerm);
     }
 
     private void pollCallback(List<Callback> callbackList, final long commitPoint) {
@@ -195,6 +238,50 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     }
 
     private void setError(PacificaException error) {
+
+    }
+
+    private void doSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback) {
+        final SnapshotReader snapshotReader = snapshotLoadCallback.getSnapshotReader();
+        if (snapshotReader == null) {
+            ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException("failed to get SnapshotReader")));
+            return;
+        }
+        final SnapshotMeta snapshotMeta = snapshotReader.getSnapshotMeta();
+        if (snapshotMeta == null) {
+            ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException("failed to get SnapshotMeta")));
+            return;
+        }
+        final LogId snapshotLogId = new LogId(snapshotMeta.getSnapshotLogIndex(), snapshotMeta.getSnapshotLogTerm());
+        // snapshotLogId > lastSnapshotLogId
+
+        //keep snapshotLogId <= commitPoint
+
+        //
+        this.stateMachine.onSnapshotLoad(snapshotReader);
+
+
+    }
+
+    private void doSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback) {
+        assert snapshotSaveCallback != null;
+        final SnapshotWriter snapshotWriter = snapshotSaveCallback.getSnapshotWriter();
+        if (snapshotWriter == null) {
+            //TODO
+            ThreadUtil.runCallback(snapshotSaveCallback, Finished.failure(new PacificaException("failed to get snapshot writer.")));
+            return;
+        }
+        // meta
+        final long snapshotLogIndex = this.commitPoint.getIndex();
+        final long snapshotLogTerm = this.commitPoint.getTerm();
+
+        //
+        try {
+            this.stateMachine.onSnapshotSave(snapshotWriter);
+            ThreadUtil.runCallback(snapshotSaveCallback, Finished.success());
+        } catch (PacificaException e) {
+            ThreadUtil.runCallback(snapshotSaveCallback, Finished.failure(e));
+        }
 
     }
 
@@ -217,17 +304,29 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     class SnapshotLoadEvent implements Runnable {
 
+        private final SnapshotLoadCallback snapshotLoadCallback;
+
+        SnapshotLoadEvent(SnapshotLoadCallback snapshotLoadCallback) {
+            this.snapshotLoadCallback = snapshotLoadCallback;
+        }
+
         @Override
         public void run() {
-
+            doSnapshotLoad(snapshotLoadCallback);
         }
     }
 
     class SnapshotSaveEvent implements Runnable {
 
+        private final SnapshotSaveCallback snapshotSaveCallback;
+
+        SnapshotSaveEvent(SnapshotSaveCallback snapshotSaveCallback) {
+            this.snapshotSaveCallback = snapshotSaveCallback;
+        }
+
         @Override
         public void run() {
-
+            doSnapshotSave(snapshotSaveCallback);
         }
     }
 

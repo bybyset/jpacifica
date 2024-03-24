@@ -1853,6 +1853,17 @@ public final class RpcRequest {
      * @return The commitPoint.
      */
     long getCommitPoint();
+
+    /**
+     * <code>optional int64 last_log_index = 5;</code>
+     * @return Whether the lastLogIndex field is set.
+     */
+    boolean hasLastLogIndex();
+    /**
+     * <code>optional int64 last_log_index = 5;</code>
+     * @return The lastLogIndex.
+     */
+    long getLastLogIndex();
   }
   /**
    * Protobuf type {@code jpacifica.AppendEntriesResponse}
@@ -1966,6 +1977,25 @@ public final class RpcRequest {
       return commitPoint_;
     }
 
+    public static final int LAST_LOG_INDEX_FIELD_NUMBER = 5;
+    private long lastLogIndex_ = 0L;
+    /**
+     * <code>optional int64 last_log_index = 5;</code>
+     * @return Whether the lastLogIndex field is set.
+     */
+    @java.lang.Override
+    public boolean hasLastLogIndex() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <code>optional int64 last_log_index = 5;</code>
+     * @return The lastLogIndex.
+     */
+    @java.lang.Override
+    public long getLastLogIndex() {
+      return lastLogIndex_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -1992,6 +2022,9 @@ public final class RpcRequest {
       if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(4, commitPoint_);
       }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        output.writeInt64(5, lastLogIndex_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -2016,6 +2049,10 @@ public final class RpcRequest {
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, commitPoint_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(5, lastLogIndex_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -2052,6 +2089,11 @@ public final class RpcRequest {
         if (getCommitPoint()
             != other.getCommitPoint()) return false;
       }
+      if (hasLastLogIndex() != other.hasLastLogIndex()) return false;
+      if (hasLastLogIndex()) {
+        if (getLastLogIndex()
+            != other.getLastLogIndex()) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -2082,6 +2124,11 @@ public final class RpcRequest {
         hash = (37 * hash) + COMMIT_POINT_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
             getCommitPoint());
+      }
+      if (hasLastLogIndex()) {
+        hash = (37 * hash) + LAST_LOG_INDEX_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getLastLogIndex());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -2218,6 +2265,7 @@ public final class RpcRequest {
         term_ = 0L;
         version_ = 0L;
         commitPoint_ = 0L;
+        lastLogIndex_ = 0L;
         return this;
       }
 
@@ -2267,6 +2315,10 @@ public final class RpcRequest {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           result.commitPoint_ = commitPoint_;
           to_bitField0_ |= 0x00000008;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.lastLogIndex_ = lastLogIndex_;
+          to_bitField0_ |= 0x00000010;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -2327,6 +2379,9 @@ public final class RpcRequest {
         if (other.hasCommitPoint()) {
           setCommitPoint(other.getCommitPoint());
         }
+        if (other.hasLastLogIndex()) {
+          setLastLogIndex(other.getLastLogIndex());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -2373,6 +2428,11 @@ public final class RpcRequest {
                 bitField0_ |= 0x00000008;
                 break;
               } // case 32
+              case 40: {
+                lastLogIndex_ = input.readInt64();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 40
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -2546,6 +2606,46 @@ public final class RpcRequest {
       public Builder clearCommitPoint() {
         bitField0_ = (bitField0_ & ~0x00000008);
         commitPoint_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long lastLogIndex_ ;
+      /**
+       * <code>optional int64 last_log_index = 5;</code>
+       * @return Whether the lastLogIndex field is set.
+       */
+      @java.lang.Override
+      public boolean hasLastLogIndex() {
+        return ((bitField0_ & 0x00000010) != 0);
+      }
+      /**
+       * <code>optional int64 last_log_index = 5;</code>
+       * @return The lastLogIndex.
+       */
+      @java.lang.Override
+      public long getLastLogIndex() {
+        return lastLogIndex_;
+      }
+      /**
+       * <code>optional int64 last_log_index = 5;</code>
+       * @param value The lastLogIndex to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLastLogIndex(long value) {
+
+        lastLogIndex_ = value;
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 last_log_index = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLastLogIndex() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        lastLogIndex_ = 0L;
         onChanged();
         return this;
       }
@@ -7904,37 +8004,39 @@ public final class RpcRequest {
       "Meta\022\025\n\010log_data\030\t \001(\014H\007\210\001\001B\r\n\013_primary_" +
       "idB\014\n\n_target_idB\021\n\017_prev_log_indexB\020\n\016_" +
       "prev_log_termB\017\n\r_commit_pointB\007\n\005_termB" +
-      "\n\n\010_versionB\013\n\t_log_data\"\243\001\n\025AppendEntri" +
+      "\n\n\010_versionB\013\n\t_log_data\"\323\001\n\025AppendEntri" +
       "esResponse\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term" +
       "\030\002 \001(\003H\001\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001\022\031\n\014com" +
-      "mit_point\030\004 \001(\003H\003\210\001\001B\n\n\010_successB\007\n\005_ter" +
-      "mB\n\n\010_versionB\017\n\r_commit_point\"\257\001\n\025Repli" +
-      "caRecoverRequest\022-\n\nrecover_id\030\001 \001(\0132\024.j" +
-      "pacifica.ReplicaIdH\000\210\001\001\022-\n\nprimary_id\030\002 " +
-      "\001(\0132\024.jpacifica.ReplicaIdH\001\210\001\001\022\021\n\004term\030\003" +
-      " \001(\003H\002\210\001\001B\r\n\013_recover_idB\r\n\013_primary_idB" +
-      "\007\n\005_term\"x\n\026ReplicaRecoverResponse\022\024\n\007su" +
-      "ccess\030\001 \001(\010H\000\210\001\001\022\021\n\004term\030\002 \001(\003H\001\210\001\001\022\024\n\007v" +
-      "ersion\030\003 \001(\003H\002\210\001\001B\n\n\010_successB\007\n\005_termB\n" +
-      "\n\010_version\"\320\001\n\026InstallSnapshotRequest\022-\n" +
-      "\nprimary_id\030\001 \001(\0132\024.jpacifica.ReplicaIdH" +
-      "\000\210\001\001\022,\n\ttarget_id\030\002 \001(\0132\024.jpacifica.Repl" +
-      "icaIdH\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001\022\024\n\007version" +
-      "\030\004 \001(\003H\003\210\001\001B\r\n\013_primary_idB\014\n\n_target_id" +
-      "B\007\n\005_termB\n\n\010_version\"y\n\027InstallSnapshot" +
-      "Response\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term\030\002" +
-      " \001(\003H\001\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B\n\n\010_succ" +
-      "essB\007\n\005_termB\n\n\010_version\"\376\001\n\016GetFileRequ" +
-      "est\022,\n\ttarget_id\030\001 \001(\0132\024.jpacifica.Repli" +
-      "caIdH\000\210\001\001\022\026\n\treader_id\030\002 \001(\003H\001\210\001\001\022\025\n\010fil" +
-      "ename\030\003 \001(\tH\002\210\001\001\022\022\n\005count\030\004 \001(\003H\003\210\001\001\022\023\n\006" +
-      "offset\030\005 \001(\003H\004\210\001\001\022\030\n\013read_partly\030\006 \001(\010H\005" +
-      "\210\001\001B\014\n\n_target_idB\014\n\n_reader_idB\013\n\t_file" +
-      "nameB\010\n\006_countB\t\n\007_offsetB\016\n\014_read_partl" +
-      "y\"k\n\017GetFileResponse\022\020\n\003eof\030\001 \001(\010H\000\210\001\001\022\021" +
-      "\n\004data\030\002 \001(\014H\001\210\001\001\022\025\n\010readSize\030\003 \001(\003H\002\210\001\001" +
-      "B\006\n\004_eofB\007\n\005_dataB\013\n\t_readSizeB$\n\026com.tr" +
-      "s.pacifica.protoB\nRpcRequestb\006proto3"
+      "mit_point\030\004 \001(\003H\003\210\001\001\022\033\n\016last_log_index\030\005" +
+      " \001(\003H\004\210\001\001B\n\n\010_successB\007\n\005_termB\n\n\010_versi" +
+      "onB\017\n\r_commit_pointB\021\n\017_last_log_index\"\257" +
+      "\001\n\025ReplicaRecoverRequest\022-\n\nrecover_id\030\001" +
+      " \001(\0132\024.jpacifica.ReplicaIdH\000\210\001\001\022-\n\nprima" +
+      "ry_id\030\002 \001(\0132\024.jpacifica.ReplicaIdH\001\210\001\001\022\021" +
+      "\n\004term\030\003 \001(\003H\002\210\001\001B\r\n\013_recover_idB\r\n\013_pri" +
+      "mary_idB\007\n\005_term\"x\n\026ReplicaRecoverRespon" +
+      "se\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term\030\002 \001(\003H\001" +
+      "\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B\n\n\010_successB\007\n" +
+      "\005_termB\n\n\010_version\"\320\001\n\026InstallSnapshotRe" +
+      "quest\022-\n\nprimary_id\030\001 \001(\0132\024.jpacifica.Re" +
+      "plicaIdH\000\210\001\001\022,\n\ttarget_id\030\002 \001(\0132\024.jpacif" +
+      "ica.ReplicaIdH\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001\022\024\n" +
+      "\007version\030\004 \001(\003H\003\210\001\001B\r\n\013_primary_idB\014\n\n_t" +
+      "arget_idB\007\n\005_termB\n\n\010_version\"y\n\027Install" +
+      "SnapshotResponse\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021" +
+      "\n\004term\030\002 \001(\003H\001\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B" +
+      "\n\n\010_successB\007\n\005_termB\n\n\010_version\"\376\001\n\016Get" +
+      "FileRequest\022,\n\ttarget_id\030\001 \001(\0132\024.jpacifi" +
+      "ca.ReplicaIdH\000\210\001\001\022\026\n\treader_id\030\002 \001(\003H\001\210\001" +
+      "\001\022\025\n\010filename\030\003 \001(\tH\002\210\001\001\022\022\n\005count\030\004 \001(\003H" +
+      "\003\210\001\001\022\023\n\006offset\030\005 \001(\003H\004\210\001\001\022\030\n\013read_partly" +
+      "\030\006 \001(\010H\005\210\001\001B\014\n\n_target_idB\014\n\n_reader_idB" +
+      "\013\n\t_filenameB\010\n\006_countB\t\n\007_offsetB\016\n\014_re" +
+      "ad_partly\"k\n\017GetFileResponse\022\020\n\003eof\030\001 \001(" +
+      "\010H\000\210\001\001\022\021\n\004data\030\002 \001(\014H\001\210\001\001\022\025\n\010readSize\030\003 " +
+      "\001(\003H\002\210\001\001B\006\n\004_eofB\007\n\005_dataB\013\n\t_readSizeB$" +
+      "\n\026com.trs.pacifica.protoB\nRpcRequestb\006pr" +
+      "oto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -7952,7 +8054,7 @@ public final class RpcRequest {
     internal_static_jpacifica_AppendEntriesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_AppendEntriesResponse_descriptor,
-        new java.lang.String[] { "Success", "Term", "Version", "CommitPoint", });
+        new java.lang.String[] { "Success", "Term", "Version", "CommitPoint", "LastLogIndex", });
     internal_static_jpacifica_ReplicaRecoverRequest_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_jpacifica_ReplicaRecoverRequest_fieldAccessorTable = new

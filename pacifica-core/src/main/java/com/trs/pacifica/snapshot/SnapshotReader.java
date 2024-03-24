@@ -18,4 +18,13 @@
 package com.trs.pacifica.snapshot;
 
 public interface SnapshotReader {
+
+
+    /**
+     *
+     * @return
+     */
+    public SnapshotMeta getSnapshotMeta();
+
+
 }

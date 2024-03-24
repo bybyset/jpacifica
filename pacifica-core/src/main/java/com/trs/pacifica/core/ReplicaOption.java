@@ -60,6 +60,15 @@ public class ReplicaOption {
 
     private int snapshotLogIndexReserved = 10;
 
+    // A snapshot saving would be triggered every |snapshot_interval_s| seconds,
+    // and at this moment when state machine's commitPoint.index value
+    // minus lastSnapshotLogId.index value is greater than snapshotLogIndexMargin value,
+    // the snapshot action will be done really.
+    // If |snapshotLogIndexMargin| < 0, the distance based snapshot would be disable.
+    //
+    // Default: 0
+    private int snapshotLogIndexMargin = 0;
+
     /**
      * path of the log storage
      */
@@ -205,5 +214,13 @@ public class ReplicaOption {
 
     public void setSnapshotLogIndexReserved(int snapshotLogIndexReserved) {
         this.snapshotLogIndexReserved = snapshotLogIndexReserved;
+    }
+
+    public int getSnapshotLogIndexMargin() {
+        return snapshotLogIndexMargin;
+    }
+
+    public void setSnapshotLogIndexMargin(int snapshotLogIndexMargin) {
+        this.snapshotLogIndexMargin = snapshotLogIndexMargin;
     }
 }

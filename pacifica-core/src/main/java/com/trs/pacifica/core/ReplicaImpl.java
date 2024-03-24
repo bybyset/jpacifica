@@ -23,6 +23,8 @@ import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.error.PacificaCodeException;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
@@ -109,7 +111,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         final ExecutorGroup logExecutorGroup = Objects.requireNonNull(option.getLogManagerExecutorGroup(), "LogManagerExecutorGroup");
         final PacificaServiceFactory pacificaServiceFactory = Objects.requireNonNull(option.getPacificaServiceFactory(), "pacificaServiceFactory");
         final String logStoragePath = Objects.requireNonNull(option.getLogStoragePath(), "logStoragePath");
-        this.logManager = new LogManagerImpl();
         final LogManagerImpl.Option logManagerOption = new LogManagerImpl.Option();
         logManagerOption.setReplicaOption(option);
         logManagerOption.setLogStoragePath(logStoragePath);
@@ -121,9 +122,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void initSnapshotManager(ReplicaOption option) {
-
-        this.snapshotManager = new SnapshotManagerImpl();
-
+        final SnapshotManagerImpl.Option snapshotManagerOption = new SnapshotManagerImpl.Option();
+        snapshotManagerOption.setSnapshotStorageFactory(option.getPacificaServiceFactory());
+        this.snapshotManager.init(snapshotManagerOption);
     }
 
     private void initSenderGroup(ReplicaOption option) {
@@ -131,7 +132,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         final SenderGroupImpl.Option senderGroupOption = new SenderGroupImpl.Option();
         senderGroupOption.setLogManager(Objects.requireNonNull(this.logManager));
         senderGroupOption.setStateMachineCaller(Objects.requireNonNull(stateMachineCaller));
-        this.senderGroup = new SenderGroupImpl(Objects.requireNonNull(this.pacificaClient, "pacificaClient"));
         this.senderGroup.init(senderGroupOption);
     }
 
@@ -142,7 +142,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void initBallotBox(ReplicaOption option) {
-        this.ballotBox = new BallotBoxImpl();
         final BallotBoxImpl.Option ballotBoxOption = new BallotBoxImpl.Option();
         ballotBoxOption.setFsmCaller(Objects.requireNonNull(this.stateMachineCaller));
         ballotBox.init(ballotBoxOption);
@@ -150,7 +149,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private void initStateMachineCall(ReplicaOption option) {
         final StateMachine stateMachine = Objects.requireNonNull(option.getStateMachine(), "state machine");
-        this.stateMachineCaller = new StateMachineCallerImpl();
         final StateMachineCallerImpl.Option fsmOption = new StateMachineCallerImpl.Option();
         fsmOption.setStateMachine(stateMachine);
         fsmOption.setLogManager(Objects.requireNonNull(this.logManager));
@@ -200,13 +198,18 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.option = Objects.requireNonNull(option, "require option");
                 this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
                 this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
+                this.logManager = new LogManagerImpl(this);
+                this.snapshotManager = new SnapshotManagerImpl(this);
+                this.stateMachineCaller = new StateMachineCallerImpl(this);
+                this.senderGroup = new SenderGroupImpl(this.pacificaClient);
+                this.ballotBox = new BallotBoxImpl();
+
                 initApplyExecutor(option);
                 initLogManager(option);
                 initStateMachineCall(option);
                 initSnapshotManager(option);
                 initBallotBox(option);
                 initSenderGroup(option);
-
                 initRepeatedTimers(option);
                 this.state = ReplicaState.Shutdown;
             }
@@ -220,6 +223,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.writeLock.lock();
         try {
             if (this.state == ReplicaState.Shutdown) {
+                this.logManager.startup();
+                this.stateMachineCaller.startup();
+                this.snapshotManager.startup();
 
             }
         } finally {
@@ -322,40 +328,66 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.writeLock.lock();
         try {
             if (!this.state.isActive()) {
-                //TODO
-
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "the replica not active. state="+ this.state)));
                 return null;
             }
-            final ReplicaId toReplicaId = RpcUtil.toReplicaId(request.getTargetId());
-            if (!this.replicaId.equals(toReplicaId)) {
-                //TODO
+
+            final ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
+            if (!this.replicaId.equals(targetId)) {
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId))));
                 return null;
             }
 
             if (this.replicaGroup.getVersion() < request.getVersion()) {
                 // TODO refresh replica group
 
-            }
-            if (this.replicaGroup.getPrimaryTerm() > request.getTerm()) {
-                //TODO
-                return null;
+
             }
             final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
-            if (!this.replicaGroup.getPrimary().equals(fromReplicaId)) {
-                //TODO
+            final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
+            if (!primaryReplicaId.equals(fromReplicaId)) {
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId))));
                 return null;
             }
+
+            final long primaryTerm = this.replicaGroup.getPrimaryTerm();
+            if (primaryTerm > request.getTerm()) {
+                return RpcRequest.AppendEntriesResponse.newBuilder()//
+                        .setSuccess(false)//
+                        .setTerm(primaryTerm)//
+                        .build();
+            }
+
             updateLastPrimaryVisit();
             final long prevLogIndex = request.getPrevLogIndex();
             final long prevLogTerm = request.getPrevLogTerm();
             final long localPrevLogTerm = this.logManager.getLogTermAt(prevLogIndex);
             if (prevLogTerm != localPrevLogTerm) {
-                // TODO
-                return null;
+                final long lastLogIndex = this.logManager.getLastLogId().getIndex();
+                LOGGER.warn("{} reject unmatched term at prevLogIndex={}, request_prev_log_term={}, local_prev_log_term={}", this.replicaId, prevLogIndex, prevLogTerm, localPrevLogTerm);
+                return RpcRequest.AppendEntriesResponse.newBuilder()//
+                        .setSuccess(false)//
+                        .setTerm(primaryTerm)//
+                        .setLastLogIndex(lastLogIndex)//
+                        .build();
+            }
+
+            if (request.hasCommitPoint()) {
+                //It is possible that the commit point of the Primary is greater than
+                // last log index of the Candidate
+                final long commitPoint = Math.min(request.getCommitPoint(), prevLogIndex);
+                this.stateMachineCaller.commitAt(commitPoint);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("receive append logEntry request, and commit at {} = min(primaryCommitPoint={}, prevLogIndex={})", commitPoint, request.getCommitPoint(), prevLogIndex);
+                }
             }
             if (request.getLogMetaCount() == 0) {
-
-                return null;
+                final long lastLogIndex = this.logManager.getLastLogId().getIndex();
+                return RpcRequest.AppendEntriesResponse.newBuilder()//
+                        .setSuccess(true)//
+                        .setTerm(primaryTerm)//
+                        .setLastLogIndex(lastLogIndex)//
+                        .build();
             }
             final List<LogEntry> logEntries = RpcUtil.parseLogEntries(prevLogIndex, request.getLogMetaList(), request.getLogData());
             final SecondaryAppendLogEntriesCallback secondaryAppendLogEntriesCallback = new SecondaryAppendLogEntriesCallback(callback);
@@ -363,7 +395,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         } finally {
             this.writeLock.unlock();
         }
-
         return null;
     }
 
@@ -400,26 +431,19 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             }
             final long curPrimaryTerm = this.replicaGroup.getPrimaryTerm();
             final int count = oneBatch.size();
-            List<LogEntry> logEntries = new ArrayList<>(count);
+            final List<LogEntry> logEntries = new ArrayList<>(count);
+            final List<Callback> callbackList = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 final OperationContext context = oneBatch.get(i);
                 final Callback callback = context.callback;
                 final LogEntry logEntry = context.logEntry;
-                //initiate ballot to ballotBox
-                if (!this.ballotBox.initiateBallot(this.replicaGroup)) {
-                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to initiate ballot", this.replicaId))));
-                    continue;
-                }
-                if (!this.callbackPendingQueue.add(callback)) {
-                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to append callback", this.replicaId))));
-                    continue;
-                }
                 logEntry.setType(LogEntry.Type.OP_DATA);
                 logEntry.getLogId().setTerm(curPrimaryTerm);
                 logEntries.add(logEntry);
+                callbackList.add(callback);
             }
             //log manager append log
-            this.logManager.appendLogEntries(logEntries, new PrimaryAppendLogEntriesCallback());
+            this.logManager.appendLogEntries(logEntries, new PrimaryAppendLogEntriesCallback(callbackList));
 
         } finally {
             this.writeLock.unlock();
@@ -498,17 +522,38 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     class PrimaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {
 
+        private final List<Callback> failureCallbacks;
+
+        PrimaryAppendLogEntriesCallback(List<Callback> failureCallbacks) {
+            this.failureCallbacks = failureCallbacks;
+        }
+
+
         @Override
-        public void run(Finished finished) {
-            if (finished.isOk()) {
-                //success
-                final long startLogIndex = this.getFirstLogIndex();
-                final long endLogIndex = startLogIndex + this.getAppendCount() - 1;
-                ReplicaImpl.this.ballotBox.ballotBy(replicaId, startLogIndex, endLogIndex);
-            } else {
-                //failure
-                LOGGER.error("Primary replica append log entries failed. first_log_index={}, log_count={}", this.getFirstLogIndex(), this.getAppendCount(), e);
-                //TODO may be call callback??
+        public void run(final Finished finished) {
+            long logIndex = this.getFirstLogIndex();
+            final long lastLogIndex = logIndex + this.getAppendCount() - 1;
+            int appendCount = this.getAppendCount();
+            int index = 0;
+            for (; index < this.getAppendCount(); index++) {
+                final Callback callback = this.failureCallbacks.get(index);
+                //initiate ballot to ballotBox
+                if (!ReplicaImpl.this.ballotBox.initiateBallot(ReplicaImpl.this.replicaGroup)) {
+                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to initiate ballot", ReplicaImpl.this.replicaId))));
+                    continue;
+                }
+                if (!ReplicaImpl.this.callbackPendingQueue.add(callback)) {
+                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to append callback", ReplicaImpl.this.replicaId))));
+                }
+            }
+            //
+            final long startLogIndex = this.getFirstLogIndex();
+            final long endLogIndex = startLogIndex + appendCount - 1;
+            ReplicaImpl.this.senderGroup.continueAppendLogEntry(endLogIndex);
+            ReplicaImpl.this.ballotBox.ballotBy(replicaId, startLogIndex, endLogIndex);
+            for (; index < this.failureCallbacks.size(); index++) {
+                Callback callback = this.failureCallbacks.get(index);
+                ThreadUtil.runCallback(callback, finished);
             }
         }
     }
@@ -524,17 +569,21 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
         @Override
         public void run(Finished finished) {
-
-            if (finished.isOk()) {
-                //success
-                //1、set commit point
-
-                //2、send response
-                this.rpcCallback.setRpcResponse(null);
-            } else {
-                //failure
+            if (!finished.isOk()) {
                 ThreadUtil.runCallback(rpcCallback, finished);
+                return;
             }
+            //TODO  maybe commit at min(prev_log_index + append_count, request_commit_point)?
+            final long lastLogIndex = this.getFirstLogIndex() + this.getAppendCount() - 1;
+            final long curTerm = ReplicaImpl.this.replicaGroup.getPrimaryTerm();
+            RpcRequest.AppendEntriesResponse response = RpcRequest.AppendEntriesResponse
+                    .newBuilder()//
+                    .setSuccess(true)//
+                    .setTerm(curTerm)//
+                    .setLastLogIndex(lastLogIndex)//
+                    .build();
+            rpcCallback.setRpcResponse(response);
+            ThreadUtil.runCallback(rpcCallback, finished);
         }
     }
 

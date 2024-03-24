@@ -49,6 +49,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
     private final Map<ReplicaId, Sender> senderContainer = new ConcurrentHashMap<>();
 
+    private Option option;
 
     public SenderGroupImpl(PacificaClient pacificaClient) {
         this.pacificaClient = pacificaClient;
@@ -70,7 +71,22 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
     }
 
     @Override
-    public boolean isAlive(ReplicaId replicaId) {
+    public boolean isAlive(final ReplicaId replicaId) {
+        Objects.requireNonNull(replicaId, "replicaId");
+        this.readLock.lock();
+        try {
+            final Sender sender = this.senderContainer.get(replicaId);
+            if (sender == null) {
+                return false;
+            }
+            return sender.isAlive(this.option.getLeasePeriodTimeOutMs());
+        } finally {
+            this.readLock.unlock();
+        }
+    }
+
+    @Override
+    public boolean continueAppendLogEntry(long logIndex) {
         return false;
     }
 
@@ -86,17 +102,17 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
 
     @Override
-    public void init(SenderGroupImpl.Option option) {
+    public synchronized void init(SenderGroupImpl.Option option) {
+        this.option = Objects.requireNonNull(option, "option");
+    }
+
+    @Override
+    public synchronized void startup() {
 
     }
 
     @Override
-    public void startup() {
-
-    }
-
-    @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
 
     }
 
@@ -105,6 +121,16 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         private LogManager logManager;
 
         private StateMachineCaller stateMachineCaller;
+
+        private int leasePeriodTimeOutMs;
+
+        public int getLeasePeriodTimeOutMs() {
+            return leasePeriodTimeOutMs;
+        }
+
+        public void setLeasePeriodTimeOutMs(int leasePeriodTimeOutMs) {
+            this.leasePeriodTimeOutMs = leasePeriodTimeOutMs;
+        }
 
         public LogManager getLogManager() {
             return logManager;

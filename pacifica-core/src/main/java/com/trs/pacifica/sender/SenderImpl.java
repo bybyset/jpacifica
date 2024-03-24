@@ -18,9 +18,12 @@
 package com.trs.pacifica.sender;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
+import com.trs.pacifica.BallotBox;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.async.DirectExecutor;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.model.LogEntry;
@@ -28,7 +31,6 @@ import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallbackAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.util.RpcUtil;
@@ -42,6 +44,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.PriorityQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
@@ -52,7 +57,10 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private final ReplicaId toId;
 
-    private SenderType type;
+    private final AtomicLong requestIdAllocator = new AtomicLong(0);
+
+    private final PriorityQueue<RpcContext> flyingRpcQueue = new PriorityQueue<>();
+    private SenderType type = SenderType.Candidate;
 
     private Option option;
 
@@ -63,8 +71,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private volatile State state = State.UNINITIALIZED;
 
-
-
+    private SingleThreadExecutor executor;
 
     public SenderImpl(ReplicaId fromId, ReplicaId toId, SenderType type) {
         this.fromId = fromId;
@@ -76,9 +83,14 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         this.lastResponseTime = TimeUtils.monotonicMs();
     }
 
+
     @Override
-    public boolean isAlive() {
-        return false;
+    public boolean isAlive(int leasePeriodTimeOutMs) {
+        return isAlive(this.lastResponseTime, leasePeriodTimeOutMs);
+    }
+
+    private static boolean isAlive(long lastRpcResponseTimestamp, long leasePeriodTimeOutMs) {
+        return TimeUtils.monotonicMs() - lastRpcResponseTimestamp < leasePeriodTimeOutMs;
     }
 
     @Override
@@ -91,6 +103,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     public synchronized void init(Option option) {
         if (this.state == State.UNINITIALIZED) {
             this.option = Objects.requireNonNull(option, "option");
+            this.executor = Objects.requireNonNull(option.getSenderExecutor(), "sender executor");
             this.heartbeatTimer = new RepeatedTimer("Heartbeat-Timer", option.getHeartbeatTimeoutMs(), option.getHeartBeatTimer()) {
                 @Override
                 protected void onTrigger() {
@@ -128,8 +141,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private void installSnapshot() {
 
-
-
         final RpcRequest.InstallSnapshotRequest.Builder requestBuilder = RpcRequest.InstallSnapshotRequest.newBuilder();
         requestBuilder.setPrimaryId(RpcUtil.protoReplicaId(this.fromId));
         requestBuilder.setTargetId(RpcUtil.protoReplicaId(this.toId));
@@ -138,9 +149,10 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         final RpcRequest.InstallSnapshotRequest request = requestBuilder.build();
 
-        this.option.getPacificaClient().installSnapshot(request, new RpcResponseCallbackAdapter<RpcRequest.InstallSnapshotResponse>() {
+        this.option.getPacificaClient().installSnapshot(request, new ResponseCallback<RpcRequest.InstallSnapshotResponse>() {
+
             @Override
-            public void run(Finished finished) {
+            protected void doRun(Finished finished) {
 
             }
         });
@@ -167,13 +179,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private void sendEmptyLogEntries(final boolean isHeartbeatRequest) {
         final RpcRequest.AppendEntriesRequest.Builder requestBuilder = RpcRequest.AppendEntriesRequest.newBuilder();
-
         if (!fillCommonRequest(requestBuilder, nextLogIndex - 1, isHeartbeatRequest)) {
             //not found LogEntry, we will install snapshot
             installSnapshot();
             return;
         }
-
         final RpcRequest.AppendEntriesRequest request = requestBuilder.build();
         if (isHeartbeatRequest) {
 
@@ -186,14 +196,18 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         } else {
             //probe request
-
-            this.option.getPacificaClient().appendLogEntries(request, new RpcResponseCallbackAdapter<RpcRequest.AppendEntriesResponse>() {
-                @Override
-                public void run(Finished finished) {
-
-                }
-            });
-
+            final RpcContext rpcContext = new RpcContext(RpcType.APPEND_LOG_ENTRY, request);
+            this.flyingRpcQueue.add(rpcContext);
+            try {
+                this.option.getPacificaClient().appendLogEntries(request, new ResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
+                    @Override
+                    protected void doRun(Finished finished) {
+                        onRpcResponse(rpcContext, finished, this.getRpcResponse());
+                    }
+                });
+            } catch (Throwable e) {
+                onRpcResponse(rpcContext, Finished.failure(e), null);
+            }
         }
 
     }
@@ -202,7 +216,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         final RpcRequest.AppendEntriesRequest.Builder requestBuilder = RpcRequest.AppendEntriesRequest.newBuilder();
         if (!fillCommonRequest(requestBuilder, nextSendingLogIndex - 1, false)) {
             //not found LogEntry, we will install snapshot
-
             installSnapshot();
             return;
         }
@@ -216,29 +229,28 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             final RpcCommon.LogEntryMeta.Builder metaBuilder = RpcCommon.LogEntryMeta.newBuilder();
             if (!prepareLogEntry(nextSendingLogIndex + logEntryNum, metaBuilder, allData)) {
                 //wait more log entry
-
-                this.option.logManager.waitNewLog(0 , null);
                 break;
             }
             logEntryNum++;
             logEntryBytes += 0;
             requestBuilder.addLogMeta(metaBuilder.build());
         } while (logEntryNum < maxSendLogEntryNum && logEntryBytes < maxSendLogEntryBytes);
-
         ByteString logData = ByteString.copyFrom(allData);
         requestBuilder.setLogData(logData);
 
         final RpcRequest.AppendEntriesRequest request = requestBuilder.build();
-
-        this.option.getPacificaClient().appendLogEntries(request, new RpcResponseCallbackAdapter<RpcRequest.AppendEntriesResponse>() {
-
-            @Override
-            public void run(Finished finished) {
-
-            }
-
-        });
-
+        final RpcContext context = new RpcContext(RpcType.APPEND_LOG_ENTRY, request);
+        this.flyingRpcQueue.add(context);
+        try {
+            this.option.getPacificaClient().appendLogEntries(request, new ResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
+                @Override
+                protected void doRun(Finished finished) {
+                    onRpcResponse(context, finished, this.getRpcResponse());
+                }
+            });
+        } catch (Throwable e) {
+            onRpcResponse(context, Finished.failure(e), null);
+        }
         return;
     }
 
@@ -291,8 +303,151 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         requestBuilder.setTargetId(RpcUtil.protoReplicaId(this.toId));
         requestBuilder.setTerm(this.option.getReplicaGroup().getPrimaryTerm());
         requestBuilder.setVersion(this.option.getReplicaGroup().getVersion());
-        requestBuilder.setCommitPoint(this.option.getStateMachineCaller().getCommitPoint());
+        requestBuilder.setCommitPoint(this.option.getStateMachineCaller().getCommitPoint().getIndex());
         return true;
+    }
+
+    private void onRpcResponse(final RpcContext rpcContext, final Finished finished, final Message response) {
+        rpcContext.finished = finished;
+        rpcContext.response = response;
+        handleRpcResponse();
+    }
+
+    private void handleRpcResponse() {
+        do {
+            RpcContext rpcContext = this.flyingRpcQueue.peek();
+            if (rpcContext == null || !rpcContext.isFinished()) {
+                break;
+            }
+            final Finished finished = rpcContext.finished;
+            if (finished.isOk()) {
+                updateLastResponseTime();
+            }
+            try {
+                final RpcType rpcType = rpcContext.rpcType;
+                switch (rpcType) {
+                    case APPEND_LOG_ENTRY : {
+                        handleAppendLogEntryResponse((RpcRequest.AppendEntriesRequest) rpcContext.request, finished, (RpcRequest.AppendEntriesResponse) rpcContext.response);
+                        break;
+                    }
+                    case INSTALL_SNAPSHOT: {
+                        handleInstallSnapshotResponse(finished, (RpcRequest.InstallSnapshotResponse) rpcContext.response);
+                    }
+                }
+            } finally {
+                this.flyingRpcQueue.poll();
+            }
+
+        } while (!this.flyingRpcQueue.isEmpty());
+    }
+
+    private void handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, RpcRequest.AppendEntriesResponse response) {
+        if (!finished.isOk()) {
+            // TODO
+            return;
+        }
+        if (!response.getSuccess()) {
+            // failure
+            // 1: receive a larger term
+            if (response.getTerm() > request.getTerm()) {
+                //TODO  shutdown  replica.check step down
+                this.shutdown();
+
+                return;
+            }
+
+            // 2: prev_log_index not match
+            if (response.getLastLogIndex() < this.nextLogIndex - 1) {
+                //The target replica contains fewer logs than the primary replica
+                this.nextLogIndex = response.getLastLogIndex() + 1;
+            } else {
+                //The target replica may be truncated
+                //
+                if (this.nextLogIndex > 1) {
+                    this.nextLogIndex--;
+                }
+            }
+            this.sendProbeRequest();
+
+            return;
+        }
+        //success
+        final int appendCount = request.getLogMetaCount();
+
+        if (appendCount > 0) {
+            if (this.type.isSecondary()) {
+                this.option.getBallotBox().ballotBy()
+            }
+
+        }
+
+    }
+
+    private void handleInstallSnapshotResponse(Finished finished, RpcRequest.InstallSnapshotResponse response) {
+
+    }
+
+
+    enum RpcType {
+        APPEND_LOG_ENTRY,
+
+        INSTALL_SNAPSHOT;
+    }
+
+
+
+    class RpcContext implements Comparable<RpcContext> {
+
+        private final long requestId;
+
+        private final RpcType rpcType;
+
+        private final Message request;
+
+        private Message response;
+
+        private Finished finished;
+
+        RpcContext(RpcType rpcType, Message request) {
+            this(requestIdAllocator.incrementAndGet(), rpcType, request);
+        }
+
+        RpcContext(final long requestId, RpcType rpcType, Message request) {
+            this.requestId = requestId;
+            this.rpcType = rpcType;
+            this.request = request;
+        }
+
+        @Override
+        public int compareTo(RpcContext o) {
+            return 0;
+        }
+
+        public boolean isFinished() {
+            return this.finished != null;
+        }
+    }
+
+    static abstract class ResponseCallback<R extends Message> extends RpcResponseCallbackAdapter<R> {
+
+        static final Executor DEFAULT_EXECUTOR = new DirectExecutor();
+        private final Executor executor;
+
+
+        ResponseCallback() {
+            this(DEFAULT_EXECUTOR);
+        }
+
+        ResponseCallback(Executor executor) {
+            this.executor = executor;
+        }
+
+        @Override
+        public void run(final Finished finished) {
+            this.executor.execute(() -> {doRun(finished);});
+        }
+
+        protected abstract void doRun(Finished finished);
     }
 
 
@@ -305,6 +460,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         SHUTDOWN;
     }
 
+
     public static class Option {
 
         private SingleThreadExecutor senderExecutor;
@@ -316,6 +472,8 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         private ReplicaGroup replicaGroup;
 
         private PacificaClient pacificaClient;
+
+        private BallotBox ballotBox;
 
         private int maxSendLogEntryNum;
 
@@ -401,6 +559,14 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         public void setHeartBeatTimer(Timer heartBeatTimer) {
             this.heartBeatTimer = heartBeatTimer;
+        }
+
+        public BallotBox getBallotBox() {
+            return ballotBox;
+        }
+
+        public void setBallotBox(BallotBox ballotBox) {
+            this.ballotBox = ballotBox;
         }
     }
 

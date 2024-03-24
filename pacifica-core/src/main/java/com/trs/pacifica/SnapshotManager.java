@@ -17,11 +17,30 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.model.LogId;
+
 public interface SnapshotManager {
 
 
     SnapshotStorage getSnapshotStorage();
 
-    void doSnapshot();
+
+    default public void doSnapshot() {
+        doSnapshot(null);
+    }
+
+    /**
+     * execute snapshot
+     * @param callback  called after finished.
+     */
+    void doSnapshot(final Callback callback);
+
+
+    /**
+     * get the LogId at last execute snapshot
+     * @return
+     */
+    LogId getLastSnapshotLodId();
 
 }

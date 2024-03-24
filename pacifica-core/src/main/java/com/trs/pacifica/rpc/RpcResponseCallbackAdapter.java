@@ -28,4 +28,9 @@ public abstract class RpcResponseCallbackAdapter<T extends Message> implements R
     public void setRpcResponse(T response) {
         this.response = response;
     }
+
+    public T getRpcResponse() {
+        return response;
+    }
+
 }

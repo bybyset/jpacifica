@@ -51,9 +51,12 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
     private final Lock writeLock = lock.writeLock();
 
+    private final ReplicaImpl replica;
+
     private final Map<Long, NewLogContext> newLogWaiterContainer = new ConcurrentHashMap<>();
 
     private final AtomicLong waiterIdAllocator = new AtomicLong(0);
+
     private Option option;
     private SingleThreadExecutor executor;
     private LogStorage logStorage;
@@ -86,7 +89,8 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     private LogId lastSnapshotLogId = new LogId(0, 0);
 
 
-    public LogManagerImpl() {
+    public LogManagerImpl(ReplicaImpl replica) {
+        this.replica = replica;
     }
 
     @Override

@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.snapshot;
 
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+public class SnapshotWriterAdapter implements SnapshotWriter{
 
-public interface SnapshotStorage {
+    private final SnapshotWriter writer;
 
 
-    public SnapshotReader openSnapshotReader();
+    public SnapshotWriterAdapter(SnapshotWriter writer) {
+        this.writer = writer;
+    }
 
-    public SnapshotWriter openSnapshotWriter();
 
 }

@@ -24,6 +24,7 @@ message AppendEntriesResponse {
   optional int64 term = 2;
   optional int64 version = 3;
   optional int64 commit_point = 4;
+  optional int64 last_log_index = 5;
 }
 
 message ReplicaRecoverRequest {

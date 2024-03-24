@@ -18,17 +18,19 @@
 package com.trs.pacifica.fsm;
 
 import com.trs.pacifica.StateMachine;
+import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.snapshot.SnapshotWriter;
 
 public abstract class StateMachineAdapter implements StateMachine {
 
     @Override
-    public boolean onSnapshotLoad() {
-        return true;
+    public void onSnapshotLoad(final SnapshotReader snapshotReader) {
+        return ;
     }
 
     @Override
-    public boolean onSnapshotSave() {
-        return true;
+    public void onSnapshotSave(final SnapshotWriter snapshotWriter) {
+        return ;
     }
 
     @Override
