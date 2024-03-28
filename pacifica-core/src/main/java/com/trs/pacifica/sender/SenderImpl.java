@@ -31,6 +31,7 @@ import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallbackAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.util.RpcUtil;
@@ -160,7 +161,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         final RpcContext rpcContext = new RpcContext(RpcType.INSTALL_SNAPSHOT, request);
         this.flyingRpcQueue.add(rpcContext);
         try {
-            this.option.getPacificaClient().installSnapshot(request, new ResponseCallback<RpcRequest.InstallSnapshotResponse>(executor) {
+            this.option.getPacificaClient().installSnapshot(request, new ExecutorResponseCallback<RpcRequest.InstallSnapshotResponse>(executor) {
 
                 @Override
                 protected void doRun(Finished finished) {
@@ -209,7 +210,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             final RpcContext rpcContext = new RpcContext(RpcType.APPEND_LOG_ENTRY, request);
             this.flyingRpcQueue.add(rpcContext);
             try {
-                this.option.getPacificaClient().appendLogEntries(request, new ResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
+                this.option.getPacificaClient().appendLogEntries(request, new ExecutorResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
                     @Override
                     protected void doRun(Finished finished) {
                         onRpcResponse(rpcContext, finished, this.getRpcResponse());
@@ -282,7 +283,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         final RpcContext context = new RpcContext(RpcType.APPEND_LOG_ENTRY, request);
         this.flyingRpcQueue.add(context);
         try {
-            this.option.getPacificaClient().appendLogEntries(request, new ResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
+            this.option.getPacificaClient().appendLogEntries(request, new ExecutorResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
                 @Override
                 protected void doRun(Finished finished) {
                     onRpcResponse(context, finished, this.getRpcResponse());
@@ -466,29 +467,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             return this.finished != null;
         }
     }
-
-    static abstract class ResponseCallback<R extends Message> extends RpcResponseCallbackAdapter<R> {
-
-        static final Executor DEFAULT_EXECUTOR = new DirectExecutor();
-        private final Executor executor;
-
-
-        ResponseCallback() {
-            this(DEFAULT_EXECUTOR);
-        }
-
-        ResponseCallback(Executor executor) {
-            this.executor = executor;
-        }
-
-        @Override
-        public void run(final Finished finished) {
-            this.executor.execute(() -> {doRun(finished);});
-        }
-
-        protected abstract void doRun(Finished finished);
-    }
-
 
     public static enum State {
         PROBE,

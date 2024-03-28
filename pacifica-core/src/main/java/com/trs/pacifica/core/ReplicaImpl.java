@@ -29,6 +29,7 @@ import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
@@ -40,6 +41,7 @@ import com.trs.pacifica.util.timer.RepeatedTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -268,13 +270,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return Replica.super.getReplicaState();
     }
 
-    private void ensureActive() {
-        final ReplicaState replicaState = this.state;
-        if (!replicaState.isActive()) {
-            throw new IllegalStateException(String.format("replica(%s) is not active, current state is %s.", this.replicaId, replicaState));
-        }
-    }
-
     @Override
     public boolean isPrimary(boolean block) {
         return false;
@@ -295,7 +290,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     @Override
     public void snapshot(Callback onFinish) {
-
+        doSnapshot(onFinish);
     }
 
     @Override
@@ -594,9 +589,74 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return this.senderGroup.isAlive(secondary);
     }
 
+    void ensureActive() {
+        final ReplicaState replicaState = this.state;
+        if (!replicaState.isActive()) {
+            throw new PacificaException(String.format("Current replica state=%s is not active", replicaState));
+        }
+    }
 
     private void doSnapshot(final Callback onFinish) {
-        
+        this.readLock.lock();
+        try {
+            ensureActive();
+            if (this.snapshotManager != null) {
+                this.snapshotManager.doSnapshot(onFinish);
+            } else {
+                throw new PacificaException("Snapshot is not supported");
+            }
+        } catch (Throwable e) {
+            ThreadUtil.runCallback(onFinish, Finished.failure(e));
+        } finally {
+            this.readLock.unlock();
+        }
+    }
+
+    private void doRecover(final Callback onFinish) {
+        this.readLock.lock();
+        try {
+            ensureActive();
+            //TODO  check recovering
+            // refresh
+
+            if (this.state != ReplicaState.Candidate) {
+                throw new PacificaException("Only Candidate state needs to recover. current state is " + this.state);
+            }
+            final ReplicaId primaryId = this.replicaGroup.getPrimary();
+            final long term = this.replicaGroup.getPrimaryTerm();
+            RpcRequest.ReplicaRecoverRequest recoverRequest = RpcRequest.ReplicaRecoverRequest.newBuilder()//
+                    .setPrimaryId(RpcUtil.protoReplicaId(primaryId))//
+                    .setRecoverId(RpcUtil.protoReplicaId(this.replicaId))//
+                    .setTerm(term)//
+                    .build();
+            this.pacificaClient.recoverReplica(recoverRequest, new ExecutorResponseCallback<RpcRequest.ReplicaRecoverResponse>(){
+
+                @Override
+                protected void doRun(Finished finished) {
+                    handleRecoverReplicaResponse(finished, getRpcResponse(), onFinish);
+                }
+            });
+
+        } catch (Throwable e) {
+            ThreadUtil.runCallback(onFinish, Finished.failure(e));
+        } finally {
+            this.readLock.unlock();
+        }
+    }
+
+    private void handleRecoverReplicaResponse(final Finished finished, final RpcRequest.ReplicaRecoverResponse response, final @Nullable Callback onFinish) {
+        if (!finished.isOk()) {
+            ThreadUtil.runCallback(onFinish, finished);
+            return;
+        }
+        assert response != null;
+        if (!response.getSuccess()) {
+
+            return;
+        }
+
+        //TODO success
+
     }
 
     /**

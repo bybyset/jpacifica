@@ -46,4 +46,9 @@ public interface PacificaClient extends ReplicaConnection {
 
     Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs);
 
+    Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs);
+
+    default Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) {
+        return recoverReplica(request, callback, DEFAULT_TIMEOUT_MS);
+    }
 }
