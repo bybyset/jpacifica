@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -469,28 +470,133 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     /**
-     *
-     * @return
+     * Whether the current Primary is valid
+     * @return true if is valid
      */
     private boolean isCurrentPrimaryValid() {
         return isWithinGracePeriod(TimeUtils.monotonicMs());
     }
 
 
+    /**
+     * The Secondary checks whether the Primary is faulty.
+     *  If the Primary is faulty, change Primary.
+     */
     private void handleGracePeriodTimeout() {
+        this.readLock.lock();
+        try {
+            if (this.state != ReplicaState.Secondary) {
+                return;
+            }
+            if (isCurrentPrimaryValid()) {
+                return;
+            }
+            LOGGER.info("The faulty Primary({}) was found. we will elect Primary", this.replicaGroup.getPrimary());
+        } finally {
+            this.readLock.unlock();
+        }
+        //TODO change primary
+
+
 
     }
 
+    /**
+     * The Primary checks whether the Secondary is faulty.
+     * If the Secondary is faulty, remove Secondary.
+     */
     private void handleLeasePeriodTimeout() {
+        this.readLock.lock();
+        try {
+            if (this.state != ReplicaState.Primary) {
+                return;
+            }
+            final List<ReplicaId> secondaries = this.replicaGroup.listSecondary();
+            if (secondaries == null || secondaries.isEmpty()) {
+                return;
+            }
+            final List<ReplicaId> removed = new ArrayList<>(secondaries.size());
+            long currentVersion = replicaGroup.getVersion();
+            boolean hasRemoveFailure = false;
+            for (ReplicaId secondary : secondaries) {
+                if (isAlive(secondary)) {
+                    return;
+                }
+                LOGGER.info("The faulty Secondary({}) was found, we will remove it from replica group.", secondary);
+                if (this.configurationClient.removeSecondary(currentVersion, secondary)) {
+                    //success call config cluster to remove faulty secondary.
+                    currentVersion++;
+                    removed.add(secondary);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Response was received for successfully removing the Secondary({}) from the config cluster", secondary);
+                    }
+                } else {
+                    //failure
+                    hasRemoveFailure = true;
+                    LOGGER.warn("Response was received for failure removing the Secondary({}) from the config cluster, current_version={}", secondary, currentVersion);
+                    break;
+                }
+            }
+            if (hasRemoveFailure) {
+                // TODO step down
+                return;
+            }
+            if (!removed.isEmpty()) {
+                //TODO 1、remove sender 2、abandon ballot
 
+            }
+
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
+    /**
+     *
+     */
     private void handleSnapshotTimeout() {
+        this.readLock.lock();
+        try {
+            if (!this.state.isActive()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("The replica not active on handle snapshot timeout, state={}", this.state);
+                }
+                return;
+            }
+            // TODO do snapshot
+
+
+        } finally {
+            this.readLock.unlock();
+        }
 
     }
 
     private void handleRecoverTimeout() {
+        this.readLock.lock();
+        try {
+            if (!this.state.isActive()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("The replica not active on handle recover timeout, state={}", this.state);
+                }
+                return;
+            }
+            //TODO doRecover
 
+        } finally {
+            this.readLock.unlock();
+        }
+
+    }
+
+    boolean isAlive(final ReplicaId secondary) {
+        Objects.requireNonNull(secondary, "secondary");
+        return this.senderGroup.isAlive(secondary);
+    }
+
+
+    private void doSnapshot(final Callback onFinish) {
+        
     }
 
     /**
