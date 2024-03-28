@@ -30,24 +30,25 @@ public class LogEntry implements Checksum {
 
     private ByteBuffer logData = EMPTY_DATA;
 
-    private Type type = Type.NO_OP;
+    private final Type type;
 
     private long checksum = 0L;
 
     private boolean hasChecksum = false;
 
-    public LogEntry() {
-
+    public LogEntry(Type type) {
+        this.type = type;
     }
 
-    public LogEntry(LogId logId) {
-        this(logId.getIndex(), logId.getTerm(), EMPTY_DATA);
+    public LogEntry(LogId logId, Type type) {
+        this(logId.getIndex(), logId.getTerm(), type, EMPTY_DATA);
     }
 
-    public LogEntry(final long logIndex, final long logTerm, ByteBuffer logData) {
+    public LogEntry(final long logIndex, final long logTerm, final Type type, final ByteBuffer logData) {
         this.logId.setIndex(logIndex);
         this.logId.setTerm(logTerm);
         this.logData = logData;
+        this.type = type;
     }
 
     public LogId getLogId() {
@@ -64,10 +65,6 @@ public class LogEntry implements Checksum {
 
     public Type getType() {
         return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public void setLogIndex(final long logIndex) {

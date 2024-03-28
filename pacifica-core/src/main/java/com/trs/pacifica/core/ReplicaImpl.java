@@ -33,6 +33,7 @@ import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroup;
+import com.trs.pacifica.sender.SenderType;
 import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
@@ -226,10 +227,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.writeLock.lock();
         try {
             if (this.state == ReplicaState.Shutdown) {
+
                 this.logManager.startup();
                 this.stateMachineCaller.startup();
                 this.snapshotManager.startup();
 
+                onReplicaStateChange();
             }
         } finally {
             this.writeLock.unlock();
@@ -241,6 +244,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.writeLock.lock();
         try {
             this.state = ReplicaState.Shutdown;
+            stopRecoverTimer();
+            stopSnapshotTimer();
+            stopGracePeriodTimer();
+            stopLeasePeriodTimer();
+
         } finally {
             this.writeLock.unlock();
         }
@@ -279,12 +287,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     public void apply(Operation operation) {
         Objects.requireNonNull(operation, "param: operation is null");
         ensureActive();
-        final LogEntry logEntry = new LogEntry();
+        final LogEntry logEntry = new LogEntry(LogEntry.Type.OP_DATA);
         logEntry.setLogData(operation.getLogData());
-        final OperationContext context = new OperationContext(logEntry, operation.getOnFinish());
-        if (this.operationContextQueue.offer(context)) {
-            this.applyExecutor.execute(new OperationConsumer());
-        }
+        apply(logEntry, operation.getOnFinish());
     }
 
 
@@ -295,7 +300,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     @Override
     public void recover(Callback onFinish) {
-
+        doRecover(onFinish);
     }
 
     @Override
@@ -433,7 +438,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 final OperationContext context = oneBatch.get(i);
                 final Callback callback = context.callback;
                 final LogEntry logEntry = context.logEntry;
-                logEntry.setType(LogEntry.Type.OP_DATA);
                 logEntry.getLogId().setTerm(curPrimaryTerm);
                 logEntries.add(logEntry);
                 callbackList.add(callback);
@@ -445,6 +449,173 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             this.writeLock.unlock();
         }
 
+    }
+
+    private void onReplicaStateChange() {
+        ReplicaState oldState, newState;
+        this.readLock.lock();
+        try {
+            oldState = newState = this.state;
+            newState = toReplicaState(this.replicaGroup, replicaId);
+        } finally {
+            this.readLock.unlock();
+        }
+        if (oldState != newState) {
+            LOGGER.info("The state of the replica={} changes from {} to {}.", this.replicaId.getGroupName(), oldState,
+                    newState);
+            switch (newState) {
+                case Primary:
+                    becomePrimary();
+                    break;
+                case Secondary:
+                    becomeSecondary();
+                    break;
+                case Candidate:
+                    becomeCandidate();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    /**
+     *
+     */
+    private void becomePrimary() {
+        this.writeLock.lock();
+        try {
+            this.state = ReplicaState.Primary;
+            stopRecoverTimer();
+            stopGracePeriodTimer();
+            startLeasePeriodTimer();
+            startSnapshotTimer();
+            startSenderGroup();
+            startBallotBox();
+
+            reconciliation();
+
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    private void becomeSecondary() {
+        this.writeLock.lock();
+        try {
+            this.state = ReplicaState.Secondary;
+            this.ballotBox.shutdown();
+            this.senderGroup.shutdown();
+            this.stopRecoverTimer();
+            this.stopLeasePeriodTimer();
+            this.startGracePeriodTimer();
+            this.startSnapshotTimer();
+            LOGGER.info("The replica({}) has become Secondary.", this.replicaId);
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    private void becomeCandidate() {
+        this.writeLock.lock();
+        try {
+            this.state = ReplicaState.Candidate;
+            this.ballotBox.shutdown();
+            this.senderGroup.shutdown();
+            stopLeasePeriodTimer();
+            stopGracePeriodTimer();
+            stopSnapshotTimer();
+            startRecoverTimer();
+            LOGGER.info("The replica({}) has become Candidate.", this.replicaId);
+        } finally {
+            this.writeLock.unlock();
+        }
+
+    }
+
+    private void apply(final LogEntry logEntry, final Callback onFinish) {
+        final OperationContext context = new OperationContext(logEntry, onFinish);
+        if (this.operationContextQueue.offer(context)) {
+            this.applyExecutor.execute(new OperationConsumer());
+        }
+    }
+
+    /**
+     * call by Primary for reconciliation
+     * should be in write lock
+     */
+    private void reconciliation() {
+        final LogEntry logEntry = new LogEntry(LogEntry.Type.NO_OP);
+        apply(logEntry, new Callback() {
+            @Override
+            public void run(Finished finished) {
+                if (finished.isOk()) {
+                    LOGGER.info("Primary({}) success to reconciliation", replicaId);
+                }
+            }
+        });
+    }
+
+    private void startBallotBox() {
+        this.ballotBox.startup();
+    }
+
+    private void startSenderGroup() {
+        List<ReplicaId> secondaries = this.replicaGroup.listSecondary();
+        for (ReplicaId secondary : secondaries) {
+            this.senderGroup.addSenderTo(secondary);
+        }
+        this.senderGroup.startup();
+    }
+
+    private void startGracePeriodTimer() {
+        this.gracePeriodTimer.start();
+    }
+
+    private void stopGracePeriodTimer() {
+        this.gracePeriodTimer.stop();
+    }
+
+    private void startLeasePeriodTimer() {
+        this.leasePeriodTimer.start();
+    }
+
+    private void stopLeasePeriodTimer() {
+        this.leasePeriodTimer.stop();
+    }
+
+    private void startSnapshotTimer() {
+        this.snapshotTimer.start();
+    }
+
+    private void stopSnapshotTimer() {
+        this.snapshotTimer.stop();
+    }
+
+    private void startRecoverTimer() {
+        this.recoverTimer.start();
+    }
+
+    private void stopRecoverTimer() {
+        this.recoverTimer.stop();
+    }
+
+    private static ReplicaState toReplicaState(final ReplicaGroup replicaGroup, final ReplicaId replicaId) {
+        ReplicaId primary = replicaGroup.getPrimary();
+        if (replicaId.equals(primary)) {
+            return ReplicaState.Primary;
+        }
+        List<ReplicaId> secondaries = replicaGroup.listSecondary();
+        if (secondaries == null || secondaries.isEmpty()) {
+            return ReplicaState.Candidate;
+        }
+        for (ReplicaId secondary : secondaries) {
+            if (secondary.equals(replicaId)) {
+                return ReplicaState.Secondary;
+            }
+        }
+        return ReplicaState.Candidate;
     }
 
     public void updateLastPrimaryVisit() {

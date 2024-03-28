@@ -17,12 +17,8 @@
 
 package com.trs.pacifica.async;
 
-import java.util.concurrent.Executor;
-
+@FunctionalInterface
 public interface Callback {
-
-
     public void run(Finished finished);
-
 
 }

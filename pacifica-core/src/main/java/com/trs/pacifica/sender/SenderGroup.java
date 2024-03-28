@@ -25,6 +25,15 @@ import com.trs.pacifica.model.ReplicaId;
  */
 public interface SenderGroup {
 
+    default public boolean addSenderTo(ReplicaId replicaId) {
+        return addSenderTo(replicaId, SenderType.Secondary, false);
+    }
+
+    default public boolean addSenderTo(ReplicaId replicaId, SenderType senderType) {
+        return addSenderTo(replicaId, senderType, false);
+    }
+
+
 
     /**
      * add Sender
