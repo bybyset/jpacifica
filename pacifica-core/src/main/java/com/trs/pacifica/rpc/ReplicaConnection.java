@@ -40,7 +40,7 @@ public interface ReplicaConnection {
      * and if there is no connection, create a new address.
      * @param targetReplicaId
      * @param createIfAbsent
-     * @return
+     * @return true if keep connected
      */
     public boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent);
 

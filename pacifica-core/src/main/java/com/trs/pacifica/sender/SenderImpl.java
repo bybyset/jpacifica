@@ -23,7 +23,6 @@ import com.trs.pacifica.BallotBox;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.StateMachineCaller;
-import com.trs.pacifica.async.DirectExecutor;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.model.LogEntry;
@@ -50,7 +49,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
-
 
     static final Logger LOGGER = LoggerFactory.getLogger(SenderImpl.class);
 
@@ -108,7 +106,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
         return false;
     }
-
 
     @Override
     public synchronized void init(Option option) {
@@ -482,6 +479,10 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     public static class Option {
 
+        static final int DEFAULT_MAX_SEND_LOG_ENTRY_NUM = 16;
+
+        static final int DEFAULT_MAX_SEND_LOG_ENTRY_BYTE_SIZE = 2 * 1024 * 1024;
+
         private SingleThreadExecutor senderExecutor;
 
         private LogManager logManager;
@@ -494,13 +495,13 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         private BallotBox ballotBox;
 
-        private int maxSendLogEntryNum;
+        private int maxSendLogEntryNum = DEFAULT_MAX_SEND_LOG_ENTRY_NUM;
 
         /**
          * Maximum number of bytes of AppendLogEntriesRequest
          * The actual number of bytes is likely to exceed this value
          */
-        private int maxSendLogEntryBytes;
+        private int maxSendLogEntryBytes = DEFAULT_MAX_SEND_LOG_ENTRY_BYTE_SIZE;
 
 
         private int heartbeatTimeoutMs = 2000;

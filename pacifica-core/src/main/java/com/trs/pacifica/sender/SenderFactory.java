@@ -19,42 +19,8 @@ package com.trs.pacifica.sender;
 
 import com.trs.pacifica.model.ReplicaId;
 
-/**
- * implement:
- * <li>Maintain the heartbeat of the Primary to other replica</li>
- * <li>Primary copies op log to other replica </li>
- *
- */
-public interface Sender {
+public interface SenderFactory {
 
-
-    /**
-     * Check if the peer-to-peer heartbeat is alive
-     * @param leasePeriodTimeOutMs 
-     * @return true if alive
-     */
-    public boolean isAlive(final int leasePeriodTimeOutMs);
-
-
-    /**
-     * get SenderType
-     * @return
-     */
-    public SenderType getType();
-
-
-    public boolean continueSendLogEntries(final long endLogIndex);
-
-
-    /**
-     *
-     */
-    public void startup();
-
-    /**
-     *
-     */
-    public void shutdown();
-
+    public Sender getSender(final ReplicaId targetId, final SenderType type);
 
 }

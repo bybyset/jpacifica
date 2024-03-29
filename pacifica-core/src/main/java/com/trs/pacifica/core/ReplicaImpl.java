@@ -32,8 +32,7 @@ import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
-import com.trs.pacifica.sender.SenderGroup;
-import com.trs.pacifica.sender.SenderType;
+import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
@@ -47,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -205,7 +203,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.logManager = new LogManagerImpl(this);
                 this.snapshotManager = new SnapshotManagerImpl(this);
                 this.stateMachineCaller = new StateMachineCallerImpl(this);
-                this.senderGroup = new SenderGroupImpl(this.pacificaClient);
+                this.senderGroup = new SenderGroupImpl(this, this.pacificaClient);
                 this.ballotBox = new BallotBoxImpl();
 
                 initApplyExecutor(option);
@@ -248,6 +246,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             stopSnapshotTimer();
             stopGracePeriodTimer();
             stopLeasePeriodTimer();
+
+            this.senderGroup.shutdown();
+            this.ballotBox.shutdown();
+            this.stateMachineCaller.shutdown();
+            this.logManager.shutdown();
+            this.snapshotManager.shutdown();
 
         } finally {
             this.writeLock.unlock();
@@ -562,11 +566,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void startSenderGroup() {
+        this.senderGroup.startup();
         List<ReplicaId> secondaries = this.replicaGroup.listSecondary();
         for (ReplicaId secondary : secondaries) {
             this.senderGroup.addSenderTo(secondary);
         }
-        this.senderGroup.startup();
     }
 
     private void startGracePeriodTimer() {

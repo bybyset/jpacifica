@@ -25,12 +25,12 @@ import com.trs.pacifica.model.ReplicaId;
  */
 public interface SenderGroup {
 
-    default public boolean addSenderTo(ReplicaId replicaId) {
-        return addSenderTo(replicaId, SenderType.Secondary, false);
+    default public void addSenderTo(ReplicaId replicaId) {
+        addSenderTo(replicaId, SenderType.Secondary, false);
     }
 
-    default public boolean addSenderTo(ReplicaId replicaId, SenderType senderType) {
-        return addSenderTo(replicaId, senderType, false);
+    default public void addSenderTo(ReplicaId replicaId, SenderType senderType) {
+        addSenderTo(replicaId, senderType, false);
     }
 
 
@@ -40,9 +40,8 @@ public interface SenderGroup {
      * @param replicaId
      * @param senderType  to see {@link SenderType}
      * @param checkConnection  check connect
-     * @return
      */
-    public boolean addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
+    public void addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
 
 
     /**
@@ -62,10 +61,6 @@ public interface SenderGroup {
 
 
     public Sender removeSender(ReplicaId replicaId);
-
-
-
-    public void clear();
 
 
 
