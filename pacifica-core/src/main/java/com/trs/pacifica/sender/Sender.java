@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.sender;
 
-import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.async.Callback;
 
 /**
  * implement:
@@ -44,6 +44,9 @@ public interface Sender {
 
 
     public boolean continueSendLogEntries(final long endLogIndex);
+
+
+    public void waitCaughtUp(Callback onCaughtUp);
 
 
     /**

@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.sender;
 
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.ReplicaId;
 
 /**
@@ -50,6 +51,9 @@ public interface SenderGroup {
      * @return true if the Replica is alive
      */
     public boolean isAlive(ReplicaId replicaId);
+
+
+    public boolean waitCaughtUp(final ReplicaId replicaId, final Callback onCaughtUp,  final long timeoutMs);
 
 
     /**

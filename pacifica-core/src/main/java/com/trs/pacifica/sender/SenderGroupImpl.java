@@ -21,6 +21,7 @@ import com.trs.pacifica.BallotBox;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.core.ReplicaImpl;
 import com.trs.pacifica.error.PacificaException;
@@ -118,6 +119,20 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         } finally {
             this.readLock.unlock();
         }
+    }
+
+    @Override
+    public boolean waitCaughtUp(ReplicaId replicaId, Callback onCaughtUp, long timeoutMs) {
+        this.readLock.lock();
+        try {
+            Sender sender = this.senderContainer.get(replicaId);
+            if (sender != null) {
+            }
+        } finally {
+            this.readLock.unlock();
+        }
+
+        return false;
     }
 
     @Override

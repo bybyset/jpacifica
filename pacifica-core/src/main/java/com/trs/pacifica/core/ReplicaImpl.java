@@ -33,6 +33,7 @@ import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.SenderGroupImpl;
+import com.trs.pacifica.sender.SenderType;
 import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
@@ -199,6 +200,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (this.state == ReplicaState.Uninitialized) {
                 this.option = Objects.requireNonNull(option, "require option");
                 this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
+                this.replicaGroup = new CacheReplicaGroup(() -> {
+                    return this.configurationClient.getReplicaGroup(this.replicaId.getGroupName());
+                });
                 this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
                 this.logManager = new LogManagerImpl(this);
                 this.snapshotManager = new SnapshotManagerImpl(this);
@@ -278,13 +282,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public ReplicaState getReplicaState() {
-        return Replica.super.getReplicaState();
-    }
-
-    @Override
     public boolean isPrimary(boolean block) {
-        return false;
+        return getReplicaState(block) == ReplicaState.Primary;
     }
 
     @Override
@@ -330,19 +329,13 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     @Override
     public RpcRequest.AppendEntriesResponse handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback) throws PacificaException {
         // Secondary or Candidate received AppendEntriesRequest from Primary
-        this.writeLock.lock();
+        this.readLock.lock();
         try {
-            if (!this.state.isActive()) {
-                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "the replica not active. state="+ this.state)));
-                return null;
-            }
-
+            ensureActive();
             final ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
             if (!this.replicaId.equals(targetId)) {
-                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId))));
-                return null;
+                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
             }
-
             if (this.replicaGroup.getVersion() < request.getVersion()) {
                 // TODO refresh replica group
 
@@ -351,8 +344,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
             final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
             if (!primaryReplicaId.equals(fromReplicaId)) {
-                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId))));
-                return null;
+                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
             }
 
             final long primaryTerm = this.replicaGroup.getPrimaryTerm();
@@ -362,7 +354,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                         .setTerm(primaryTerm)//
                         .build();
             }
-
             updateLastPrimaryVisit();
             final long prevLogIndex = request.getPrevLogIndex();
             final long prevLogTerm = request.getPrevLogTerm();
@@ -397,29 +388,80 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             final List<LogEntry> logEntries = RpcUtil.parseLogEntries(prevLogIndex, request.getLogMetaList(), request.getLogData());
             final SecondaryAppendLogEntriesCallback secondaryAppendLogEntriesCallback = new SecondaryAppendLogEntriesCallback(callback);
             this.logManager.appendLogEntries(logEntries, secondaryAppendLogEntriesCallback);
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {
-            this.writeLock.unlock();
+            this.readLock.unlock();
         }
         return null;
     }
 
     @Override
     public RpcRequest.ReplicaRecoverResponse handleReplicaRecoverRequest(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) throws PacificaException {
+        //Primary received ReplicaRecoverRequest from Candidate
+        this.readLock.lock();
+        try {
+            ensureActive();
+            if (this.state != ReplicaState.Primary) {
+                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "");
+            }
+            final ReplicaId primaryId = RpcUtil.toReplicaId(request.getPrimaryId());
+            if (!this.replicaId.equals(primaryId)) {
+                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "");
+            }
+            final long localTerm = this.replicaGroup.getPrimaryTerm();
+            if (request.getTerm() != localTerm) {
+                return RpcRequest.ReplicaRecoverResponse.newBuilder()//
+                        .setSuccess(false)//
+                        .setTerm(localTerm)//
+                        .build();//
+            }
+            final ReplicaId recoverId = RpcUtil.toReplicaId(request.getRecoverId());
+            // add sender
+            this.senderGroup.addSenderTo(recoverId, SenderType.Candidate, true);
+            // wait caught up
+
+            this.senderGroup.waitCaughtUp(recoverId, );
+
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(callback, Finished.failure(throwable));
+        } finally {
+            this.readLock.unlock();
+        }
         return null;
     }
 
     @Override
     public RpcRequest.InstallSnapshotResponse handleInstallSnapshotRequest(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback) throws PacificaException {
+        this.readLock.lock();
+        try {
+            ensureActive();
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(callback, Finished.failure(throwable));
+        } finally {
+            this.readLock.unlock();
+        }
         return null;
     }
 
     @Override
     public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback) throws PacificaException {
+        this.readLock.lock();
+        try {
+            ensureActive();
+
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(callback, Finished.failure(throwable));
+        } finally {
+            this.readLock.unlock();
+        }
         return null;
     }
 
+
     /**
      * apply batch operation only by primary
+     *
      * @param oneBatch
      */
     private void applyOperationBatch(List<OperationContext> oneBatch) {
@@ -631,7 +673,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     /**
-     *
      * @param monotonicNowMs
      * @return
      */
@@ -641,6 +682,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     /**
      * Whether the current Primary is valid
+     *
      * @return true if is valid
      */
     private boolean isCurrentPrimaryValid() {
@@ -650,7 +692,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     /**
      * The Secondary checks whether the Primary is faulty.
-     *  If the Primary is faulty, change Primary.
+     * If the Primary is faulty, change Primary.
      */
     private void handleGracePeriodTimeout() {
         this.readLock.lock();
@@ -666,7 +708,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             this.readLock.unlock();
         }
         //TODO change primary
-
 
 
     }
@@ -804,7 +845,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                     .setRecoverId(RpcUtil.protoReplicaId(this.replicaId))//
                     .setTerm(term)//
                     .build();
-            this.pacificaClient.recoverReplica(recoverRequest, new ExecutorResponseCallback<RpcRequest.ReplicaRecoverResponse>(){
+            this.pacificaClient.recoverReplica(recoverRequest, new ExecutorResponseCallback<RpcRequest.ReplicaRecoverResponse>() {
 
                 @Override
                 protected void doRun(Finished finished) {

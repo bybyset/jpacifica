@@ -23,6 +23,7 @@ import com.trs.pacifica.BallotBox;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.model.LogEntry;
@@ -45,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.PriorityQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
@@ -105,6 +105,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void waitCaughtUp(Callback onCaughtUp) {
+
     }
 
     @Override
