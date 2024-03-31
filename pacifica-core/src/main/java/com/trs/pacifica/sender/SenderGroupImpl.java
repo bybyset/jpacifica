@@ -17,10 +17,7 @@
 
 package com.trs.pacifica.sender;
 
-import com.trs.pacifica.BallotBox;
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.LogManager;
-import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.core.ReplicaImpl;
@@ -78,6 +75,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
     private ReplicaGroup replicaGroup;
 
+    private ConfigurationClient configurationClient;
 
     public SenderGroupImpl(ReplicaImpl replica, PacificaClient pacificaClient) {
         this.replica = replica;
@@ -122,11 +120,12 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
     }
 
     @Override
-    public boolean waitCaughtUp(ReplicaId replicaId, Callback onCaughtUp, long timeoutMs) {
+    public boolean waitCaughtUp(ReplicaId replicaId, Sender.OnCaughtUp onCaughtUp, long timeoutMs) {
         this.readLock.lock();
         try {
             Sender sender = this.senderContainer.get(replicaId);
             if (sender != null) {
+                sender.waitCaughtUp(onCaughtUp, timeoutMs);
             }
         } finally {
             this.readLock.unlock();
@@ -170,7 +169,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
             this.stateMachineCaller = Objects.requireNonNull(option.getStateMachineCaller(), "stateMachineCaller");
             this.ballotBox = Objects.requireNonNull(option.getBallotBox(), "ballotBox");
             this.replicaGroup = Objects.requireNonNull(option.getReplicaGroup(), "replicaGroup");
-
+            this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
             this.state = STATE_SHUTDOWN;
         } finally {
             this.writeLock.unlock();
@@ -243,6 +242,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
             senderOption.setBallotBox(ballotBox);
             senderOption.setPacificaClient(pacificaClient);
             senderOption.setReplicaGroup(replicaGroup);
+            senderOption.setConfigurationClient(configurationClient);
 
             senderOption.setHeartbeatTimeoutMs(Math.max(100, option.getLeasePeriodTimeOutMs() / option.getHeartBeatFactor()));
             senderOption.setHeartBeatTimer(null);
@@ -258,10 +258,19 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         private BallotBox ballotBox;
         private ReplicaGroup replicaGroup;
 
+        private ConfigurationClient configurationClient;
+
         private int leasePeriodTimeOutMs;
 
         private int heartBeatFactor = 30;
 
+        public ConfigurationClient getConfigurationClient() {
+            return configurationClient;
+        }
+
+        public void setConfigurationClient(ConfigurationClient configurationClient) {
+            this.configurationClient = configurationClient;
+        }
 
         public ReplicaGroup getReplicaGroup() {
             return replicaGroup;

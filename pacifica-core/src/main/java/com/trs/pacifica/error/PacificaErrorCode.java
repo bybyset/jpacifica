@@ -24,12 +24,13 @@ public enum PacificaErrorCode {
 
 
     UNDEFINED(999999, "undefined"),
-
     CONFLICT_LOG(100001, "conflict log"),
-
     UNAVAILABLE(100002, "unavailable"),
-
     UN_MATCH_TERM(100003, "un match term"),
+    STEP_DOWN(100004, "step down"),
+    TIMEOUT(100005, "time out"),
+    BUSY(1000006, "busy"),
+
 
     ;
 

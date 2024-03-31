@@ -19,13 +19,13 @@ package com.trs.pacifica.sender;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
-import com.trs.pacifica.BallotBox;
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.LogManager;
-import com.trs.pacifica.StateMachineCaller;
+import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.error.PacificaCodeException;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
@@ -36,6 +36,7 @@ import com.trs.pacifica.rpc.RpcResponseCallbackAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
+import com.trs.pacifica.util.thread.ThreadUtil;
 import com.trs.pacifica.util.timer.RepeatedTimer;
 import com.trs.pacifica.util.timer.Timer;
 import org.slf4j.Logger;
@@ -46,7 +47,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.PriorityQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
 
 public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
@@ -70,7 +78,13 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private volatile State state = State.UNINITIALIZED;
 
+    private AtomicInteger version = new AtomicInteger(0);
+
     private SingleThreadExecutor executor;
+
+    private final AtomicReference<OnCaughtUp> caughtUpRef = new AtomicReference<>(null);
+
+
 
     public SenderImpl(ReplicaId fromId, ReplicaId toId, SenderType type) {
         this.fromId = fromId;
@@ -108,7 +122,17 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
     @Override
-    public void waitCaughtUp(Callback onCaughtUp) {
+    public boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs) {
+        if (this.caughtUpRef.get() != null) {
+            return false;
+        }
+        final OnCaughtUpTimeoutAble onCaughtUpTimeoutAble = new OnCaughtUpTimeoutAble(onCaughtUp, timeoutMs, TimeUnit.MILLISECONDS);
+        if (!this.caughtUpRef.compareAndSet(null, onCaughtUpTimeoutAble)) {
+
+
+            return false;
+        }
+        return true;
 
     }
 
@@ -130,6 +154,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     @Override
     public synchronized void startup() {
         if (this.state == State.SHUTDOWN) {
+            this.version.incrementAndGet();
             this.nextLogIndex = this.option.getLogManager().getLastLogId().getIndex() + 1;
             this.updateLastResponseTime();
             this.heartbeatTimer.start();
@@ -141,15 +166,80 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     public synchronized void shutdown() {
         if (isStarted()) {
             this.state = State.SHUTTING;
-
+            notifyOnCaughtUp(new PacificaCodeException(PacificaErrorCode.STEP_DOWN, "The sender is shutting"));
             this.state = State.SHUTDOWN;
         }
+    }
+
+
+    private void doNotifyOnCaughtUp(final Finished finished, final long lastLogIndex) {
+        final OnCaughtUp caughtUp = this.caughtUpRef.get();
+        if (caughtUp == null) {
+            return;
+        }
+        if (!finished.isOk()) {
+            this.caughtUpRef.compareAndSet(caughtUp, null);
+            ThreadUtil.runCallback(caughtUp, finished);
+            return;
+        }
+        if (doOnCaughtUp(caughtUp, lastLogIndex)) {
+            this.caughtUpRef.compareAndSet(caughtUp, null);
+        }
+    }
+
+    private void notifyOnCaughtUp(final long lastLogIndex) {
+        doNotifyOnCaughtUp(Finished.success(), lastLogIndex);
+    }
+
+    private void notifyOnCaughtUp(Throwable failure) {
+        doNotifyOnCaughtUp(Finished.failure(failure), -1L);
+    }
+
+    private boolean doOnCaughtUp(final OnCaughtUp onCaughtUp, final long caughtUpLogIndex) {
+        assert onCaughtUp != null;
+        final BallotBox ballotBox = this.option.getBallotBox();
+        assert ballotBox != null;
+        final Lock commitLock = ballotBox.getCommitLock();
+        if (!commitLock.tryLock()) {
+            //wait for the next notify until it times out
+            return false;
+        }
+        try {
+            if (caughtUpLogIndex < this.option.getBallotBox().getLastCommittedLogIndex()) {
+                return false;
+            }
+            final long version = this.option.getReplicaGroup().getVersion();
+            // add Secondary
+            if (!this.option.getConfigurationClient().addSecondary(version, toId)) {
+                //TODO
+                throw new PacificaException("");
+            }
+            // join ballot
+            if (!ballotBox.recoverBallot(toId, caughtUpLogIndex)) {
+                // TODO
+                throw new PacificaException("");
+            }
+            this.type = SenderType.Secondary;
+            onCaughtUp.setCaughtUpLogIndex(caughtUpLogIndex);
+            ThreadUtil.runCallback(onCaughtUp, Finished.success());
+            return true;
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(onCaughtUp, Finished.failure(throwable));
+        } finally {
+            commitLock.unlock();
+        }
+        return false;
     }
 
     public boolean isStarted() {
         return this.state.compareTo(State.STARTED) > 0;
     }
 
+    private void ensureStarted() {
+        if (!isStarted()) {
+            throw new PacificaException("");
+        }
+    }
 
     private void installSnapshot() {
 
@@ -187,9 +277,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
     }
 
-
-
-
     private void sendEmptyLogEntries(final boolean isHeartbeatRequest) {
         final RpcRequest.AppendEntriesRequest.Builder requestBuilder = RpcRequest.AppendEntriesRequest.newBuilder();
         if (!fillCommonRequest(requestBuilder, nextLogIndex - 1, isHeartbeatRequest)) {
@@ -203,7 +290,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             this.option.getPacificaClient().appendLogEntries(request, new RpcResponseCallbackAdapter<RpcRequest.AppendEntriesResponse>() {
                 @Override
                 public void run(Finished finished) {
-
+                    handleHeartbeatResponse(request, finished, getRpcResponse());
                 }
             });
 
@@ -350,13 +437,27 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         return true;
     }
 
+    private void handleHeartbeatResponse(final RpcContext rpcContext, final Finished finished, final RpcRequest.AppendEntriesResponse heartbeatResponse) {
+        if (finished.isOk()) {
+            updateLastResponseTime();
+        }
+        this.executor.execute(() ->{
+            handleAppendLogEntryResponse(heartbeatRequest, finished, heartbeatResponse);
+        });
+    }
+
     private void onRpcResponse(final RpcContext rpcContext, final Finished finished, final Message response) {
+        if (rpcContext.isExpired()) {
+            LOGGER.warn("{} received expired response, ctx={}", this.fromId, rpcContext);
+            return;
+        }
         rpcContext.finished = finished;
         rpcContext.response = response;
         handleRpcResponse();
     }
 
     private void handleRpcResponse() {
+        boolean continueSendLogEntry = false;
         do {
             RpcContext rpcContext = this.flyingRpcQueue.peek();
             if (rpcContext == null || !rpcContext.isFinished()) {
@@ -366,15 +467,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             if (finished.isOk()) {
                 updateLastResponseTime();
             }
+
             try {
                 final RpcType rpcType = rpcContext.rpcType;
                 switch (rpcType) {
                     case APPEND_LOG_ENTRY : {
-                        handleAppendLogEntryResponse((RpcRequest.AppendEntriesRequest) rpcContext.request, finished, (RpcRequest.AppendEntriesResponse) rpcContext.response);
+                        continueSendLogEntry = handleAppendLogEntryResponse((RpcRequest.AppendEntriesRequest) rpcContext.request, finished, (RpcRequest.AppendEntriesResponse) rpcContext.response);
                         break;
                     }
                     case INSTALL_SNAPSHOT: {
-                        handleInstallSnapshotResponse(finished, (RpcRequest.InstallSnapshotResponse) rpcContext.response);
+                        continueSendLogEntry = handleInstallSnapshotResponse(finished, (RpcRequest.InstallSnapshotResponse) rpcContext.response);
                     }
                 }
             } finally {
@@ -382,12 +484,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             }
 
         } while (!this.flyingRpcQueue.isEmpty());
+
+        if (continueSendLogEntry) {
+            this.sendLogEntries();
+        }
     }
 
-    private void handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, RpcRequest.AppendEntriesResponse response) {
+    private boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, RpcRequest.AppendEntriesResponse response) {
         if (!finished.isOk()) {
             // TODO
-            return;
+            return false;
         }
         if (!response.getSuccess()) {
             // failure
@@ -396,7 +502,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 //TODO  shutdown  replica.check step down
                 this.shutdown();
 
-                return;
+                return false;
             }
 
             // 2: prev_log_index not match
@@ -411,7 +517,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 }
             }
             this.sendProbeRequest();
-            return;
+            return false;
         }
         //success
         final int appendCount = request.getLogMetaCount();
@@ -421,12 +527,46 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 this.option.getBallotBox().ballotBy(this.toId, this.nextLogIndex, endLogIndex);
             }
         }
-
-        this.sendLogEntries();
+        if (response.hasLastLogIndex()) {
+            final long lastLogIndex = response.getLastLogIndex();
+            notifyOnCaughtUp(lastLogIndex);
+        }
+        return true;
     }
 
-    private void handleInstallSnapshotResponse(Finished finished, RpcRequest.InstallSnapshotResponse response) {
+    private boolean handleInstallSnapshotResponse(Finished finished, RpcRequest.InstallSnapshotResponse response) {
 
+        return true;
+    }
+
+
+    class OnCaughtUpTimeoutAble extends OnCaughtUp {
+
+        private final OnCaughtUp wrapper;
+
+        private final AtomicBoolean runOnce = new AtomicBoolean(false);
+
+        private ScheduledFuture<?> timeoutFuture;
+
+        OnCaughtUpTimeoutAble(OnCaughtUp wrapper, long timeout, TimeUnit timeUnit) {
+            this.wrapper = wrapper;
+            this.timeoutFuture = option.getSenderScheduler().schedule(()->{
+                this.run(Finished.failure(new PacificaCodeException(PacificaErrorCode.TIMEOUT, String.format("%s caught up time out.", toId))));
+            }, timeout, timeUnit);
+        }
+
+        @Override
+        public void run(Finished finished) {
+            if (runOnce.compareAndSet(false, true)) {
+                try {
+                    ThreadUtil.runCallback(wrapper, finished);
+                } finally {
+                    timeoutFuture.cancel(true);
+                }
+            } else {
+                LOGGER.warn("OnCaughtUpTimeoutAble Repeated call run.", finished.error());
+            }
+        }
     }
 
 
@@ -446,18 +586,21 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         private final Message request;
 
+        private final int version;
+
         private Message response;
 
         private Finished finished;
 
         RpcContext(RpcType rpcType, Message request) {
-            this(requestIdAllocator.incrementAndGet(), rpcType, request);
+            this(requestIdAllocator.incrementAndGet(), rpcType, request, SenderImpl.this.version.get());
         }
 
-        RpcContext(final long requestId, RpcType rpcType, Message request) {
+        RpcContext(final long requestId, RpcType rpcType, Message request, int version) {
             this.requestId = requestId;
             this.rpcType = rpcType;
             this.request = request;
+            this.version = version;
         }
 
         @Override
@@ -467,6 +610,20 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         public boolean isFinished() {
             return this.finished != null;
+        }
+
+        public boolean isExpired() {
+            return SenderImpl.this.version.get() > version;
+        }
+
+        @Override
+        public String toString() {
+            return "RpcContext{" +
+                    "requestId=" + requestId +
+                    ", rpcType=" + rpcType +
+                    ", version=" + version +
+                    ", request=" + request.getClass().getSimpleName() +
+                    '}';
         }
     }
 
@@ -500,6 +657,8 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         private BallotBox ballotBox;
 
+        private ConfigurationClient configurationClient;
+
         private int maxSendLogEntryNum = DEFAULT_MAX_SEND_LOG_ENTRY_NUM;
 
         /**
@@ -513,6 +672,23 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         private Timer heartBeatTimer;
 
+        private ScheduledExecutorService senderScheduler;
+
+        public ScheduledExecutorService getSenderScheduler() {
+            return senderScheduler;
+        }
+
+        public void setSenderScheduler(ScheduledExecutorService senderScheduler) {
+            this.senderScheduler = senderScheduler;
+        }
+
+        public ConfigurationClient getConfigurationClient() {
+            return configurationClient;
+        }
+
+        public void setConfigurationClient(ConfigurationClient configurationClient) {
+            this.configurationClient = configurationClient;
+        }
 
         public SingleThreadExecutor getSenderExecutor() {
             return senderExecutor;

@@ -20,6 +20,8 @@ package com.trs.pacifica.sender;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.ReplicaId;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Only called by Primary.
  *
@@ -53,7 +55,11 @@ public interface SenderGroup {
     public boolean isAlive(ReplicaId replicaId);
 
 
-    public boolean waitCaughtUp(final ReplicaId replicaId, final Callback onCaughtUp,  final long timeoutMs);
+    default public boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, long timeout, TimeUnit unit) {
+        return waitCaughtUp(replicaId, onCaughtUp, unit.toMillis(timeout));
+    }
+
+    public boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**

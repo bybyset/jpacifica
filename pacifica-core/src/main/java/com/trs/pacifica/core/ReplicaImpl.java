@@ -32,6 +32,7 @@ import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
 import com.trs.pacifica.util.QueueUtil;
@@ -417,11 +418,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                         .build();//
             }
             final ReplicaId recoverId = RpcUtil.toReplicaId(request.getRecoverId());
-            // add sender
+            // add log sender for recoverId
             this.senderGroup.addSenderTo(recoverId, SenderType.Candidate, true);
             // wait caught up
 
-            this.senderGroup.waitCaughtUp(recoverId, );
+            final CandidateCaughtUpCallback onCaughtUp = new CandidateCaughtUpCallback(recoverId, callback);
+            this.senderGroup.waitCaughtUp(recoverId, onCaughtUp, 1000);
 
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
@@ -900,6 +902,35 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             return callback;
         }
 
+    }
+
+    class CandidateCaughtUpCallback extends Sender.OnCaughtUp {
+
+        private final ReplicaId recoverId;
+        private final RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback;
+
+        CandidateCaughtUpCallback(ReplicaId recoverId, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) {
+            this.recoverId = recoverId;
+            this.callback = callback;
+        }
+
+        @Override
+        public void run(Finished finished) {
+            if (!finished.isOk()) {
+                ThreadUtil.runCallback(callback, finished);
+                LOGGER.error("Failed to recover. replica_id={}.", recoverId, finished.error());
+                return;
+            }
+            //add secondary
+
+            //inc ballot
+
+
+
+
+
+
+        }
     }
 
     class PrimaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {

@@ -22,6 +22,7 @@ import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.locks.Lock;
 
 /**
  * ballot box, managed by primary replica.
@@ -66,6 +67,14 @@ public interface BallotBox {
     public boolean ballotBy(final ReplicaId replicaId, final long startLogIndex, final long endLogIndex);
 
 
+    public Lock getCommitLock();
+
+    /**
+     * get last committed log index
+     *
+     * @return
+     */
+    public long getLastCommittedLogIndex();
 
 
 }

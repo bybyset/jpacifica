@@ -46,7 +46,7 @@ public interface Sender {
     public boolean continueSendLogEntries(final long endLogIndex);
 
 
-    public void waitCaughtUp(Callback onCaughtUp);
+    public boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**
@@ -58,6 +58,20 @@ public interface Sender {
      *
      */
     public void shutdown();
+
+
+    public static abstract class OnCaughtUp implements Callback {
+
+        private long caughtUpLogIndex = -1L;
+
+        public void setCaughtUpLogIndex(long logIndex) {
+            this.caughtUpLogIndex = logIndex;
+        }
+
+        public long getCaughtUpLogIndex() {
+            return caughtUpLogIndex;
+        }
+    }
 
 
 }

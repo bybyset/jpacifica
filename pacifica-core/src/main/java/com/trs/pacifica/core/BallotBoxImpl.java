@@ -43,7 +43,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     private final Lock writeLock = lock.writeLock();
 
     private long pendingLogIndex = 0; //pendingLogIndex = last_log_index + 1
-    private long lastCommittedLogIndex = 0; //lastCommittedLogIndex
+    private volatile long lastCommittedLogIndex = 0; //lastCommittedLogIndex
 
     private StateMachineCaller fsmCaller;
 
@@ -189,6 +189,16 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         }
         setLastCommittedLogIndex(lastCommittedLogIndex);
         return true;
+    }
+
+    @Override
+    public Lock getCommitLock() {
+        return this.writeLock;
+    }
+
+    @Override
+    public long getLastCommittedLogIndex() {
+        return this.lastCommittedLogIndex;
     }
 
     private void setLastCommittedLogIndex(final long lastCommittedLogIndex) {
