@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.fs;
 
-import com.trs.pacifica.snapshot.SnapshotDownloader;
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.RpcResponseCallback;
 
-public interface SnapshotStorage {
+public interface FileService {
 
+    public FileReader getFileReader(final long readerId);
 
-    public SnapshotReader openSnapshotReader();
+    public long addFileReader(final FileReader fileReader);
 
-    public SnapshotWriter openSnapshotWriter();
+    public boolean removeFileReader(final long readerId);
 
+    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback);
 
-    /**
-     *
-     * @return
-     */
-    public SnapshotDownloader startDownloadSnapshot();
 
 }

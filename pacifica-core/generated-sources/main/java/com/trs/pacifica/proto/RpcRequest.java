@@ -6099,37 +6099,26 @@ public final class RpcRequest {
         getFilenameBytes();
 
     /**
-     * <code>optional int64 count = 4;</code>
-     * @return Whether the count field is set.
-     */
-    boolean hasCount();
-    /**
-     * <code>optional int64 count = 4;</code>
-     * @return The count.
-     */
-    long getCount();
-
-    /**
-     * <code>optional int64 offset = 5;</code>
+     * <code>optional int32 offset = 4;</code>
      * @return Whether the offset field is set.
      */
     boolean hasOffset();
     /**
-     * <code>optional int64 offset = 5;</code>
+     * <code>optional int32 offset = 4;</code>
      * @return The offset.
      */
-    long getOffset();
+    int getOffset();
 
     /**
-     * <code>optional bool read_partly = 6;</code>
-     * @return Whether the readPartly field is set.
+     * <code>optional int32 length = 5;</code>
+     * @return Whether the length field is set.
      */
-    boolean hasReadPartly();
+    boolean hasLength();
     /**
-     * <code>optional bool read_partly = 6;</code>
-     * @return The readPartly.
+     * <code>optional int32 length = 5;</code>
+     * @return The length.
      */
-    boolean getReadPartly();
+    int getLength();
   }
   /**
    * Protobuf type {@code jpacifica.GetFileRequest}
@@ -6260,61 +6249,42 @@ public final class RpcRequest {
       }
     }
 
-    public static final int COUNT_FIELD_NUMBER = 4;
-    private long count_ = 0L;
+    public static final int OFFSET_FIELD_NUMBER = 4;
+    private int offset_ = 0;
     /**
-     * <code>optional int64 count = 4;</code>
-     * @return Whether the count field is set.
-     */
-    @java.lang.Override
-    public boolean hasCount() {
-      return ((bitField0_ & 0x00000008) != 0);
-    }
-    /**
-     * <code>optional int64 count = 4;</code>
-     * @return The count.
-     */
-    @java.lang.Override
-    public long getCount() {
-      return count_;
-    }
-
-    public static final int OFFSET_FIELD_NUMBER = 5;
-    private long offset_ = 0L;
-    /**
-     * <code>optional int64 offset = 5;</code>
+     * <code>optional int32 offset = 4;</code>
      * @return Whether the offset field is set.
      */
     @java.lang.Override
     public boolean hasOffset() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>optional int64 offset = 5;</code>
+     * <code>optional int32 offset = 4;</code>
      * @return The offset.
      */
     @java.lang.Override
-    public long getOffset() {
+    public int getOffset() {
       return offset_;
     }
 
-    public static final int READ_PARTLY_FIELD_NUMBER = 6;
-    private boolean readPartly_ = false;
+    public static final int LENGTH_FIELD_NUMBER = 5;
+    private int length_ = 0;
     /**
-     * <code>optional bool read_partly = 6;</code>
-     * @return Whether the readPartly field is set.
+     * <code>optional int32 length = 5;</code>
+     * @return Whether the length field is set.
      */
     @java.lang.Override
-    public boolean hasReadPartly() {
-      return ((bitField0_ & 0x00000020) != 0);
+    public boolean hasLength() {
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
-     * <code>optional bool read_partly = 6;</code>
-     * @return The readPartly.
+     * <code>optional int32 length = 5;</code>
+     * @return The length.
      */
     @java.lang.Override
-    public boolean getReadPartly() {
-      return readPartly_;
+    public int getLength() {
+      return length_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -6341,13 +6311,10 @@ public final class RpcRequest {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, filename_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        output.writeInt64(4, count_);
+        output.writeInt32(4, offset_);
       }
       if (((bitField0_ & 0x00000010) != 0)) {
-        output.writeInt64(5, offset_);
-      }
-      if (((bitField0_ & 0x00000020) != 0)) {
-        output.writeBool(6, readPartly_);
+        output.writeInt32(5, length_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -6371,15 +6338,11 @@ public final class RpcRequest {
       }
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(4, count_);
+          .computeInt32Size(4, offset_);
       }
       if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(5, offset_);
-      }
-      if (((bitField0_ & 0x00000020) != 0)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, readPartly_);
+          .computeInt32Size(5, length_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -6411,20 +6374,15 @@ public final class RpcRequest {
         if (!getFilename()
             .equals(other.getFilename())) return false;
       }
-      if (hasCount() != other.hasCount()) return false;
-      if (hasCount()) {
-        if (getCount()
-            != other.getCount()) return false;
-      }
       if (hasOffset() != other.hasOffset()) return false;
       if (hasOffset()) {
         if (getOffset()
             != other.getOffset()) return false;
       }
-      if (hasReadPartly() != other.hasReadPartly()) return false;
-      if (hasReadPartly()) {
-        if (getReadPartly()
-            != other.getReadPartly()) return false;
+      if (hasLength() != other.hasLength()) return false;
+      if (hasLength()) {
+        if (getLength()
+            != other.getLength()) return false;
       }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
@@ -6450,20 +6408,13 @@ public final class RpcRequest {
         hash = (37 * hash) + FILENAME_FIELD_NUMBER;
         hash = (53 * hash) + getFilename().hashCode();
       }
-      if (hasCount()) {
-        hash = (37 * hash) + COUNT_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getCount());
-      }
       if (hasOffset()) {
         hash = (37 * hash) + OFFSET_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getOffset());
+        hash = (53 * hash) + getOffset();
       }
-      if (hasReadPartly()) {
-        hash = (37 * hash) + READ_PARTLY_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getReadPartly());
+      if (hasLength()) {
+        hash = (37 * hash) + LENGTH_FIELD_NUMBER;
+        hash = (53 * hash) + getLength();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -6609,9 +6560,8 @@ public final class RpcRequest {
         }
         readerId_ = 0L;
         filename_ = "";
-        count_ = 0L;
-        offset_ = 0L;
-        readPartly_ = false;
+        offset_ = 0;
+        length_ = 0;
         return this;
       }
 
@@ -6661,16 +6611,12 @@ public final class RpcRequest {
           to_bitField0_ |= 0x00000004;
         }
         if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.count_ = count_;
+          result.offset_ = offset_;
           to_bitField0_ |= 0x00000008;
         }
         if (((from_bitField0_ & 0x00000010) != 0)) {
-          result.offset_ = offset_;
+          result.length_ = length_;
           to_bitField0_ |= 0x00000010;
-        }
-        if (((from_bitField0_ & 0x00000020) != 0)) {
-          result.readPartly_ = readPartly_;
-          to_bitField0_ |= 0x00000020;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -6730,14 +6676,11 @@ public final class RpcRequest {
           bitField0_ |= 0x00000004;
           onChanged();
         }
-        if (other.hasCount()) {
-          setCount(other.getCount());
-        }
         if (other.hasOffset()) {
           setOffset(other.getOffset());
         }
-        if (other.hasReadPartly()) {
-          setReadPartly(other.getReadPartly());
+        if (other.hasLength()) {
+          setLength(other.getLength());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -6783,20 +6726,15 @@ public final class RpcRequest {
                 break;
               } // case 26
               case 32: {
-                count_ = input.readInt64();
+                offset_ = input.readInt32();
                 bitField0_ |= 0x00000008;
                 break;
               } // case 32
               case 40: {
-                offset_ = input.readInt64();
+                length_ = input.readInt32();
                 bitField0_ |= 0x00000010;
                 break;
               } // case 40
-              case 48: {
-                readPartly_ = input.readBool();
-                bitField0_ |= 0x00000020;
-                break;
-              } // case 48
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -7054,122 +6992,82 @@ public final class RpcRequest {
         return this;
       }
 
-      private long count_ ;
+      private int offset_ ;
       /**
-       * <code>optional int64 count = 4;</code>
-       * @return Whether the count field is set.
+       * <code>optional int32 offset = 4;</code>
+       * @return Whether the offset field is set.
        */
       @java.lang.Override
-      public boolean hasCount() {
+      public boolean hasOffset() {
         return ((bitField0_ & 0x00000008) != 0);
       }
       /**
-       * <code>optional int64 count = 4;</code>
-       * @return The count.
+       * <code>optional int32 offset = 4;</code>
+       * @return The offset.
        */
       @java.lang.Override
-      public long getCount() {
-        return count_;
+      public int getOffset() {
+        return offset_;
       }
       /**
-       * <code>optional int64 count = 4;</code>
-       * @param value The count to set.
+       * <code>optional int32 offset = 4;</code>
+       * @param value The offset to set.
        * @return This builder for chaining.
        */
-      public Builder setCount(long value) {
+      public Builder setOffset(int value) {
 
-        count_ = value;
+        offset_ = value;
         bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 count = 4;</code>
+       * <code>optional int32 offset = 4;</code>
        * @return This builder for chaining.
        */
-      public Builder clearCount() {
+      public Builder clearOffset() {
         bitField0_ = (bitField0_ & ~0x00000008);
-        count_ = 0L;
+        offset_ = 0;
         onChanged();
         return this;
       }
 
-      private long offset_ ;
+      private int length_ ;
       /**
-       * <code>optional int64 offset = 5;</code>
-       * @return Whether the offset field is set.
+       * <code>optional int32 length = 5;</code>
+       * @return Whether the length field is set.
        */
       @java.lang.Override
-      public boolean hasOffset() {
+      public boolean hasLength() {
         return ((bitField0_ & 0x00000010) != 0);
       }
       /**
-       * <code>optional int64 offset = 5;</code>
-       * @return The offset.
+       * <code>optional int32 length = 5;</code>
+       * @return The length.
        */
       @java.lang.Override
-      public long getOffset() {
-        return offset_;
+      public int getLength() {
+        return length_;
       }
       /**
-       * <code>optional int64 offset = 5;</code>
-       * @param value The offset to set.
+       * <code>optional int32 length = 5;</code>
+       * @param value The length to set.
        * @return This builder for chaining.
        */
-      public Builder setOffset(long value) {
+      public Builder setLength(int value) {
 
-        offset_ = value;
+        length_ = value;
         bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 offset = 5;</code>
+       * <code>optional int32 length = 5;</code>
        * @return This builder for chaining.
        */
-      public Builder clearOffset() {
+      public Builder clearLength() {
         bitField0_ = (bitField0_ & ~0x00000010);
-        offset_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      private boolean readPartly_ ;
-      /**
-       * <code>optional bool read_partly = 6;</code>
-       * @return Whether the readPartly field is set.
-       */
-      @java.lang.Override
-      public boolean hasReadPartly() {
-        return ((bitField0_ & 0x00000020) != 0);
-      }
-      /**
-       * <code>optional bool read_partly = 6;</code>
-       * @return The readPartly.
-       */
-      @java.lang.Override
-      public boolean getReadPartly() {
-        return readPartly_;
-      }
-      /**
-       * <code>optional bool read_partly = 6;</code>
-       * @param value The readPartly to set.
-       * @return This builder for chaining.
-       */
-      public Builder setReadPartly(boolean value) {
-
-        readPartly_ = value;
-        bitField0_ |= 0x00000020;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool read_partly = 6;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearReadPartly() {
-        bitField0_ = (bitField0_ & ~0x00000020);
-        readPartly_ = false;
+        length_ = 0;
         onChanged();
         return this;
       }
@@ -7264,15 +7162,15 @@ public final class RpcRequest {
     com.google.protobuf.ByteString getData();
 
     /**
-     * <code>optional int64 readSize = 3;</code>
-     * @return Whether the readSize field is set.
+     * <code>optional int64 read_length = 3;</code>
+     * @return Whether the readLength field is set.
      */
-    boolean hasReadSize();
+    boolean hasReadLength();
     /**
-     * <code>optional int64 readSize = 3;</code>
-     * @return The readSize.
+     * <code>optional int64 read_length = 3;</code>
+     * @return The readLength.
      */
-    long getReadSize();
+    long getReadLength();
   }
   /**
    * Protobuf type {@code jpacifica.GetFileResponse}
@@ -7349,23 +7247,23 @@ public final class RpcRequest {
       return data_;
     }
 
-    public static final int READSIZE_FIELD_NUMBER = 3;
-    private long readSize_ = 0L;
+    public static final int READ_LENGTH_FIELD_NUMBER = 3;
+    private long readLength_ = 0L;
     /**
-     * <code>optional int64 readSize = 3;</code>
-     * @return Whether the readSize field is set.
+     * <code>optional int64 read_length = 3;</code>
+     * @return Whether the readLength field is set.
      */
     @java.lang.Override
-    public boolean hasReadSize() {
+    public boolean hasReadLength() {
       return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional int64 readSize = 3;</code>
-     * @return The readSize.
+     * <code>optional int64 read_length = 3;</code>
+     * @return The readLength.
      */
     @java.lang.Override
-    public long getReadSize() {
-      return readSize_;
+    public long getReadLength() {
+      return readLength_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -7389,7 +7287,7 @@ public final class RpcRequest {
         output.writeBytes(2, data_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, readSize_);
+        output.writeInt64(3, readLength_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7410,7 +7308,7 @@ public final class RpcRequest {
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, readSize_);
+          .computeInt64Size(3, readLength_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -7437,10 +7335,10 @@ public final class RpcRequest {
         if (!getData()
             .equals(other.getData())) return false;
       }
-      if (hasReadSize() != other.hasReadSize()) return false;
-      if (hasReadSize()) {
-        if (getReadSize()
-            != other.getReadSize()) return false;
+      if (hasReadLength() != other.hasReadLength()) return false;
+      if (hasReadLength()) {
+        if (getReadLength()
+            != other.getReadLength()) return false;
       }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
@@ -7462,10 +7360,10 @@ public final class RpcRequest {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
       }
-      if (hasReadSize()) {
-        hash = (37 * hash) + READSIZE_FIELD_NUMBER;
+      if (hasReadLength()) {
+        hash = (37 * hash) + READ_LENGTH_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getReadSize());
+            getReadLength());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -7600,7 +7498,7 @@ public final class RpcRequest {
         bitField0_ = 0;
         eof_ = false;
         data_ = com.google.protobuf.ByteString.EMPTY;
-        readSize_ = 0L;
+        readLength_ = 0L;
         return this;
       }
 
@@ -7644,7 +7542,7 @@ public final class RpcRequest {
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.readSize_ = readSize_;
+          result.readLength_ = readLength_;
           to_bitField0_ |= 0x00000004;
         }
         result.bitField0_ |= to_bitField0_;
@@ -7700,8 +7598,8 @@ public final class RpcRequest {
         if (other.hasData()) {
           setData(other.getData());
         }
-        if (other.hasReadSize()) {
-          setReadSize(other.getReadSize());
+        if (other.hasReadLength()) {
+          setReadLength(other.getReadLength());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -7740,7 +7638,7 @@ public final class RpcRequest {
                 break;
               } // case 18
               case 24: {
-                readSize_ = input.readInt64();
+                readLength_ = input.readInt64();
                 bitField0_ |= 0x00000004;
                 break;
               } // case 24
@@ -7841,42 +7739,42 @@ public final class RpcRequest {
         return this;
       }
 
-      private long readSize_ ;
+      private long readLength_ ;
       /**
-       * <code>optional int64 readSize = 3;</code>
-       * @return Whether the readSize field is set.
+       * <code>optional int64 read_length = 3;</code>
+       * @return Whether the readLength field is set.
        */
       @java.lang.Override
-      public boolean hasReadSize() {
+      public boolean hasReadLength() {
         return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional int64 readSize = 3;</code>
-       * @return The readSize.
+       * <code>optional int64 read_length = 3;</code>
+       * @return The readLength.
        */
       @java.lang.Override
-      public long getReadSize() {
-        return readSize_;
+      public long getReadLength() {
+        return readLength_;
       }
       /**
-       * <code>optional int64 readSize = 3;</code>
-       * @param value The readSize to set.
+       * <code>optional int64 read_length = 3;</code>
+       * @param value The readLength to set.
        * @return This builder for chaining.
        */
-      public Builder setReadSize(long value) {
+      public Builder setReadLength(long value) {
 
-        readSize_ = value;
+        readLength_ = value;
         bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 readSize = 3;</code>
+       * <code>optional int64 read_length = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearReadSize() {
+      public Builder clearReadLength() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        readSize_ = 0L;
+        readLength_ = 0L;
         onChanged();
         return this;
       }
@@ -8025,18 +7923,17 @@ public final class RpcRequest {
       "arget_idB\007\n\005_termB\n\n\010_version\"y\n\027Install" +
       "SnapshotResponse\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021" +
       "\n\004term\030\002 \001(\003H\001\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B" +
-      "\n\n\010_successB\007\n\005_termB\n\n\010_version\"\376\001\n\016Get" +
+      "\n\n\010_successB\007\n\005_termB\n\n\010_version\"\326\001\n\016Get" +
       "FileRequest\022,\n\ttarget_id\030\001 \001(\0132\024.jpacifi" +
       "ca.ReplicaIdH\000\210\001\001\022\026\n\treader_id\030\002 \001(\003H\001\210\001" +
-      "\001\022\025\n\010filename\030\003 \001(\tH\002\210\001\001\022\022\n\005count\030\004 \001(\003H" +
-      "\003\210\001\001\022\023\n\006offset\030\005 \001(\003H\004\210\001\001\022\030\n\013read_partly" +
-      "\030\006 \001(\010H\005\210\001\001B\014\n\n_target_idB\014\n\n_reader_idB" +
-      "\013\n\t_filenameB\010\n\006_countB\t\n\007_offsetB\016\n\014_re" +
-      "ad_partly\"k\n\017GetFileResponse\022\020\n\003eof\030\001 \001(" +
-      "\010H\000\210\001\001\022\021\n\004data\030\002 \001(\014H\001\210\001\001\022\025\n\010readSize\030\003 " +
-      "\001(\003H\002\210\001\001B\006\n\004_eofB\007\n\005_dataB\013\n\t_readSizeB$" +
-      "\n\026com.trs.pacifica.protoB\nRpcRequestb\006pr" +
-      "oto3"
+      "\001\022\025\n\010filename\030\003 \001(\tH\002\210\001\001\022\023\n\006offset\030\004 \001(\005" +
+      "H\003\210\001\001\022\023\n\006length\030\005 \001(\005H\004\210\001\001B\014\n\n_target_id" +
+      "B\014\n\n_reader_idB\013\n\t_filenameB\t\n\007_offsetB\t" +
+      "\n\007_length\"q\n\017GetFileResponse\022\020\n\003eof\030\001 \001(" +
+      "\010H\000\210\001\001\022\021\n\004data\030\002 \001(\014H\001\210\001\001\022\030\n\013read_length" +
+      "\030\003 \001(\003H\002\210\001\001B\006\n\004_eofB\007\n\005_dataB\016\n\014_read_le" +
+      "ngthB$\n\026com.trs.pacifica.protoB\nRpcReque" +
+      "stb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8084,13 +7981,13 @@ public final class RpcRequest {
     internal_static_jpacifica_GetFileRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_GetFileRequest_descriptor,
-        new java.lang.String[] { "TargetId", "ReaderId", "Filename", "Count", "Offset", "ReadPartly", });
+        new java.lang.String[] { "TargetId", "ReaderId", "Filename", "Offset", "Length", });
     internal_static_jpacifica_GetFileResponse_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_jpacifica_GetFileResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_GetFileResponse_descriptor,
-        new java.lang.String[] { "Eof", "Data", "ReadSize", });
+        new java.lang.String[] { "Eof", "Data", "ReadLength", });
     com.trs.pacifica.proto.RpcCommon.getDescriptor();
   }
 

@@ -285,18 +285,17 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             return;
         }
         final RpcRequest.AppendEntriesRequest request = requestBuilder.build();
+        final RpcContext rpcContext = new RpcContext(RpcType.APPEND_LOG_ENTRY, request);
         if (isHeartbeatRequest) {
-
+            // heartbeat request
             this.option.getPacificaClient().appendLogEntries(request, new RpcResponseCallbackAdapter<RpcRequest.AppendEntriesResponse>() {
                 @Override
                 public void run(Finished finished) {
-                    handleHeartbeatResponse(request, finished, getRpcResponse());
+                    handleHeartbeatResponse(rpcContext, finished, getRpcResponse());
                 }
             });
-
         } else {
             //probe request
-            final RpcContext rpcContext = new RpcContext(RpcType.APPEND_LOG_ENTRY, request);
             this.flyingRpcQueue.add(rpcContext);
             try {
                 this.option.getPacificaClient().appendLogEntries(request, new ExecutorResponseCallback<RpcRequest.AppendEntriesResponse>(executor) {
@@ -438,11 +437,17 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
     private void handleHeartbeatResponse(final RpcContext rpcContext, final Finished finished, final RpcRequest.AppendEntriesResponse heartbeatResponse) {
+        if (rpcContext.isExpired()) {
+            LOGGER.warn("{} received expired response, ctx={}", this.fromId, rpcContext);
+            return;
+        }
+        rpcContext.finished = finished;
+        rpcContext.response = heartbeatResponse;
         if (finished.isOk()) {
             updateLastResponseTime();
         }
         this.executor.execute(() ->{
-            handleAppendLogEntryResponse(heartbeatRequest, finished, heartbeatResponse);
+            handleAppendLogEntryResponse((RpcRequest.AppendEntriesRequest) rpcContext.request, finished, heartbeatResponse);
         });
     }
 

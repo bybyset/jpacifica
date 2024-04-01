@@ -20,8 +20,11 @@ package com.trs.pacifica.core;
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
+import com.trs.pacifica.error.PacificaCodeException;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
@@ -111,6 +114,41 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
+    public void installSnapshot(SnapshotMeta snapshotMeta, Callback callback) {
+        try {
+            this.readLock.lock();
+            try {
+                final LogId installLogId = new LogId(snapshotMeta.getSnapshotLogIndex(), snapshotMeta.getSnapshotLogTerm());
+                if (installLogId.compareTo(this.lastSnapshotLogId) < 0) {
+                    //TODO installed
+                    return;
+                }
+            } finally {
+                this.readLock.unlock();
+            }
+            if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_DOWNLOADING)) {
+                //1、download snapshot from Primary
+                try(final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot()) {
+                    snapshotDownloader.awaitComplete();
+                } catch (ExecutionException e) {
+                    throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());
+                } catch (InterruptedException e) {
+                    //TODO
+                }
+                //2、load snapshot
+                doSnapshotLoad(null, State.SNAPSHOT_DOWNLOADING);
+
+            } else {
+                //TODO
+                return;
+            }
+
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(callback, Finished.failure(throwable));
+        }
+    }
+
+    @Override
     public SnapshotStorage getSnapshotStorage() {
         return snapshotStorage;
     }
@@ -175,19 +213,33 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         }
     }
 
-    @Override
-    public String toString() {
-        return "SnapshotManagerImpl{" +
-                "state=" + state +
-                ", lastSnapshotLogId=" + this.lastSnapshotLogId +
-                '}';
+    private void doSnapshotLoad(final StateMachineCaller.SnapshotLoadCallback snapshotLoadCallback, final State expectState) throws PacificaCodeException {
+        if (STATE_UPDATER.compareAndSet(this, expectState, State.SNAPSHOT_LOADING)) {
+            try {
+                if (this.stateMachineCaller.onSnapshotLoad(snapshotLoadCallback)) {
+                    try {
+                        snapshotLoadCallback.awaitComplete();
+                    } catch (InterruptedException e) {
+
+                    } catch (ExecutionException e) {
+                        throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());
+                    }
+                } else {
+                    throw new PacificaCodeException(PacificaErrorCode.BUSY, "");
+                }
+            } finally {
+                STATE_UPDATER.set(this, State.IDLE);
+            }
+        } else {
+            throw new PacificaCodeException(PacificaErrorCode.BUSY, "");
+        }
     }
 
-    private void doFirstSnapshotLoad() throws ExecutionException, InterruptedException {
+
+    private void doFirstSnapshotLoad() throws PacificaCodeException {
         final SnapshotReader snapshotReader = this.snapshotStorage.openSnapshotReader();
         final FirstSnapshotLoadCallback firstSnapshotLoadCallback = new FirstSnapshotLoadCallback(snapshotReader);
-        this.stateMachineCaller.onSnapshotLoad(firstSnapshotLoadCallback);
-        firstSnapshotLoadCallback.awaitComplete();
+        doSnapshotLoad(firstSnapshotLoadCallback, State.IDLE);
     }
 
     private void onSnapshotLoadSuccess(final SnapshotMeta snapshotMeta) {
@@ -210,6 +262,14 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
     private void onSnapshotSaveSuccess() {
 
+    }
+
+    @Override
+    public String toString() {
+        return "SnapshotManagerImpl{" +
+                "state=" + state +
+                ", lastSnapshotLogId=" + this.lastSnapshotLogId +
+                '}';
     }
 
     class SnapshotSaveCallback implements StateMachineCaller.SnapshotSaveCallback {

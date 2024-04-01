@@ -28,12 +28,11 @@ public interface PacificaClient extends ReplicaConnection {
     static final int DEFAULT_TIMEOUT_MS = 60 * 1000;
 
     /**
-     *
      * @param request
      * @param callback
      * @return
      */
-    default Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback ) {
+    default Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback) {
         return appendLogEntries(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
@@ -51,4 +50,12 @@ public interface PacificaClient extends ReplicaConnection {
     default Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) {
         return recoverReplica(request, callback, DEFAULT_TIMEOUT_MS);
     }
+
+    Message getFile(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback, final long timeoutMs);
+
+
+    default Message getFile(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback) {
+        return getFile(request, callback, DEFAULT_TIMEOUT_MS);
+    }
+
 }

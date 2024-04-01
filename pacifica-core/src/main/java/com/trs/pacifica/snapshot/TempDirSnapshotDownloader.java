@@ -15,24 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.snapshot;
 
-import com.trs.pacifica.snapshot.SnapshotDownloader;
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
-public interface SnapshotStorage {
-
-
-    public SnapshotReader openSnapshotReader();
-
-    public SnapshotWriter openSnapshotWriter();
+public abstract class TempDirSnapshotDownloader implements SnapshotDownloader{
 
 
-    /**
-     *
-     * @return
-     */
-    public SnapshotDownloader startDownloadSnapshot();
+    @Override
+    public boolean cancel() {
+        return false;
+    }
 
+    @Override
+    public void awaitComplete() throws InterruptedException, ExecutionException {
+
+    }
+
+    @Override
+    public void close() throws IOException {
+
+    }
 }

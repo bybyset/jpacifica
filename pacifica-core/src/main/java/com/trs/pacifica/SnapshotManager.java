@@ -19,8 +19,17 @@ package com.trs.pacifica;
 
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.snapshot.SnapshotMeta;
 
 public interface SnapshotManager {
+
+
+    /**
+     * install snapshot
+     * @param snapshotMeta
+     * @param callback
+     */
+    public void installSnapshot(final SnapshotMeta snapshotMeta, final Callback callback);
 
 
     SnapshotStorage getSnapshotStorage();

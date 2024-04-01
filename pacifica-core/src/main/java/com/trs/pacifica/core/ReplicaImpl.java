@@ -26,6 +26,7 @@ import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.PacificaCodeException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
@@ -100,6 +101,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     private RepeatedTimer snapshotTimer;
 
     private RepeatedTimer recoverTimer;
+
+    private FileService fileService;
 
     /**
      * last timestamp receive heartbeat request from primary
@@ -435,9 +438,40 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     @Override
     public RpcRequest.InstallSnapshotResponse handleInstallSnapshotRequest(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback) throws PacificaException {
+        // Secondary or Candidate receive InstallSnapshotRequest
         this.readLock.lock();
         try {
             ensureActive();
+            //TODO Refactoring duplicate code
+            if (this.snapshotManager == null) {
+                throw new PacificaCodeException(PacificaErrorCode.NOT_SUPPORT, "not support install snapshot.");
+            }
+            final ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
+            if (!this.replicaId.equals(targetId)) {
+                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
+            }
+            if (this.replicaGroup.getVersion() < request.getVersion()) {
+                // TODO refresh replica group
+
+
+            }
+            final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
+            final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
+            if (!primaryReplicaId.equals(fromReplicaId)) {
+                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
+            }
+
+            final long primaryTerm = this.replicaGroup.getPrimaryTerm();
+            if (primaryTerm > request.getTerm()) {
+                return RpcRequest.InstallSnapshotResponse.newBuilder()//
+                        .setSuccess(false)//
+                        .setTerm(primaryTerm)//
+                        .build();
+            }
+
+            this.snapshotManager.installSnapshot();
+
+
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {
@@ -451,7 +485,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.readLock.lock();
         try {
             ensureActive();
-
+            return fileService.handleGetFileRequest(request, callback);
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {

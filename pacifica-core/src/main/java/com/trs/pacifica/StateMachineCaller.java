@@ -23,6 +23,8 @@ import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 
+import java.util.concurrent.ExecutionException;
+
 public interface StateMachineCaller {
 
 
@@ -68,7 +70,15 @@ public interface StateMachineCaller {
 
     public static interface SnapshotLoadCallback extends Callback {
 
-        SnapshotReader getSnapshotReader();
+        public SnapshotReader getSnapshotReader();
+
+        /**
+         * wait snapshot load
+         * @throws InterruptedException if loading snapshot was interrupted.
+         * @throws ExecutionException if loading snapshot failed.
+         */
+        public void awaitComplete() throws InterruptedException, ExecutionException;
+
 
     }
 

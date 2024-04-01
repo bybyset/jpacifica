@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.fs;
 
-import com.trs.pacifica.snapshot.SnapshotDownloader;
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
-public interface SnapshotStorage {
+public interface FileReader {
 
 
-    public SnapshotReader openSnapshotReader();
-
-    public SnapshotWriter openSnapshotWriter();
-
+    public static final int EOF = -1;
 
     /**
-     *
-     * @return
+     * Read file into buffer starts from offset at most length.
+     * @param buffer
+     * @param filename
+     * @param offset
+     * @param length max read length
+     * @return -1 If the end of the file is reached, otherwise, the length read is returned.
      */
-    public SnapshotDownloader startDownloadSnapshot();
+    public int read(ByteBuffer buffer, String filename, int offset, int length) throws IOException;
 
 }

@@ -57,13 +57,12 @@ message GetFileRequest {
   optional ReplicaId target_id = 1;
   optional int64 reader_id = 2;
   optional string filename = 3;
-  optional int64 count = 4;
-  optional int64 offset = 5;
-  optional bool read_partly = 6;
+  optional int32 offset = 4;
+  optional int32 length = 5;
 }
 
 message GetFileResponse {
   optional bool eof = 1;
   optional bytes data = 2;
-  optional int64 readSize = 3;
+  optional int64 read_length = 3;
 }

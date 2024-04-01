@@ -15,24 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.snapshot;
 
-import com.trs.pacifica.snapshot.SnapshotDownloader;
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+import java.io.Closeable;
+import java.util.concurrent.ExecutionException;
 
-public interface SnapshotStorage {
-
-
-    public SnapshotReader openSnapshotReader();
-
-    public SnapshotWriter openSnapshotWriter();
+public interface SnapshotDownloader extends Closeable {
 
 
     /**
-     *
-     * @return
+     * stop and cancel download snapshot
+     * @return false if it is already completed, true otherwise
      */
-    public SnapshotDownloader startDownloadSnapshot();
+    public boolean cancel();
+
+
+    /**
+     * Block the thread until complete download, or some error occurs.
+     * @throws InterruptedException
+     */
+    public void awaitComplete() throws InterruptedException, ExecutionException;
+
 
 }
