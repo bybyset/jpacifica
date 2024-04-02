@@ -128,7 +128,8 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
             }
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_DOWNLOADING)) {
                 //1、download snapshot from Primary
-                try(final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot()) {
+                final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(1, null, null);
+                try(final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot(context)) {
                     snapshotDownloader.awaitComplete();
                 } catch (ExecutionException e) {
                     throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());

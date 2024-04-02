@@ -17,6 +17,8 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
@@ -30,9 +32,24 @@ public interface SnapshotStorage {
 
 
     /**
-     *
      * @return
      */
-    public SnapshotDownloader startDownloadSnapshot();
+    public SnapshotDownloader startDownloadSnapshot(final DownloadContext downloadContext);
+
+
+    public static class DownloadContext {
+
+        private final long readerId;
+
+        private final PacificaClient pacificaClient;
+
+        private final ReplicaId remoteId;
+
+        public DownloadContext(long readerId, PacificaClient pacificaClient, ReplicaId remoteId) {
+            this.readerId = readerId;
+            this.pacificaClient = pacificaClient;
+            this.remoteId = remoteId;
+        }
+    }
 
 }

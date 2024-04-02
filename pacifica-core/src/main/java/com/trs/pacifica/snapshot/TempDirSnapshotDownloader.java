@@ -17,10 +17,22 @@
 
 package com.trs.pacifica.snapshot;
 
+import com.trs.pacifica.fs.remote.RemoteFileDownloader;
+import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.client.PacificaClient;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public abstract class TempDirSnapshotDownloader implements SnapshotDownloader{
+
+
+    protected final RemoteFileDownloader remoteFileDownloader;
+
+    protected TempDirSnapshotDownloader(PacificaClient pacificaClient, ReplicaId remoteId, long remoteReaderId) {
+        remoteFileDownloader = new RemoteFileDownloader(pacificaClient, remoteId, remoteReaderId);
+    }
+
 
 
     @Override

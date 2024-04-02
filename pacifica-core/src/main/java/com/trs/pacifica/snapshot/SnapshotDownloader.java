@@ -17,24 +17,13 @@
 
 package com.trs.pacifica.snapshot;
 
+import com.trs.pacifica.async.Task;
+
 import java.io.Closeable;
 import java.util.concurrent.ExecutionException;
 
-public interface SnapshotDownloader extends Closeable {
+public interface SnapshotDownloader extends Closeable, Task {
 
-
-    /**
-     * stop and cancel download snapshot
-     * @return false if it is already completed, true otherwise
-     */
-    public boolean cancel();
-
-
-    /**
-     * Block the thread until complete download, or some error occurs.
-     * @throws InterruptedException
-     */
-    public void awaitComplete() throws InterruptedException, ExecutionException;
 
 
 }
