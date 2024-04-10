@@ -83,7 +83,19 @@ public interface StateMachineCaller {
     }
 
     public static interface SnapshotSaveCallback extends Callback {
-        SnapshotWriter getSnapshotWriter();
+
+        /**
+         *
+         * @param saveLogId
+         * @return
+         */
+        SnapshotWriter start(final LogId saveLogId);
+
+        /**
+         * get save LogId on snapshot save
+         * @return null if not start
+         */
+        LogId getSaveLogId();
 
     }
 

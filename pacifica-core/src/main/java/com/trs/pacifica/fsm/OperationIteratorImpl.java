@@ -92,8 +92,8 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
                     this.curCallback = this.callbackList.get((int)(currentLogIndex - startLogIndex));
                 } catch (Throwable e) {
                     this.committingIndex.set(prevLogIndex);
-                    if (e instanceof PacificaException pacificaException) {
-                        this.error = pacificaException;
+                    if (e instanceof PacificaException ) {
+                        this.error = (PacificaException) e;
                     } else {
                         this.error = new PacificaException("failed to get LogEntry at logIndex=" + currentLogIndex, e);
                     }

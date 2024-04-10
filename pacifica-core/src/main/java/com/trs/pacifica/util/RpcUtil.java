@@ -21,12 +21,11 @@ import com.google.protobuf.ByteString;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcCommon;
+import com.trs.pacifica.snapshot.ProtoSnapshotMeta;
+import com.trs.pacifica.snapshot.SnapshotMeta;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class RpcUtil {
 
@@ -67,10 +66,9 @@ public class RpcUtil {
     public static LogEntry parseLogEntry(final long logIndex, final RpcCommon.LogEntryMeta logEntryMeta, final ByteBuffer allData) {
         final LogEntry.Type type = toLogEntryType(logEntryMeta.getType());
         Objects.requireNonNull(type, "log entry type");
-        final LogEntry logEntry = new LogEntry();
+        final LogEntry logEntry = new LogEntry(type);
         logEntry.setLogIndex(logIndex);
         logEntry.setLogTerm(logEntryMeta.getLogTerm());
-        logEntry.setType(type);
         if (logEntryMeta.hasChecksum()) {
             logEntry.setChecksum(logEntryMeta.getChecksum());
         }
@@ -104,6 +102,29 @@ public class RpcUtil {
             default:
                 return null;
         }
+    }
+
+    public static RpcCommon.SnapshotMeta protoSnapshotMeta(final SnapshotMeta snapshotMeta) {
+        List<RpcCommon.Attribute> attributes = new ArrayList<>();
+        final Map<String, String>  userData = snapshotMeta.getUserData();
+        if (userData != null && userData.isEmpty()) {
+            userData.forEach( (key, value) -> {
+                attributes.add(RpcCommon.Attribute.newBuilder()//
+                        .setKey(key)//
+                        .setValue(value)//
+                        .build()//
+                );
+            });
+        }
+        return RpcCommon.SnapshotMeta.newBuilder()
+                .setLogIndex(snapshotMeta.getSnapshotLogIndex())//
+                .setLogTerm(snapshotMeta.getSnapshotLogTerm())//
+                .addAllAttributes(attributes)//
+                .build();
+    }
+
+    public static SnapshotMeta toSnapshotMeta(final RpcCommon.SnapshotMeta snapshotMeta) {
+        return new ProtoSnapshotMeta(snapshotMeta);
     }
 
 

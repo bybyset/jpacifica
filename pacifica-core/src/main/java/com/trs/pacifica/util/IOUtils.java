@@ -17,16 +17,19 @@
 
 package com.trs.pacifica.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Arrays;
 
 public class IOUtils {
+
+    static final Logger LOGGER = LoggerFactory.getLogger(IOUtils.class);
 
     private IOUtils() {
     }
@@ -197,5 +200,50 @@ public class IOUtils {
                 throw e;
             }
         }
+    }
+
+
+    public static boolean atomicMoveDirectory(final File source, final File target, final boolean sync) throws IOException {
+        final Path sourcePath = source.toPath();
+        final Path targetPath = target.toPath();
+        boolean success;
+        try {
+            success = Files.move(sourcePath, targetPath, StandardCopyOption.ATOMIC_MOVE) != null;
+        } catch (final IOException e) {
+            // If it falls here that can mean many things. Either that the atomic move is not supported,
+            // or something wrong happened. Anyway, let's try to be over-diagnosing
+            if (e instanceof AtomicMoveNotSupportedException) {
+                LOGGER.warn("Atomic move not supported, falling back to non-atomic move, error: {}.", e.getMessage());
+            } else {
+                LOGGER.error("Unable to move atomically, falling back to non-atomic move, error: {}.", e);
+            }
+
+            if (target.exists()) {
+                LOGGER.info("The target file {} was already existing.", targetPath);
+            }
+
+            try {
+                success = Files.move(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING) != null;
+            } catch (final IOException e1) {
+                e1.addSuppressed(e);
+                LOGGER.error("Unable to move {} to {}. Attempting to delete {} and abandoning.", sourcePath, targetPath,
+                        sourcePath, e1);
+                try {
+                    Files.deleteIfExists(sourcePath);
+                } catch (final IOException e2) {
+                    e2.addSuppressed(e1);
+                    LOGGER.error("Unable to delete {}, good bye then!", sourcePath, e2);
+                    throw e2;
+                }
+
+                throw e1;
+            }
+        }
+
+        if (success && sync) {
+            // fsync on target parent dir.
+            fsync(targetPath, target.isDirectory());
+        }
+        return true;
     }
 }

@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.snapshot;
 
+import java.util.Map;
+
 public interface SnapshotMeta {
 
     /**
@@ -30,4 +32,10 @@ public interface SnapshotMeta {
      * @return
      */
     public long getSnapshotLogTerm();
+
+    /**
+     *
+     * @return
+     */
+    public Map<String, String> getUserData();
 }

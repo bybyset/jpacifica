@@ -15,34 +15,41 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.snapshot;
+package com.trs.pacifica.snapshot.storage;
 
-import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.snapshot.SnapshotMeta;
+import com.trs.pacifica.snapshot.SnapshotReader;
 
-import java.io.Closeable;
+import java.util.Collection;
 
-public abstract class SnapshotWriter implements Snapshot, Closeable {
+public class DefaultSnapshotReader implements SnapshotReader {
 
-    protected final LogId snapshotLogId;
+    private final String snapshotName;
 
-    protected SnapshotWriter(final LogId snapshotLogId) {
-        this.snapshotLogId = snapshotLogId;
+    private final DefaultSnapshotStorage snapshotStorage;
+
+    public DefaultSnapshotReader(DefaultSnapshotStorage snapshotStorage, String snapshotName) {
+        this.snapshotName = snapshotName;
+        this.snapshotStorage = snapshotStorage;
     }
 
     @Override
-    public LogId getSnapshotLogId() {
-        if (this.snapshotLogId != null) {
-            return this.snapshotLogId.copy();
-        }
+    public SnapshotMeta getSnapshotMeta() {
         return null;
     }
 
-    public abstract boolean addFile(String filename);
+    @Override
+    public String getDirectory() {
+        return this.snapshotStorage.getSnapshotPath(this.snapshotName);
+    }
 
+    @Override
+    public Collection<String> listFiles() {
+        return null;
+    }
 
-    public abstract boolean removeFile(String filename);
-
-
-
-
+    @Override
+    public long generateReadIdForDownload() {
+        return 0;
+    }
 }

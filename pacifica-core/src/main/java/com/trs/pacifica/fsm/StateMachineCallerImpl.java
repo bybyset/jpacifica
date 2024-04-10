@@ -247,12 +247,11 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
             ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException("failed to get SnapshotReader")));
             return;
         }
-        final SnapshotMeta snapshotMeta = snapshotReader.getSnapshotMeta();
-        if (snapshotMeta == null) {
+        final LogId snapshotLogId = snapshotReader.getSnapshotLogId();
+        if (snapshotLogId == null) {
             ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException("failed to get SnapshotMeta")));
             return;
         }
-        final LogId snapshotLogId = new LogId(snapshotMeta.getSnapshotLogIndex(), snapshotMeta.getSnapshotLogTerm());
         // snapshotLogId > lastSnapshotLogId
 
         //keep snapshotLogId <= commitPoint
@@ -265,24 +264,19 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     private void doSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback) {
         assert snapshotSaveCallback != null;
-        final SnapshotWriter snapshotWriter = snapshotSaveCallback.getSnapshotWriter();
-        if (snapshotWriter == null) {
-            //TODO
-            ThreadUtil.runCallback(snapshotSaveCallback, Finished.failure(new PacificaException("failed to get snapshot writer.")));
-            return;
-        }
-        // meta
-        final long snapshotLogIndex = this.commitPoint.getIndex();
-        final long snapshotLogTerm = this.commitPoint.getTerm();
-
-        //
         try {
+            // meta
+            final long snapshotLogIndex = this.commitPoint.getIndex();
+            final long snapshotLogTerm = this.commitPoint.getTerm();
+            final SnapshotWriter snapshotWriter = snapshotSaveCallback.start(new LogId(snapshotLogIndex, snapshotLogTerm));
+            if (snapshotWriter == null) {
+                throw new PacificaException("failed to get snapshot writer.");
+            }
             this.stateMachine.onSnapshotSave(snapshotWriter);
             ThreadUtil.runCallback(snapshotSaveCallback, Finished.success());
-        } catch (PacificaException e) {
-            ThreadUtil.runCallback(snapshotSaveCallback, Finished.failure(e));
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(snapshotSaveCallback, Finished.failure(throwable));
         }
-
     }
 
 

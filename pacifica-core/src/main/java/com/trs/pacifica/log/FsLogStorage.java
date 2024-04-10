@@ -224,6 +224,11 @@ public class FsLogStorage implements LogStorage {
     }
 
     @Override
+    public void open() {
+
+    }
+
+    @Override
     public void close() {
 
     }

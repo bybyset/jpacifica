@@ -1714,6 +1714,1746 @@ public final class RpcCommon {
 
   }
 
+  public interface AttributeOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:jpacifica.Attribute)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string key = 1;</code>
+     * @return Whether the key field is set.
+     */
+    boolean hasKey();
+    /**
+     * <code>optional string key = 1;</code>
+     * @return The key.
+     */
+    java.lang.String getKey();
+    /**
+     * <code>optional string key = 1;</code>
+     * @return The bytes for key.
+     */
+    com.google.protobuf.ByteString
+        getKeyBytes();
+
+    /**
+     * <code>optional string value = 2;</code>
+     * @return Whether the value field is set.
+     */
+    boolean hasValue();
+    /**
+     * <code>optional string value = 2;</code>
+     * @return The value.
+     */
+    java.lang.String getValue();
+    /**
+     * <code>optional string value = 2;</code>
+     * @return The bytes for value.
+     */
+    com.google.protobuf.ByteString
+        getValueBytes();
+  }
+  /**
+   * Protobuf type {@code jpacifica.Attribute}
+   */
+  public static final class Attribute extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:jpacifica.Attribute)
+      AttributeOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use Attribute.newBuilder() to construct.
+    private Attribute(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private Attribute() {
+      key_ = "";
+      value_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new Attribute();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_Attribute_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_Attribute_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.trs.pacifica.proto.RpcCommon.Attribute.class, com.trs.pacifica.proto.RpcCommon.Attribute.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int KEY_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object key_ = "";
+    /**
+     * <code>optional string key = 1;</code>
+     * @return Whether the key field is set.
+     */
+    @java.lang.Override
+    public boolean hasKey() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional string key = 1;</code>
+     * @return The key.
+     */
+    @java.lang.Override
+    public java.lang.String getKey() {
+      java.lang.Object ref = key_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        key_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string key = 1;</code>
+     * @return The bytes for key.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getKeyBytes() {
+      java.lang.Object ref = key_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        key_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object value_ = "";
+    /**
+     * <code>optional string value = 2;</code>
+     * @return Whether the value field is set.
+     */
+    @java.lang.Override
+    public boolean hasValue() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional string value = 2;</code>
+     * @return The value.
+     */
+    @java.lang.Override
+    public java.lang.String getValue() {
+      java.lang.Object ref = value_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        value_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string value = 2;</code>
+     * @return The bytes for value.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getValueBytes() {
+      java.lang.Object ref = value_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        value_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, key_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, key_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.trs.pacifica.proto.RpcCommon.Attribute)) {
+        return super.equals(obj);
+      }
+      com.trs.pacifica.proto.RpcCommon.Attribute other = (com.trs.pacifica.proto.RpcCommon.Attribute) obj;
+
+      if (hasKey() != other.hasKey()) return false;
+      if (hasKey()) {
+        if (!getKey()
+            .equals(other.getKey())) return false;
+      }
+      if (hasValue() != other.hasValue()) return false;
+      if (hasValue()) {
+        if (!getValue()
+            .equals(other.getValue())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasKey()) {
+        hash = (37 * hash) + KEY_FIELD_NUMBER;
+        hash = (53 * hash) + getKey().hashCode();
+      }
+      if (hasValue()) {
+        hash = (37 * hash) + VALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getValue().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.Attribute parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcCommon.Attribute prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code jpacifica.Attribute}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:jpacifica.Attribute)
+        com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_Attribute_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_Attribute_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.trs.pacifica.proto.RpcCommon.Attribute.class, com.trs.pacifica.proto.RpcCommon.Attribute.Builder.class);
+      }
+
+      // Construct using com.trs.pacifica.proto.RpcCommon.Attribute.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        key_ = "";
+        value_ = "";
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_Attribute_descriptor;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.Attribute getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcCommon.Attribute.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.Attribute build() {
+        com.trs.pacifica.proto.RpcCommon.Attribute result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.Attribute buildPartial() {
+        com.trs.pacifica.proto.RpcCommon.Attribute result = new com.trs.pacifica.proto.RpcCommon.Attribute(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.trs.pacifica.proto.RpcCommon.Attribute result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.key_ = key_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.value_ = value_;
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.trs.pacifica.proto.RpcCommon.Attribute) {
+          return mergeFrom((com.trs.pacifica.proto.RpcCommon.Attribute)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.Attribute other) {
+        if (other == com.trs.pacifica.proto.RpcCommon.Attribute.getDefaultInstance()) return this;
+        if (other.hasKey()) {
+          key_ = other.key_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (other.hasValue()) {
+          value_ = other.value_;
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                key_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                value_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object key_ = "";
+      /**
+       * <code>optional string key = 1;</code>
+       * @return Whether the key field is set.
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional string key = 1;</code>
+       * @return The key.
+       */
+      public java.lang.String getKey() {
+        java.lang.Object ref = key_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          key_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string key = 1;</code>
+       * @return The bytes for key.
+       */
+      public com.google.protobuf.ByteString
+          getKeyBytes() {
+        java.lang.Object ref = key_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          key_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string key = 1;</code>
+       * @param value The key to set.
+       * @return This builder for chaining.
+       */
+      public Builder setKey(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        key_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string key = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearKey() {
+        key_ = getDefaultInstance().getKey();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string key = 1;</code>
+       * @param value The bytes for key to set.
+       * @return This builder for chaining.
+       */
+      public Builder setKeyBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        key_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object value_ = "";
+      /**
+       * <code>optional string value = 2;</code>
+       * @return Whether the value field is set.
+       */
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @return The value.
+       */
+      public java.lang.String getValue() {
+        java.lang.Object ref = value_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          value_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @return The bytes for value.
+       */
+      public com.google.protobuf.ByteString
+          getValueBytes() {
+        java.lang.Object ref = value_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          value_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @param value The value to set.
+       * @return This builder for chaining.
+       */
+      public Builder setValue(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        value_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearValue() {
+        value_ = getDefaultInstance().getValue();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @param value The bytes for value to set.
+       * @return This builder for chaining.
+       */
+      public Builder setValueBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        value_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:jpacifica.Attribute)
+    }
+
+    // @@protoc_insertion_point(class_scope:jpacifica.Attribute)
+    private static final com.trs.pacifica.proto.RpcCommon.Attribute DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcCommon.Attribute();
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.Attribute getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<Attribute>
+        PARSER = new com.google.protobuf.AbstractParser<Attribute>() {
+      @java.lang.Override
+      public Attribute parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<Attribute> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Attribute> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.Attribute getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface SnapshotMetaOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:jpacifica.SnapshotMeta)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int64 log_index = 1;</code>
+     * @return Whether the logIndex field is set.
+     */
+    boolean hasLogIndex();
+    /**
+     * <code>optional int64 log_index = 1;</code>
+     * @return The logIndex.
+     */
+    long getLogIndex();
+
+    /**
+     * <code>optional int64 log_term = 2;</code>
+     * @return Whether the logTerm field is set.
+     */
+    boolean hasLogTerm();
+    /**
+     * <code>optional int64 log_term = 2;</code>
+     * @return The logTerm.
+     */
+    long getLogTerm();
+
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    java.util.List<com.trs.pacifica.proto.RpcCommon.Attribute> 
+        getAttributesList();
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    com.trs.pacifica.proto.RpcCommon.Attribute getAttributes(int index);
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    int getAttributesCount();
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    java.util.List<? extends com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder> 
+        getAttributesOrBuilderList();
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder getAttributesOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code jpacifica.SnapshotMeta}
+   */
+  public static final class SnapshotMeta extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:jpacifica.SnapshotMeta)
+      SnapshotMetaOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use SnapshotMeta.newBuilder() to construct.
+    private SnapshotMeta(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SnapshotMeta() {
+      attributes_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SnapshotMeta();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_SnapshotMeta_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_SnapshotMeta_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.trs.pacifica.proto.RpcCommon.SnapshotMeta.class, com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int LOG_INDEX_FIELD_NUMBER = 1;
+    private long logIndex_ = 0L;
+    /**
+     * <code>optional int64 log_index = 1;</code>
+     * @return Whether the logIndex field is set.
+     */
+    @java.lang.Override
+    public boolean hasLogIndex() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional int64 log_index = 1;</code>
+     * @return The logIndex.
+     */
+    @java.lang.Override
+    public long getLogIndex() {
+      return logIndex_;
+    }
+
+    public static final int LOG_TERM_FIELD_NUMBER = 2;
+    private long logTerm_ = 0L;
+    /**
+     * <code>optional int64 log_term = 2;</code>
+     * @return Whether the logTerm field is set.
+     */
+    @java.lang.Override
+    public boolean hasLogTerm() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional int64 log_term = 2;</code>
+     * @return The logTerm.
+     */
+    @java.lang.Override
+    public long getLogTerm() {
+      return logTerm_;
+    }
+
+    public static final int ATTRIBUTES_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
+    private java.util.List<com.trs.pacifica.proto.RpcCommon.Attribute> attributes_;
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    @java.lang.Override
+    public java.util.List<com.trs.pacifica.proto.RpcCommon.Attribute> getAttributesList() {
+      return attributes_;
+    }
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder> 
+        getAttributesOrBuilderList() {
+      return attributes_;
+    }
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    @java.lang.Override
+    public int getAttributesCount() {
+      return attributes_.size();
+    }
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.Attribute getAttributes(int index) {
+      return attributes_.get(index);
+    }
+    /**
+     * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder getAttributesOrBuilder(
+        int index) {
+      return attributes_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeInt64(1, logIndex_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeInt64(2, logTerm_);
+      }
+      for (int i = 0; i < attributes_.size(); i++) {
+        output.writeMessage(3, attributes_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, logIndex_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, logTerm_);
+      }
+      for (int i = 0; i < attributes_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, attributes_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.trs.pacifica.proto.RpcCommon.SnapshotMeta)) {
+        return super.equals(obj);
+      }
+      com.trs.pacifica.proto.RpcCommon.SnapshotMeta other = (com.trs.pacifica.proto.RpcCommon.SnapshotMeta) obj;
+
+      if (hasLogIndex() != other.hasLogIndex()) return false;
+      if (hasLogIndex()) {
+        if (getLogIndex()
+            != other.getLogIndex()) return false;
+      }
+      if (hasLogTerm() != other.hasLogTerm()) return false;
+      if (hasLogTerm()) {
+        if (getLogTerm()
+            != other.getLogTerm()) return false;
+      }
+      if (!getAttributesList()
+          .equals(other.getAttributesList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasLogIndex()) {
+        hash = (37 * hash) + LOG_INDEX_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getLogIndex());
+      }
+      if (hasLogTerm()) {
+        hash = (37 * hash) + LOG_TERM_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getLogTerm());
+      }
+      if (getAttributesCount() > 0) {
+        hash = (37 * hash) + ATTRIBUTES_FIELD_NUMBER;
+        hash = (53 * hash) + getAttributesList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcCommon.SnapshotMeta prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code jpacifica.SnapshotMeta}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:jpacifica.SnapshotMeta)
+        com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_SnapshotMeta_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_SnapshotMeta_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.trs.pacifica.proto.RpcCommon.SnapshotMeta.class, com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder.class);
+      }
+
+      // Construct using com.trs.pacifica.proto.RpcCommon.SnapshotMeta.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        logIndex_ = 0L;
+        logTerm_ = 0L;
+        if (attributesBuilder_ == null) {
+          attributes_ = java.util.Collections.emptyList();
+        } else {
+          attributes_ = null;
+          attributesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_SnapshotMeta_descriptor;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.SnapshotMeta getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.SnapshotMeta build() {
+        com.trs.pacifica.proto.RpcCommon.SnapshotMeta result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.SnapshotMeta buildPartial() {
+        com.trs.pacifica.proto.RpcCommon.SnapshotMeta result = new com.trs.pacifica.proto.RpcCommon.SnapshotMeta(this);
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(com.trs.pacifica.proto.RpcCommon.SnapshotMeta result) {
+        if (attributesBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) != 0)) {
+            attributes_ = java.util.Collections.unmodifiableList(attributes_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.attributes_ = attributes_;
+        } else {
+          result.attributes_ = attributesBuilder_.build();
+        }
+      }
+
+      private void buildPartial0(com.trs.pacifica.proto.RpcCommon.SnapshotMeta result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.logIndex_ = logIndex_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.logTerm_ = logTerm_;
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.trs.pacifica.proto.RpcCommon.SnapshotMeta) {
+          return mergeFrom((com.trs.pacifica.proto.RpcCommon.SnapshotMeta)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.SnapshotMeta other) {
+        if (other == com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance()) return this;
+        if (other.hasLogIndex()) {
+          setLogIndex(other.getLogIndex());
+        }
+        if (other.hasLogTerm()) {
+          setLogTerm(other.getLogTerm());
+        }
+        if (attributesBuilder_ == null) {
+          if (!other.attributes_.isEmpty()) {
+            if (attributes_.isEmpty()) {
+              attributes_ = other.attributes_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureAttributesIsMutable();
+              attributes_.addAll(other.attributes_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.attributes_.isEmpty()) {
+            if (attributesBuilder_.isEmpty()) {
+              attributesBuilder_.dispose();
+              attributesBuilder_ = null;
+              attributes_ = other.attributes_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              attributesBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getAttributesFieldBuilder() : null;
+            } else {
+              attributesBuilder_.addAllMessages(other.attributes_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                logIndex_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 16: {
+                logTerm_ = input.readInt64();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              case 26: {
+                com.trs.pacifica.proto.RpcCommon.Attribute m =
+                    input.readMessage(
+                        com.trs.pacifica.proto.RpcCommon.Attribute.parser(),
+                        extensionRegistry);
+                if (attributesBuilder_ == null) {
+                  ensureAttributesIsMutable();
+                  attributes_.add(m);
+                } else {
+                  attributesBuilder_.addMessage(m);
+                }
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private long logIndex_ ;
+      /**
+       * <code>optional int64 log_index = 1;</code>
+       * @return Whether the logIndex field is set.
+       */
+      @java.lang.Override
+      public boolean hasLogIndex() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional int64 log_index = 1;</code>
+       * @return The logIndex.
+       */
+      @java.lang.Override
+      public long getLogIndex() {
+        return logIndex_;
+      }
+      /**
+       * <code>optional int64 log_index = 1;</code>
+       * @param value The logIndex to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLogIndex(long value) {
+
+        logIndex_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 log_index = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLogIndex() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        logIndex_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long logTerm_ ;
+      /**
+       * <code>optional int64 log_term = 2;</code>
+       * @return Whether the logTerm field is set.
+       */
+      @java.lang.Override
+      public boolean hasLogTerm() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional int64 log_term = 2;</code>
+       * @return The logTerm.
+       */
+      @java.lang.Override
+      public long getLogTerm() {
+        return logTerm_;
+      }
+      /**
+       * <code>optional int64 log_term = 2;</code>
+       * @param value The logTerm to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLogTerm(long value) {
+
+        logTerm_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 log_term = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLogTerm() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        logTerm_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.trs.pacifica.proto.RpcCommon.Attribute> attributes_ =
+        java.util.Collections.emptyList();
+      private void ensureAttributesIsMutable() {
+        if (!((bitField0_ & 0x00000004) != 0)) {
+          attributes_ = new java.util.ArrayList<com.trs.pacifica.proto.RpcCommon.Attribute>(attributes_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.trs.pacifica.proto.RpcCommon.Attribute, com.trs.pacifica.proto.RpcCommon.Attribute.Builder, com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder> attributesBuilder_;
+
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public java.util.List<com.trs.pacifica.proto.RpcCommon.Attribute> getAttributesList() {
+        if (attributesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(attributes_);
+        } else {
+          return attributesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public int getAttributesCount() {
+        if (attributesBuilder_ == null) {
+          return attributes_.size();
+        } else {
+          return attributesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.Attribute getAttributes(int index) {
+        if (attributesBuilder_ == null) {
+          return attributes_.get(index);
+        } else {
+          return attributesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder setAttributes(
+          int index, com.trs.pacifica.proto.RpcCommon.Attribute value) {
+        if (attributesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAttributesIsMutable();
+          attributes_.set(index, value);
+          onChanged();
+        } else {
+          attributesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder setAttributes(
+          int index, com.trs.pacifica.proto.RpcCommon.Attribute.Builder builderForValue) {
+        if (attributesBuilder_ == null) {
+          ensureAttributesIsMutable();
+          attributes_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          attributesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder addAttributes(com.trs.pacifica.proto.RpcCommon.Attribute value) {
+        if (attributesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAttributesIsMutable();
+          attributes_.add(value);
+          onChanged();
+        } else {
+          attributesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder addAttributes(
+          int index, com.trs.pacifica.proto.RpcCommon.Attribute value) {
+        if (attributesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAttributesIsMutable();
+          attributes_.add(index, value);
+          onChanged();
+        } else {
+          attributesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder addAttributes(
+          com.trs.pacifica.proto.RpcCommon.Attribute.Builder builderForValue) {
+        if (attributesBuilder_ == null) {
+          ensureAttributesIsMutable();
+          attributes_.add(builderForValue.build());
+          onChanged();
+        } else {
+          attributesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder addAttributes(
+          int index, com.trs.pacifica.proto.RpcCommon.Attribute.Builder builderForValue) {
+        if (attributesBuilder_ == null) {
+          ensureAttributesIsMutable();
+          attributes_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          attributesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder addAllAttributes(
+          java.lang.Iterable<? extends com.trs.pacifica.proto.RpcCommon.Attribute> values) {
+        if (attributesBuilder_ == null) {
+          ensureAttributesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, attributes_);
+          onChanged();
+        } else {
+          attributesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder clearAttributes() {
+        if (attributesBuilder_ == null) {
+          attributes_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          attributesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public Builder removeAttributes(int index) {
+        if (attributesBuilder_ == null) {
+          ensureAttributesIsMutable();
+          attributes_.remove(index);
+          onChanged();
+        } else {
+          attributesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.Attribute.Builder getAttributesBuilder(
+          int index) {
+        return getAttributesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder getAttributesOrBuilder(
+          int index) {
+        if (attributesBuilder_ == null) {
+          return attributes_.get(index);  } else {
+          return attributesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public java.util.List<? extends com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder> 
+           getAttributesOrBuilderList() {
+        if (attributesBuilder_ != null) {
+          return attributesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(attributes_);
+        }
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.Attribute.Builder addAttributesBuilder() {
+        return getAttributesFieldBuilder().addBuilder(
+            com.trs.pacifica.proto.RpcCommon.Attribute.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.Attribute.Builder addAttributesBuilder(
+          int index) {
+        return getAttributesFieldBuilder().addBuilder(
+            index, com.trs.pacifica.proto.RpcCommon.Attribute.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .jpacifica.Attribute attributes = 3;</code>
+       */
+      public java.util.List<com.trs.pacifica.proto.RpcCommon.Attribute.Builder> 
+           getAttributesBuilderList() {
+        return getAttributesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.trs.pacifica.proto.RpcCommon.Attribute, com.trs.pacifica.proto.RpcCommon.Attribute.Builder, com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder> 
+          getAttributesFieldBuilder() {
+        if (attributesBuilder_ == null) {
+          attributesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              com.trs.pacifica.proto.RpcCommon.Attribute, com.trs.pacifica.proto.RpcCommon.Attribute.Builder, com.trs.pacifica.proto.RpcCommon.AttributeOrBuilder>(
+                  attributes_,
+                  ((bitField0_ & 0x00000004) != 0),
+                  getParentForChildren(),
+                  isClean());
+          attributes_ = null;
+        }
+        return attributesBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:jpacifica.SnapshotMeta)
+    }
+
+    // @@protoc_insertion_point(class_scope:jpacifica.SnapshotMeta)
+    private static final com.trs.pacifica.proto.RpcCommon.SnapshotMeta DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcCommon.SnapshotMeta();
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.SnapshotMeta getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SnapshotMeta>
+        PARSER = new com.google.protobuf.AbstractParser<SnapshotMeta>() {
+      @java.lang.Override
+      public SnapshotMeta parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<SnapshotMeta> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<SnapshotMeta> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.SnapshotMeta getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_jpacifica_ReplicaId_descriptor;
   private static final 
@@ -1724,6 +3464,16 @@ public final class RpcCommon {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_jpacifica_LogEntryMeta_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_jpacifica_Attribute_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_jpacifica_Attribute_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_jpacifica_SnapshotMeta_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_jpacifica_SnapshotMeta_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1740,9 +3490,14 @@ public final class RpcCommon {
       "a_len\030\002 \001(\005H\001\210\001\001\022*\n\004type\030\003 \001(\0162\027.jpacifi" +
       "ca.LogEntryTypeH\002\210\001\001\022\025\n\010checksum\030\004 \001(\003H\003" +
       "\210\001\001B\013\n\t_log_termB\013\n\t_data_lenB\007\n\005_typeB\013" +
-      "\n\t_checksum*&\n\014LogEntryType\022\013\n\007OP_DATA\020\000" +
-      "\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacifica.protoB\tR" +
-      "pcCommonb\006proto3"
+      "\n\t_checksum\"C\n\tAttribute\022\020\n\003key\030\001 \001(\tH\000\210" +
+      "\001\001\022\022\n\005value\030\002 \001(\tH\001\210\001\001B\006\n\004_keyB\010\n\006_value" +
+      "\"\202\001\n\014SnapshotMeta\022\026\n\tlog_index\030\001 \001(\003H\000\210\001" +
+      "\001\022\025\n\010log_term\030\002 \001(\003H\001\210\001\001\022(\n\nattributes\030\003" +
+      " \003(\0132\024.jpacifica.AttributeB\014\n\n_log_index" +
+      "B\013\n\t_log_term*&\n\014LogEntryType\022\013\n\007OP_DATA" +
+      "\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacifica.protoB" +
+      "\tRpcCommonb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1760,6 +3515,18 @@ public final class RpcCommon {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_LogEntryMeta_descriptor,
         new java.lang.String[] { "LogTerm", "DataLen", "Type", "Checksum", });
+    internal_static_jpacifica_Attribute_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_jpacifica_Attribute_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_jpacifica_Attribute_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_jpacifica_SnapshotMeta_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_jpacifica_SnapshotMeta_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_jpacifica_SnapshotMeta_descriptor,
+        new java.lang.String[] { "LogIndex", "LogTerm", "Attributes", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

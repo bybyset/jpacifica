@@ -25,6 +25,7 @@ allprojects {
         guava_version = '33.0.0-jre'
         jctools_version = '4.0.3'
         metrics_version = '4.2.25'
+        commons_io_version = '2.16.0'
     }
 }
 

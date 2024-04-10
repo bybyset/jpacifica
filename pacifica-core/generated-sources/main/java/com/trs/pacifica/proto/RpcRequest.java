@@ -4387,6 +4387,32 @@ public final class RpcRequest {
      * @return The version.
      */
     long getVersion();
+
+    /**
+     * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+     * @return Whether the meta field is set.
+     */
+    boolean hasMeta();
+    /**
+     * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+     * @return The meta.
+     */
+    com.trs.pacifica.proto.RpcCommon.SnapshotMeta getMeta();
+    /**
+     * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+     */
+    com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder getMetaOrBuilder();
+
+    /**
+     * <code>optional int64 readerId = 6;</code>
+     * @return Whether the readerId field is set.
+     */
+    boolean hasReaderId();
+    /**
+     * <code>optional int64 readerId = 6;</code>
+     * @return The readerId.
+     */
+    long getReaderId();
   }
   /**
    * Protobuf type {@code jpacifica.InstallSnapshotRequest}
@@ -4514,6 +4540,51 @@ public final class RpcRequest {
       return version_;
     }
 
+    public static final int META_FIELD_NUMBER = 5;
+    private com.trs.pacifica.proto.RpcCommon.SnapshotMeta meta_;
+    /**
+     * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+     * @return Whether the meta field is set.
+     */
+    @java.lang.Override
+    public boolean hasMeta() {
+      return ((bitField0_ & 0x00000010) != 0);
+    }
+    /**
+     * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+     * @return The meta.
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.SnapshotMeta getMeta() {
+      return meta_ == null ? com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance() : meta_;
+    }
+    /**
+     * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder getMetaOrBuilder() {
+      return meta_ == null ? com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance() : meta_;
+    }
+
+    public static final int READERID_FIELD_NUMBER = 6;
+    private long readerId_ = 0L;
+    /**
+     * <code>optional int64 readerId = 6;</code>
+     * @return Whether the readerId field is set.
+     */
+    @java.lang.Override
+    public boolean hasReaderId() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <code>optional int64 readerId = 6;</code>
+     * @return The readerId.
+     */
+    @java.lang.Override
+    public long getReaderId() {
+      return readerId_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -4540,6 +4611,12 @@ public final class RpcRequest {
       if (((bitField0_ & 0x00000008) != 0)) {
         output.writeInt64(4, version_);
       }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        output.writeMessage(5, getMeta());
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        output.writeInt64(6, readerId_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4564,6 +4641,14 @@ public final class RpcRequest {
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(4, version_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, getMeta());
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(6, readerId_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -4600,6 +4685,16 @@ public final class RpcRequest {
         if (getVersion()
             != other.getVersion()) return false;
       }
+      if (hasMeta() != other.hasMeta()) return false;
+      if (hasMeta()) {
+        if (!getMeta()
+            .equals(other.getMeta())) return false;
+      }
+      if (hasReaderId() != other.hasReaderId()) return false;
+      if (hasReaderId()) {
+        if (getReaderId()
+            != other.getReaderId()) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -4628,6 +4723,15 @@ public final class RpcRequest {
         hash = (37 * hash) + VERSION_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
             getVersion());
+      }
+      if (hasMeta()) {
+        hash = (37 * hash) + META_FIELD_NUMBER;
+        hash = (53 * hash) + getMeta().hashCode();
+      }
+      if (hasReaderId()) {
+        hash = (37 * hash) + READERID_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getReaderId());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -4761,6 +4865,7 @@ public final class RpcRequest {
                 .alwaysUseFieldBuilders) {
           getPrimaryIdFieldBuilder();
           getTargetIdFieldBuilder();
+          getMetaFieldBuilder();
         }
       }
       @java.lang.Override
@@ -4779,6 +4884,12 @@ public final class RpcRequest {
         }
         term_ = 0L;
         version_ = 0L;
+        meta_ = null;
+        if (metaBuilder_ != null) {
+          metaBuilder_.dispose();
+          metaBuilder_ = null;
+        }
+        readerId_ = 0L;
         return this;
       }
 
@@ -4832,6 +4943,16 @@ public final class RpcRequest {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           result.version_ = version_;
           to_bitField0_ |= 0x00000008;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.meta_ = metaBuilder_ == null
+              ? meta_
+              : metaBuilder_.build();
+          to_bitField0_ |= 0x00000010;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.readerId_ = readerId_;
+          to_bitField0_ |= 0x00000020;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -4892,6 +5013,12 @@ public final class RpcRequest {
         if (other.hasVersion()) {
           setVersion(other.getVersion());
         }
+        if (other.hasMeta()) {
+          mergeMeta(other.getMeta());
+        }
+        if (other.hasReaderId()) {
+          setReaderId(other.getReaderId());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -4942,6 +5069,18 @@ public final class RpcRequest {
                 bitField0_ |= 0x00000008;
                 break;
               } // case 32
+              case 42: {
+                input.readMessage(
+                    getMetaFieldBuilder().getBuilder(),
+                    extensionRegistry);
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+              case 48: {
+                readerId_ = input.readInt64();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -5277,6 +5416,167 @@ public final class RpcRequest {
       public Builder clearVersion() {
         bitField0_ = (bitField0_ & ~0x00000008);
         version_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private com.trs.pacifica.proto.RpcCommon.SnapshotMeta meta_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcCommon.SnapshotMeta, com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder, com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder> metaBuilder_;
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       * @return Whether the meta field is set.
+       */
+      public boolean hasMeta() {
+        return ((bitField0_ & 0x00000010) != 0);
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       * @return The meta.
+       */
+      public com.trs.pacifica.proto.RpcCommon.SnapshotMeta getMeta() {
+        if (metaBuilder_ == null) {
+          return meta_ == null ? com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance() : meta_;
+        } else {
+          return metaBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      public Builder setMeta(com.trs.pacifica.proto.RpcCommon.SnapshotMeta value) {
+        if (metaBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          meta_ = value;
+        } else {
+          metaBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      public Builder setMeta(
+          com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder builderForValue) {
+        if (metaBuilder_ == null) {
+          meta_ = builderForValue.build();
+        } else {
+          metaBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      public Builder mergeMeta(com.trs.pacifica.proto.RpcCommon.SnapshotMeta value) {
+        if (metaBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) != 0) &&
+            meta_ != null &&
+            meta_ != com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance()) {
+            getMetaBuilder().mergeFrom(value);
+          } else {
+            meta_ = value;
+          }
+        } else {
+          metaBuilder_.mergeFrom(value);
+        }
+        if (meta_ != null) {
+          bitField0_ |= 0x00000010;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      public Builder clearMeta() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        meta_ = null;
+        if (metaBuilder_ != null) {
+          metaBuilder_.dispose();
+          metaBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder getMetaBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getMetaFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      public com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder getMetaOrBuilder() {
+        if (metaBuilder_ != null) {
+          return metaBuilder_.getMessageOrBuilder();
+        } else {
+          return meta_ == null ?
+              com.trs.pacifica.proto.RpcCommon.SnapshotMeta.getDefaultInstance() : meta_;
+        }
+      }
+      /**
+       * <code>optional .jpacifica.SnapshotMeta meta = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcCommon.SnapshotMeta, com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder, com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder> 
+          getMetaFieldBuilder() {
+        if (metaBuilder_ == null) {
+          metaBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.trs.pacifica.proto.RpcCommon.SnapshotMeta, com.trs.pacifica.proto.RpcCommon.SnapshotMeta.Builder, com.trs.pacifica.proto.RpcCommon.SnapshotMetaOrBuilder>(
+                  getMeta(),
+                  getParentForChildren(),
+                  isClean());
+          meta_ = null;
+        }
+        return metaBuilder_;
+      }
+
+      private long readerId_ ;
+      /**
+       * <code>optional int64 readerId = 6;</code>
+       * @return Whether the readerId field is set.
+       */
+      @java.lang.Override
+      public boolean hasReaderId() {
+        return ((bitField0_ & 0x00000020) != 0);
+      }
+      /**
+       * <code>optional int64 readerId = 6;</code>
+       * @return The readerId.
+       */
+      @java.lang.Override
+      public long getReaderId() {
+        return readerId_;
+      }
+      /**
+       * <code>optional int64 readerId = 6;</code>
+       * @param value The readerId to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReaderId(long value) {
+
+        readerId_ = value;
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 readerId = 6;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearReaderId() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        readerId_ = 0L;
         onChanged();
         return this;
       }
@@ -7915,25 +8215,27 @@ public final class RpcRequest {
       "mary_idB\007\n\005_term\"x\n\026ReplicaRecoverRespon" +
       "se\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term\030\002 \001(\003H\001" +
       "\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B\n\n\010_successB\007\n" +
-      "\005_termB\n\n\010_version\"\320\001\n\026InstallSnapshotRe" +
+      "\005_termB\n\n\010_version\"\251\002\n\026InstallSnapshotRe" +
       "quest\022-\n\nprimary_id\030\001 \001(\0132\024.jpacifica.Re" +
       "plicaIdH\000\210\001\001\022,\n\ttarget_id\030\002 \001(\0132\024.jpacif" +
       "ica.ReplicaIdH\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001\022\024\n" +
-      "\007version\030\004 \001(\003H\003\210\001\001B\r\n\013_primary_idB\014\n\n_t" +
-      "arget_idB\007\n\005_termB\n\n\010_version\"y\n\027Install" +
-      "SnapshotResponse\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021" +
-      "\n\004term\030\002 \001(\003H\001\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B" +
-      "\n\n\010_successB\007\n\005_termB\n\n\010_version\"\326\001\n\016Get" +
-      "FileRequest\022,\n\ttarget_id\030\001 \001(\0132\024.jpacifi" +
-      "ca.ReplicaIdH\000\210\001\001\022\026\n\treader_id\030\002 \001(\003H\001\210\001" +
-      "\001\022\025\n\010filename\030\003 \001(\tH\002\210\001\001\022\023\n\006offset\030\004 \001(\005" +
-      "H\003\210\001\001\022\023\n\006length\030\005 \001(\005H\004\210\001\001B\014\n\n_target_id" +
-      "B\014\n\n_reader_idB\013\n\t_filenameB\t\n\007_offsetB\t" +
-      "\n\007_length\"q\n\017GetFileResponse\022\020\n\003eof\030\001 \001(" +
-      "\010H\000\210\001\001\022\021\n\004data\030\002 \001(\014H\001\210\001\001\022\030\n\013read_length" +
-      "\030\003 \001(\003H\002\210\001\001B\006\n\004_eofB\007\n\005_dataB\016\n\014_read_le" +
-      "ngthB$\n\026com.trs.pacifica.protoB\nRpcReque" +
-      "stb\006proto3"
+      "\007version\030\004 \001(\003H\003\210\001\001\022*\n\004meta\030\005 \001(\0132\027.jpac" +
+      "ifica.SnapshotMetaH\004\210\001\001\022\025\n\010readerId\030\006 \001(" +
+      "\003H\005\210\001\001B\r\n\013_primary_idB\014\n\n_target_idB\007\n\005_" +
+      "termB\n\n\010_versionB\007\n\005_metaB\013\n\t_readerId\"y" +
+      "\n\027InstallSnapshotResponse\022\024\n\007success\030\001 \001" +
+      "(\010H\000\210\001\001\022\021\n\004term\030\002 \001(\003H\001\210\001\001\022\024\n\007version\030\003 " +
+      "\001(\003H\002\210\001\001B\n\n\010_successB\007\n\005_termB\n\n\010_versio" +
+      "n\"\326\001\n\016GetFileRequest\022,\n\ttarget_id\030\001 \001(\0132" +
+      "\024.jpacifica.ReplicaIdH\000\210\001\001\022\026\n\treader_id\030" +
+      "\002 \001(\003H\001\210\001\001\022\025\n\010filename\030\003 \001(\tH\002\210\001\001\022\023\n\006off" +
+      "set\030\004 \001(\005H\003\210\001\001\022\023\n\006length\030\005 \001(\005H\004\210\001\001B\014\n\n_" +
+      "target_idB\014\n\n_reader_idB\013\n\t_filenameB\t\n\007" +
+      "_offsetB\t\n\007_length\"q\n\017GetFileResponse\022\020\n" +
+      "\003eof\030\001 \001(\010H\000\210\001\001\022\021\n\004data\030\002 \001(\014H\001\210\001\001\022\030\n\013re" +
+      "ad_length\030\003 \001(\003H\002\210\001\001B\006\n\004_eofB\007\n\005_dataB\016\n" +
+      "\014_read_lengthB$\n\026com.trs.pacifica.protoB" +
+      "\nRpcRequestb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -7969,7 +8271,7 @@ public final class RpcRequest {
     internal_static_jpacifica_InstallSnapshotRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_InstallSnapshotRequest_descriptor,
-        new java.lang.String[] { "PrimaryId", "TargetId", "Term", "Version", });
+        new java.lang.String[] { "PrimaryId", "TargetId", "Term", "Version", "Meta", "ReaderId", });
     internal_static_jpacifica_InstallSnapshotResponse_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_jpacifica_InstallSnapshotResponse_fieldAccessorTable = new

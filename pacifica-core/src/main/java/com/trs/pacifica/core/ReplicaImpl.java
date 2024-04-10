@@ -36,6 +36,7 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
+import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
@@ -468,10 +469,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                         .setTerm(primaryTerm)//
                         .build();
             }
-
-            this.snapshotManager.installSnapshot();
-
-
+            this.snapshotManager.installSnapshot(request, callback);
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {

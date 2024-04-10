@@ -37,6 +37,7 @@ dependencies {
     implementation "com.google.guava:guava:$guava_version"
     implementation "org.jctools:jctools-core:$jctools_version"
     implementation "io.dropwizard.metrics:metrics-core:$metrics_version"
+    implementation "commons-io:commons-io:$commons_io_version"
 }
 
 sourceSets {

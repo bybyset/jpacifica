@@ -34,6 +34,8 @@ import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallbackAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.snapshot.SnapshotMeta;
+import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
 import com.trs.pacifica.util.thread.ThreadUtil;
@@ -242,12 +244,29 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
     private void installSnapshot() {
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} -> {} install snapshot", fromId, toId);
+        }
+        final SnapshotStorage snapshotStorage = this.option.getSnapshotStorage();
+        if (snapshotStorage == null) {
+            throw new PacificaException("");
+        }
+        final SnapshotReader snapshotReader = snapshotStorage.openSnapshotReader();
+        if (snapshotReader == null) {
+            throw new PacificaException("");
+        }
+        final SnapshotMeta snapshotMeta = snapshotReader.getSnapshotMeta();
+        if (snapshotMeta == null) {
+            throw new PacificaException("");
+        }
+        final long readerId = snapshotReader.generateReadIdForDownload();
         final RpcRequest.InstallSnapshotRequest.Builder requestBuilder = RpcRequest.InstallSnapshotRequest.newBuilder();
         requestBuilder.setPrimaryId(RpcUtil.protoReplicaId(this.fromId));
         requestBuilder.setTargetId(RpcUtil.protoReplicaId(this.toId));
         requestBuilder.setTerm(this.option.replicaGroup.getPrimaryTerm());
         requestBuilder.setVersion(this.option.replicaGroup.getVersion());
+        requestBuilder.setMeta(RpcUtil.protoSnapshotMeta(snapshotMeta));
+        requestBuilder.setReaderId(readerId);
 
         final RpcRequest.InstallSnapshotRequest request = requestBuilder.build();
         final RpcContext rpcContext = new RpcContext(RpcType.INSTALL_SNAPSHOT, request);
@@ -481,7 +500,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                         break;
                     }
                     case INSTALL_SNAPSHOT: {
-                        continueSendLogEntry = handleInstallSnapshotResponse(finished, (RpcRequest.InstallSnapshotResponse) rpcContext.response);
+                        continueSendLogEntry = handleInstallSnapshotResponse((RpcRequest.InstallSnapshotRequest) rpcContext.request, finished, (RpcRequest.InstallSnapshotResponse) rpcContext.response);
                     }
                 }
             } finally {
@@ -539,8 +558,17 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         return true;
     }
 
-    private boolean handleInstallSnapshotResponse(Finished finished, RpcRequest.InstallSnapshotResponse response) {
+    private boolean handleInstallSnapshotResponse(final RpcRequest.InstallSnapshotRequest request, Finished finished, RpcRequest.InstallSnapshotResponse response) {
+        if (!finished.isOk()) {
 
+            return false;
+        }
+        if (!response.getSuccess()) {
+
+            return false;
+        }
+        //success
+        this.nextLogIndex = request.getMeta().getLogIndex() + 1;
         return true;
     }
 
@@ -664,6 +692,8 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
         private ConfigurationClient configurationClient;
 
+        private SnapshotStorage snapshotStorage;
+
         private int maxSendLogEntryNum = DEFAULT_MAX_SEND_LOG_ENTRY_NUM;
 
         /**
@@ -678,6 +708,14 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         private Timer heartBeatTimer;
 
         private ScheduledExecutorService senderScheduler;
+
+        public SnapshotStorage getSnapshotStorage() {
+            return snapshotStorage;
+        }
+
+        public void setSnapshotStorage(SnapshotStorage snapshotStorage) {
+            this.snapshotStorage = snapshotStorage;
+        }
 
         public ScheduledExecutorService getSenderScheduler() {
             return senderScheduler;

@@ -17,18 +17,21 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 
+import java.io.IOException;
+
 public interface SnapshotStorage {
 
 
     public SnapshotReader openSnapshotReader();
 
-    public SnapshotWriter openSnapshotWriter();
+    public SnapshotWriter openSnapshotWriter(final LogId snapshotLogId);
 
 
     /**

@@ -24,10 +24,14 @@ import com.trs.pacifica.error.PacificaCodeException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,10 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     private StateMachineCaller stateMachineCaller;
     private LogId lastSnapshotLogId = new LogId(0, 0);
 
+    private PacificaClient pacificaClient;
+
+    private SnapshotDownloader snapshotDownloader = null;
+
 
     public SnapshotManagerImpl(final ReplicaImpl replica) {
         this.replica = replica;
@@ -74,6 +82,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 this.snapshotStorage = snapshotStorageFactory.newSnapshotStorage(storagePath);
                 this.logManager = Objects.requireNonNull(option.getLogManager(), "logManager");
                 this.stateMachineCaller = Objects.requireNonNull(option.getStateMachineCaller(), "stateMachineCaller");
+                this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
                 this.state = State.SHUTDOWN;
             }
         } finally {
@@ -106,6 +115,10 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
             if (this.state != State.SHUTDOWN) {
                 this.state = State.SHUTTING;
 
+                if (snapshotDownloader != null) {
+                    snapshotDownloader.cancel();
+                }
+
                 this.state = State.SHUTDOWN;
             }
         } finally {
@@ -114,10 +127,11 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
-    public void installSnapshot(SnapshotMeta snapshotMeta, Callback callback) {
+    public void installSnapshot(RpcRequest.InstallSnapshotRequest installSnapshotRequest, Callback callback) {
         try {
             this.readLock.lock();
             try {
+                final SnapshotMeta snapshotMeta = RpcUtil.toSnapshotMeta(installSnapshotRequest.getMeta());
                 final LogId installLogId = new LogId(snapshotMeta.getSnapshotLogIndex(), snapshotMeta.getSnapshotLogTerm());
                 if (installLogId.compareTo(this.lastSnapshotLogId) < 0) {
                     //TODO installed
@@ -127,14 +141,18 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 this.readLock.unlock();
             }
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_DOWNLOADING)) {
+                final ReplicaId primaryId = RpcUtil.toReplicaId(installSnapshotRequest.getPrimaryId());
                 //1、download snapshot from Primary
-                final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(1, null, null);
+                final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(installSnapshotRequest.getReaderId(), this.pacificaClient, primaryId);
                 try(final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot(context)) {
+                    this.snapshotDownloader = snapshotDownloader;
                     snapshotDownloader.awaitComplete();
                 } catch (ExecutionException e) {
                     throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());
                 } catch (InterruptedException e) {
                     //TODO
+                } finally {
+                    snapshotDownloader = null;
                 }
                 //2、load snapshot
                 doSnapshotLoad(null, State.SNAPSHOT_DOWNLOADING);
@@ -160,47 +178,38 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
     @Override
     public void doSnapshot(final Callback callback) {
-        final int snapshotLogIndexMargin = this.option.getReplicaOption().getSnapshotLogIndexMargin();
-        if (snapshotLogIndexMargin < 0) {
-
-            return;
-        }
-        if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_SAVING)) {
-            this.writeLock.lock();
-            try {
-                final LogId commitPoint = this.stateMachineCaller.getCommitPoint();
-                if (commitPoint.getIndex() < this.lastSnapshotLogId.getIndex()) {
-                    //TODO ERROR
-                    return;
+        try {
+            final int snapshotLogIndexMargin = Math.max(0, this.option.getReplicaOption().getSnapshotLogIndexMargin());
+            if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_SAVING)) {
+                this.readLock.lock();
+                try {
+                    final LogId commitPoint = this.stateMachineCaller.getCommitPoint();
+                    if (commitPoint.getIndex() < this.lastSnapshotLogId.getIndex()) {
+                        //TODO ERROR
+                        return;
+                    }
+                    if (commitPoint.getIndex() == this.lastSnapshotLogId.getIndex()) {
+                        //TODO
+                        return;
+                    }
+                    final long distance = commitPoint.getIndex() - this.lastSnapshotLogId.getIndex();
+                    if (distance < snapshotLogIndexMargin) {
+                        //TODO
+                        return;
+                    }
+                    final SnapshotSaveCallback snapshotSaveCallback = new SnapshotSaveCallback(callback);
+                    this.stateMachineCaller.onSnapshotSave(snapshotSaveCallback);
+                    LOGGER.info("");
+                } finally {
+                    this.readLock.unlock();
                 }
-                if (commitPoint.getIndex() == this.lastSnapshotLogId.getIndex()) {
-                    //TODO
-                    return;
-                }
-                final long distance = commitPoint.getIndex() - this.lastSnapshotLogId.getIndex();
-                if (distance < snapshotLogIndexMargin) {
-                    //TODO
-                    return;
-                }
-
-                final SnapshotWriter snapshotWriter = this.snapshotStorage.openSnapshotWriter();
-                if (snapshotWriter == null) {
-                    //TODO
-                    return;
-                }
-                final SnapshotSaveCallback snapshotSaveCallback = new SnapshotSaveCallback(snapshotWriter, callback);
-                this.stateMachineCaller.onSnapshotSave(snapshotSaveCallback);
-                LOGGER.info("");
-
-            } catch (Throwable throwable) {
-                ThreadUtil.runCallback(callback, Finished.failure(throwable));
-            } finally {
-                this.writeLock.unlock();
-                STATE_UPDATER.compareAndSet(this, State.SNAPSHOT_SAVING, State.IDLE);
+            } else {
+                throw new PacificaException("it is busy or not started. state=" + this.state);
             }
-        } else {
-            ThreadUtil.runCallback(callback, Finished.failure(new PacificaException("it is busy or not started. state=" + this.state)));
+        } catch (Throwable throwable) {
+            ThreadUtil.runCallback(callback, Finished.failure(throwable));
         }
+
     }
 
 
@@ -243,12 +252,13 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         doSnapshotLoad(firstSnapshotLoadCallback, State.IDLE);
     }
 
-    private void onSnapshotLoadSuccess(final SnapshotMeta snapshotMeta) {
+    private void onSnapshotLoadSuccess(final LogId loadSnapshotLogId) {
+        assert loadSnapshotLogId != null;
         this.writeLock.lock();
         try {
-            final long snapshotLogIndex = snapshotMeta.getSnapshotLogIndex();
-            final long snapshotLogTerm = snapshotMeta.getSnapshotLogTerm();
-            final LogId snapshotLogId = new LogId(snapshotLogIndex, snapshotLogTerm);
+            final long snapshotLogIndex = loadSnapshotLogId.getIndex();
+            final long snapshotLogTerm = loadSnapshotLogId.getTerm();
+            final LogId snapshotLogId = loadSnapshotLogId.copy();
             if (snapshotLogId.compareTo(this.lastSnapshotLogId) < 0) {
                 LOGGER.warn("{} success to load snapshot, but cur_snapshot_log_id less than last_snapshot_log_id", this.replica.getReplicaId(), snapshotLogId, lastSnapshotLogId);
             }
@@ -261,8 +271,18 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
     }
 
-    private void onSnapshotSaveSuccess() {
-
+    private void onSnapshotSaveSuccess(final LogId saveLogId) {
+        //
+        assert saveLogId != null;
+        this.writeLock.lock();
+        try {
+            if (saveLogId.compareTo(this.lastSnapshotLogId) > 0) {
+                this.lastSnapshotLogId = saveLogId.copy();
+                this.logManager.onSnapshot(saveLogId.getIndex(), saveLogId.getTerm());
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     @Override
@@ -275,27 +295,49 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
     class SnapshotSaveCallback implements StateMachineCaller.SnapshotSaveCallback {
 
-        private final SnapshotWriter snapshotWriter;
-
         private final Callback callback;
 
-        SnapshotSaveCallback(SnapshotWriter snapshotWriter, Callback callback) {
-            this.snapshotWriter = snapshotWriter;
+        private SnapshotWriter snapshotWriter = null;
+        private LogId saveLogId = null;
+
+        SnapshotSaveCallback(Callback callback) {
             this.callback = callback;
         }
 
         @Override
-        public SnapshotWriter getSnapshotWriter() {
-            return snapshotWriter;
+        public void run(Finished finished) {
+            try {
+                Objects.requireNonNull(this.saveLogId, "save snapshot LogId");
+                if (this.snapshotWriter != null) {
+                    this.snapshotWriter.close();
+                }
+                if (finished.isOk()) {
+                    onSnapshotSaveSuccess(this.saveLogId);
+                }
+                ThreadUtil.runCallback(callback, finished);
+            } catch (Throwable throwable) {
+                if (!finished.isOk()) {
+                    throwable.addSuppressed(finished.error());
+                }
+                ThreadUtil.runCallback(callback, Finished.failure(throwable));
+            } finally {
+                STATE_UPDATER.compareAndSet(SnapshotManagerImpl.this, State.SNAPSHOT_SAVING, State.IDLE);
+            }
         }
 
         @Override
-        public void run(Finished finished) {
-            if (finished.isOk()) {
-                onSnapshotSaveSuccess();
-            }
-            ThreadUtil.runCallback(callback, finished);
+        public SnapshotWriter start(LogId saveLogId) {
+            this.saveLogId = saveLogId;
+            this.snapshotWriter = SnapshotManagerImpl.this.snapshotStorage.openSnapshotWriter(saveLogId);
+            return this.snapshotWriter;
+        }
 
+        @Override
+        public LogId getSaveLogId() {
+            if (this.saveLogId != null) {
+                return saveLogId.copy();
+            }
+            return null;
         }
     }
 
@@ -319,8 +361,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         public void run(Finished finished) {
             try {
                 if (finished.isOk()) {
-                    final SnapshotMeta meta = snapshotReader.getSnapshotMeta();
-                    onSnapshotLoadSuccess(meta);
+                    onSnapshotLoadSuccess(snapshotReader.getSnapshotLogId());
                 } else {
                     this.error = finished.error();
                 }
@@ -348,6 +389,16 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         private StateMachineCaller stateMachineCaller;
 
         private LogManager logManager;
+
+        private PacificaClient pacificaClient;
+
+        public PacificaClient getPacificaClient() {
+            return pacificaClient;
+        }
+
+        public void setPacificaClient(PacificaClient pacificaClient) {
+            this.pacificaClient = pacificaClient;
+        }
 
         public ReplicaOption getReplicaOption() {
             return replicaOption;

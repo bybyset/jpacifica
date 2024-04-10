@@ -17,14 +17,28 @@
 
 package com.trs.pacifica.snapshot;
 
-public class SnapshotWriterAdapter implements SnapshotWriter{
+import com.trs.pacifica.proto.RpcCommon;
 
-    private final SnapshotWriter writer;
+import java.util.Map;
 
+public class ProtoSnapshotMeta implements SnapshotMeta{
 
-    public SnapshotWriterAdapter(SnapshotWriter writer) {
-        this.writer = writer;
+    private final RpcCommon.SnapshotMeta protoSnapshotMeta;
+    public ProtoSnapshotMeta(RpcCommon.SnapshotMeta protoSnapshotMeta) {
+        this.protoSnapshotMeta = protoSnapshotMeta;
+    }
+    @Override
+    public long getSnapshotLogIndex() {
+        return protoSnapshotMeta.getLogIndex();
     }
 
+    @Override
+    public long getSnapshotLogTerm() {
+        return protoSnapshotMeta.getLogTerm();
+    }
 
+    @Override
+    public Map<String, String> getUserData() {
+        return null;
+    }
 }

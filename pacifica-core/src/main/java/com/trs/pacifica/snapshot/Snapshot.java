@@ -15,42 +15,20 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.snapshot;
 
-import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.LogId;
-import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 
-public interface SnapshotManager {
+import java.util.Collection;
 
+public interface Snapshot {
 
-    /**
-     * install snapshot
-     * @param snapshotMeta
-     * @param callback
-     */
-    public void installSnapshot(final RpcRequest.InstallSnapshotRequest installSnapshotRequest, final Callback callback);
+    public LogId getSnapshotLogId();
+
+    public String getDirectory();
+
+    public Collection<String> listFiles();
 
 
-    SnapshotStorage getSnapshotStorage();
-
-
-    default public void doSnapshot() {
-        doSnapshot(null);
-    }
-
-    /**
-     * execute snapshot
-     * @param callback  called after finished.
-     */
-    void doSnapshot(final Callback callback);
-
-
-    /**
-     * get the LogId at last execute snapshot
-     * @return
-     */
-    LogId getLastSnapshotLodId();
 
 }

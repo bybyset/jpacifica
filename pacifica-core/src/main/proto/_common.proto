@@ -21,3 +21,14 @@ message LogEntryMeta {
   optional LogEntryType type = 3;
   optional int64 checksum = 4;
 }
+
+message Attribute {
+  optional string key = 1;
+  optional string value = 2;
+}
+
+message SnapshotMeta {
+  optional int64 log_index = 1;
+  optional int64 log_term = 2;
+  repeated Attribute attributes = 3;
+}

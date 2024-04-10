@@ -17,14 +17,14 @@
 
 package com.trs.pacifica.snapshot;
 
-public interface SnapshotReader {
+public interface SnapshotReader extends Snapshot{
 
 
     /**
-     *
+     * generate file reader id for download snapshot
      * @return
      */
-    public SnapshotMeta getSnapshotMeta();
+    public long generateReadIdForDownload();
 
 
 }
