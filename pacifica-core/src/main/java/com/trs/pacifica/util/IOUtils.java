@@ -203,7 +203,7 @@ public class IOUtils {
     }
 
 
-    public static boolean atomicMoveDirectory(final File source, final File target, final boolean sync) throws IOException {
+    public static boolean atomicMoveFile(final File source, final File target, final boolean sync) throws IOException {
         final Path sourcePath = source.toPath();
         final Path targetPath = target.toPath();
         boolean success;

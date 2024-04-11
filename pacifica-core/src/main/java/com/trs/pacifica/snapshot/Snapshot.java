@@ -23,10 +23,22 @@ import java.util.Collection;
 
 public interface Snapshot {
 
+    /**
+     * get LogId on snapshot
+     * @return
+     */
     public LogId getSnapshotLogId();
 
+    /**
+     * get directory of the snapshot
+     * @return
+     */
     public String getDirectory();
 
+    /**
+     * list files of the snapshot
+     * @return
+     */
     public Collection<String> listFiles();
 
 

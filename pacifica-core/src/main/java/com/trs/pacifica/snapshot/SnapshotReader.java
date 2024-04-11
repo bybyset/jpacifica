@@ -17,7 +17,9 @@
 
 package com.trs.pacifica.snapshot;
 
-public interface SnapshotReader extends Snapshot{
+import java.io.Closeable;
+
+public interface SnapshotReader extends Snapshot, Closeable {
 
 
     /**

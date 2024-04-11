@@ -17,9 +17,11 @@
 
 package com.trs.pacifica.snapshot.storage;
 
+import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 
+import java.io.IOException;
 import java.util.Collection;
 
 public class DefaultSnapshotReader implements SnapshotReader {
@@ -28,14 +30,18 @@ public class DefaultSnapshotReader implements SnapshotReader {
 
     private final DefaultSnapshotStorage snapshotStorage;
 
-    public DefaultSnapshotReader(DefaultSnapshotStorage snapshotStorage, String snapshotName) {
+    private final DefaultSnapshotMeta snapshotMeta;
+
+    public DefaultSnapshotReader(DefaultSnapshotStorage snapshotStorage, String snapshotName) throws IOException {
         this.snapshotName = snapshotName;
         this.snapshotStorage = snapshotStorage;
+        final String snapshotMetaFilePath = DefaultSnapshotMeta.getSnapshotMetaFilePath(this.getDirectory());
+        this.snapshotMeta = DefaultSnapshotMeta.loadFromFile(snapshotMetaFilePath);
     }
 
     @Override
-    public SnapshotMeta getSnapshotMeta() {
-        return null;
+    public LogId getSnapshotLogId() {
+        return snapshotMeta.getSnapshotLogId();
     }
 
     @Override
@@ -45,11 +51,21 @@ public class DefaultSnapshotReader implements SnapshotReader {
 
     @Override
     public Collection<String> listFiles() {
-        return null;
+        return snapshotMeta.listFiles();
     }
 
     @Override
     public long generateReadIdForDownload() {
         return 0;
     }
+
+    @Override
+    public void close() throws IOException {
+        try {
+
+        } finally {
+            this.snapshotStorage.destroySnapshot(snapshotName);
+        }
+    }
+
 }

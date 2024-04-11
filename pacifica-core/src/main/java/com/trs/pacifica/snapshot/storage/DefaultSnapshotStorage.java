@@ -46,6 +46,9 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
 
     private final String storagePath;
 
+    /**
+     * snapshot path name <-> ref count. eg: snapshot_1001 : 1
+     */
     private final Map<String, AtomicInteger> refCounts = new ConcurrentHashMap<>();
 
     private long lastSnapshotIndex = 0;
@@ -98,12 +101,13 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     }
 
     /**
-     * @param path the dir of will delete
+     * @param pathname the dir of will delete
      * @return true if success to delete dir
      * @throws IOException
      */
-    private boolean destroySnapshot(final String path) throws IOException {
-        if (decRef(path)) {
+    boolean destroySnapshot(final String pathname) throws IOException {
+        if (decRef(pathname)) {
+            String path = getSnapshotPath(pathname);
             LOGGER.info("Deleting snapshot {}.", path);
             final File file = new File(path);
             FileUtils.deleteDirectory(file);
@@ -137,6 +141,21 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
         return true;
     }
 
+    synchronized void setLastSnapshotIndex(final long lastSnapshotIndex) {
+        final long oldLastSnapshotIndex = this.lastSnapshotIndex;
+        if (oldLastSnapshotIndex < lastSnapshotIndex) {
+            //set new last snapshot index
+            this.lastSnapshotIndex = lastSnapshotIndex;
+            incRef(getSnapshotName(lastSnapshotIndex));
+            // delete old snapshot
+            try {
+                destroySnapshot(getSnapshotName(oldLastSnapshotIndex));
+            } catch (IOException e) {
+                LOGGER.warn("failed to destroy old snapshot {} ", getSnapshotName(oldLastSnapshotIndex), e);
+            }
+        }
+    }
+
     protected String getTempSnapshotName() {
         return SNAPSHOT_WRITER_DIR;
     }
@@ -153,9 +172,14 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     @Override
     public SnapshotReader openSnapshotReader() {
         final String snapshotName = getSnapshotName(this.lastSnapshotIndex);
-        incRef(snapshotName);
-        final DefaultSnapshotReader snapshotReader = new DefaultSnapshotReader(this, snapshotName);
-        return snapshotReader;
+        try {
+            final DefaultSnapshotReader snapshotReader = new DefaultSnapshotReader(this, snapshotName);
+            incRef(snapshotName);
+            return snapshotReader;
+        } catch (IOException e) {
+            LOGGER.error("Failed to open snapshot reader, path={}", this.getSnapshotPath(snapshotName), e);
+        }
+        return null;
     }
 
     @Override
@@ -173,8 +197,8 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
                         break;
                     }
                 }
-                incRef(tempSnapshotName);
                 FileUtils.forceMkdir(tempFile);
+                incRef(tempSnapshotName);
                 return new DefaultSnapshotWriter(snapshotLogId, this, tempSnapshotName);
             } while (false);
         } catch (IOException e) {
@@ -189,9 +213,5 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
         return null;
     }
 
-
-    void atomicMoveTemp() {
-
-    }
 
 }
