@@ -45,8 +45,9 @@ message InstallSnapshotRequest {
   optional ReplicaId target_id = 2;
   optional int64 term = 3;
   optional int64 version = 4;
-  optional SnapshotMeta meta = 5;
-  optional int64 readerId = 6;
+  optional int64 snapshot_log_index = 5;
+  optional int64 snapshot_log_term = 6;
+  optional int64 readerId = 7;
 }
 
 message InstallSnapshotResponse {

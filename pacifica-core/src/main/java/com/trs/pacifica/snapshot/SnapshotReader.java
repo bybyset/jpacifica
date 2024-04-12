@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.snapshot;
 
+import com.trs.pacifica.fs.FileService;
+
 import java.io.Closeable;
 
 public interface SnapshotReader extends Snapshot, Closeable {
@@ -26,7 +28,7 @@ public interface SnapshotReader extends Snapshot, Closeable {
      * generate file reader id for download snapshot
      * @return
      */
-    public long generateReadIdForDownload();
+    public long generateReadIdForDownload(FileService fileService);
 
 
 }

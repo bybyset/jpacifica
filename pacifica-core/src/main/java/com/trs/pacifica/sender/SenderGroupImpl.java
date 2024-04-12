@@ -22,6 +22,7 @@ import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.core.ReplicaImpl;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
@@ -76,6 +77,8 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
     private ReplicaGroup replicaGroup;
 
     private ConfigurationClient configurationClient;
+
+    private FileService fileService;
 
     public SenderGroupImpl(ReplicaImpl replica, PacificaClient pacificaClient) {
         this.replica = replica;
@@ -170,6 +173,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
             this.ballotBox = Objects.requireNonNull(option.getBallotBox(), "ballotBox");
             this.replicaGroup = Objects.requireNonNull(option.getReplicaGroup(), "replicaGroup");
             this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
+            this.fileService = Objects.requireNonNull(option.getFileService(), "fileService");
             this.state = STATE_SHUTDOWN;
         } finally {
             this.writeLock.unlock();
@@ -243,6 +247,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
             senderOption.setPacificaClient(pacificaClient);
             senderOption.setReplicaGroup(replicaGroup);
             senderOption.setConfigurationClient(configurationClient);
+            senderOption.setFileService(fileService);
 
             senderOption.setHeartbeatTimeoutMs(Math.max(100, option.getLeasePeriodTimeOutMs() / option.getHeartBeatFactor()));
             senderOption.setHeartBeatTimer(null);
@@ -258,6 +263,8 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         private BallotBox ballotBox;
         private ReplicaGroup replicaGroup;
 
+        private FileService fileService;
+
         private ConfigurationClient configurationClient;
 
         private int leasePeriodTimeOutMs;
@@ -270,6 +277,14 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
         public void setConfigurationClient(ConfigurationClient configurationClient) {
             this.configurationClient = configurationClient;
+        }
+
+        public FileService getFileService() {
+            return fileService;
+        }
+
+        public void setFileService(FileService fileService) {
+            this.fileService = fileService;
         }
 
         public ReplicaGroup getReplicaGroup() {

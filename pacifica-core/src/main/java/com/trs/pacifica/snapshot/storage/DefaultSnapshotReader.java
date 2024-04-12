@@ -17,6 +17,9 @@
 
 package com.trs.pacifica.snapshot.storage;
 
+import com.trs.pacifica.fs.FileReader;
+import com.trs.pacifica.fs.FileService;
+import com.trs.pacifica.log.error.AlreadyClosedException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
@@ -26,11 +29,17 @@ import java.util.Collection;
 
 public class DefaultSnapshotReader implements SnapshotReader {
 
+    static final long UN_REGISTER_READER_ID = -1L;
     private final String snapshotName;
 
     private final DefaultSnapshotStorage snapshotStorage;
 
     private final DefaultSnapshotMeta snapshotMeta;
+
+    private long fileReaderId = UN_REGISTER_READER_ID;
+
+    private FileService fileService = null;
+    private boolean closed = false;
 
     public DefaultSnapshotReader(DefaultSnapshotStorage snapshotStorage, String snapshotName) throws IOException {
         this.snapshotName = snapshotName;
@@ -54,17 +63,39 @@ public class DefaultSnapshotReader implements SnapshotReader {
         return snapshotMeta.listFiles();
     }
 
+
     @Override
-    public long generateReadIdForDownload() {
-        return 0;
+    public synchronized void close() throws IOException {
+        if (!closed) {
+            try {
+                if (fileService != null) {
+                    fileService.removeFileReader(this.fileReaderId);
+                }
+                closed = true;
+            } finally {
+                this.snapshotStorage.destroySnapshot(snapshotName);
+            }
+        }
     }
 
     @Override
-    public void close() throws IOException {
-        try {
+    public synchronized long generateReadIdForDownload(FileService fileService) {
+        ensureClosed();
+        if (this.fileReaderId == UN_REGISTER_READER_ID) {
+            this.fileService = fileService;
+            final DefaultSnapshotFileReader fileReader = getFileReader();
+            this.fileReaderId = fileService.addFileReader(fileReader);
+        }
+        return this.fileReaderId;
+    }
 
-        } finally {
-            this.snapshotStorage.destroySnapshot(snapshotName);
+    DefaultSnapshotFileReader getFileReader() {
+        return new DefaultSnapshotFileReader(getDirectory());
+    }
+
+    void ensureClosed() {
+        if (closed) {
+            throw new AlreadyClosedException(this.getClass().getSimpleName() + " already closed.");
         }
     }
 

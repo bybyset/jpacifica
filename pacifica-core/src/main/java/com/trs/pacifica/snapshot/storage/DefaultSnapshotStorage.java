@@ -40,8 +40,6 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnapshotStorage.class);
     static final String SNAPSHOT_DIRECTORY_PREFIX = "snapshot_";
 
-    static final String SNAPSHOT_META_FILE = "_snapshot_meta";
-
     static final String SNAPSHOT_WRITER_DIR = "_temp";
 
     private final String storagePath;

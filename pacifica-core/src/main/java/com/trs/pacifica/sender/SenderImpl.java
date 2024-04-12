@@ -26,7 +26,9 @@ import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.PacificaCodeException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcCommon;
@@ -44,6 +46,7 @@ import com.trs.pacifica.util.timer.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +89,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private final AtomicReference<OnCaughtUp> caughtUpRef = new AtomicReference<>(null);
 
+    private SnapshotReader snapshotReader = null;
 
 
     public SenderImpl(ReplicaId fromId, ReplicaId toId, SenderType type) {
@@ -247,25 +251,35 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{} -> {} install snapshot", fromId, toId);
         }
+
+        if (!checkConnected()) {
+            LOGGER.warn("send install snapshot request, but the replica({}) is not connected.");
+            return;
+        }
+
         final SnapshotStorage snapshotStorage = this.option.getSnapshotStorage();
         if (snapshotStorage == null) {
             throw new PacificaException("");
         }
-        final SnapshotReader snapshotReader = snapshotStorage.openSnapshotReader();
-        if (snapshotReader == null) {
+        if (this.snapshotReader != null) {
             throw new PacificaException("");
         }
-        final SnapshotMeta snapshotMeta = snapshotReader.getSnapshotMeta();
-        if (snapshotMeta == null) {
+        this.snapshotReader = snapshotStorage.openSnapshotReader();
+        if (this.snapshotReader == null) {
             throw new PacificaException("");
         }
-        final long readerId = snapshotReader.generateReadIdForDownload();
+        final LogId snapshotLogId = this.snapshotReader.getSnapshotLogId();
+        if (snapshotLogId == null) {
+            throw new PacificaException("");
+        }
+        final long readerId = this.snapshotReader.generateReadIdForDownload(option.getFileService());
         final RpcRequest.InstallSnapshotRequest.Builder requestBuilder = RpcRequest.InstallSnapshotRequest.newBuilder();
         requestBuilder.setPrimaryId(RpcUtil.protoReplicaId(this.fromId));
         requestBuilder.setTargetId(RpcUtil.protoReplicaId(this.toId));
         requestBuilder.setTerm(this.option.replicaGroup.getPrimaryTerm());
         requestBuilder.setVersion(this.option.replicaGroup.getVersion());
-        requestBuilder.setMeta(RpcUtil.protoSnapshotMeta(snapshotMeta));
+        requestBuilder.setSnapshotLogIndex(snapshotLogId.getIndex());
+        requestBuilder.setSnapshotLogTerm(snapshotLogId.getTerm());
         requestBuilder.setReaderId(readerId);
 
         final RpcRequest.InstallSnapshotRequest request = requestBuilder.build();
@@ -568,10 +582,30 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             return false;
         }
         //success
-        this.nextLogIndex = request.getMeta().getLogIndex() + 1;
+        this.nextLogIndex = request.getSnapshotLogIndex() + 1;
         return true;
     }
 
+
+    private boolean checkConnected() {
+        if (!this.option.getPacificaClient().checkConnection(toId, true)) {
+            // block until time out, will continue
+
+            return false;
+        }
+        return true;
+    }
+
+    private void releaseSnapshotReader() {
+        if (this.snapshotReader != null) {
+            try {
+                this.snapshotReader.close();
+            } catch (IOException e) {
+                LOGGER.error("{} to {} failed to release snapshot reader.", fromId, toId, e);
+            }
+            this.snapshotReader = null;
+        }
+    }
 
     class OnCaughtUpTimeoutAble extends OnCaughtUp {
 
@@ -708,6 +742,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         private Timer heartBeatTimer;
 
         private ScheduledExecutorService senderScheduler;
+
+        private FileService fileService;
+
+        public FileService getFileService() {
+            return fileService;
+        }
+
+        public void setFileService(FileService fileService) {
+            this.fileService = fileService;
+        }
 
         public SnapshotStorage getSnapshotStorage() {
             return snapshotStorage;
