@@ -63,16 +63,18 @@ public class DefaultSnapshotMeta {
         return new DefaultSnapshotMeta(snapshotLogId);
     }
 
+    public static DefaultSnapshotMeta loadFromFile(File metaFile) throws IOException {
+        try (final FileInputStream fis = new FileInputStream(metaFile)) {
+            final byte[] bytes = fis.readAllBytes();
+            return decode(bytes);
+        }
+    }
+
     public static DefaultSnapshotMeta loadFromFile(String filePath) throws IOException {
         File saveTempFile = new File(filePath);
-        if (saveTempFile.exists()) {
-            try (final FileInputStream fis = new FileInputStream(saveTempFile)){
-                final byte[] bytes = fis.readAllBytes();
-                return decode(bytes);
-            }
-        }
-        return null;
+        return loadFromFile(saveTempFile);
     }
+
 
     public static void saveToFile(DefaultSnapshotMeta snapshotMeta, String filePath, boolean sync) throws IOException {
         File saveTempFile = new File(filePath + TEMP_SUFFIX);
@@ -89,7 +91,7 @@ public class DefaultSnapshotMeta {
         if (sync) {
             IOUtils.fsync(saveTempFile.toPath(), false);
         }
-        IOUtils.atomicMoveFile(saveTempFile, new File(filePath) , sync);
+        IOUtils.atomicMoveFile(saveTempFile, new File(filePath), sync);
 
     }
 
@@ -100,22 +102,22 @@ public class DefaultSnapshotMeta {
         bytes.add(HEADER);
         final long snapshotLogIndex = snapshotMeta.snapshotLogId.getIndex();
         byte[] snapshotLogIndexBytes = new byte[Long.BYTES];
-        BitUtil.putLong(snapshotLogIndexBytes, 0 , snapshotLogIndex);
+        BitUtil.putLong(snapshotLogIndexBytes, 0, snapshotLogIndex);
         bytes.add(snapshotLogIndexBytes);
         final long snapshotLogTerm = snapshotMeta.snapshotLogId.getTerm();
         byte[] snapshotLogTermBytes = new byte[Long.BYTES];
-        BitUtil.putLong(snapshotLogTermBytes, 0 , snapshotLogTerm);
+        BitUtil.putLong(snapshotLogTermBytes, 0, snapshotLogTerm);
         bytes.add(snapshotLogTermBytes);
         //
         int size = snapshotMeta.files.size();
         byte[] fileSizeBytes = new byte[Integer.BYTES];
-        BitUtil.putInt(fileSizeBytes, 0 , size);
+        BitUtil.putInt(fileSizeBytes, 0, size);
         bytes.add(fileSizeBytes);
         //
         snapshotMeta.files.forEach((filename, meta) -> {
             byte[] utf8Filename = filename.getBytes(StandardCharsets.UTF_8);
             byte[] utf8FilenameLenBytes = new byte[Integer.BYTES];
-            BitUtil.putInt(utf8FilenameLenBytes, 0 , utf8Filename.length);
+            BitUtil.putInt(utf8FilenameLenBytes, 0, utf8Filename.length);
             bytes.add(utf8FilenameLenBytes);
             bytes.add(utf8Filename);
         });

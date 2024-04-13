@@ -25,5 +25,9 @@ import java.util.concurrent.ExecutionException;
 public interface SnapshotDownloader extends Closeable, Task {
 
 
+    /**
+     * start to download snapshot
+     */
+    public void start();
 
 }

@@ -32,6 +32,7 @@ public enum PacificaErrorCode {
     BUSY(100106, "busy"),
     NOT_SUPPORT(100107, "not support"),
     USER_ERROR(100108, "user exception"),
+    INTERNAL(100109, "internal error"),
 
 
 

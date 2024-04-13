@@ -19,6 +19,7 @@ package com.trs.pacifica.fs.remote;
 
 import com.google.protobuf.ByteString;
 import com.trs.pacifica.async.Finished;
+import com.trs.pacifica.async.Task;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorResponseCallback;
@@ -33,7 +34,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class DownloadSession {
+public abstract class DownloadSession implements Task {
     static final Logger LOGGER = LoggerFactory.getLogger(DownloadSession.class);
     static final int DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
     static final int DEFAULT_READ_LENGTH = 1024;
@@ -104,6 +105,7 @@ public abstract class DownloadSession {
         }
     }
 
+    @Override
     public void awaitComplete() throws InterruptedException, ExecutionException {
         this.latch.await();
         if (this.exception != null) {
@@ -128,10 +130,20 @@ public abstract class DownloadSession {
      * @return false if the task could not be cancelled, typically because it has already completed;
      * true otherwise.  If two or more threads cause a task to be cancelled, then at least one of them returns true.
      */
+    @Override
     public boolean cancel() {
        return onFinished(new CancellationException("cancel download task."));
     }
 
     protected abstract void onDownload(byte[] bytes) throws IOException;
 
+    @Override
+    public boolean isCancelled() {
+        return this.exception != null && this.exception instanceof CancellationException;
+    }
+
+    @Override
+    public boolean isCompleted() {
+        return finished.get();
+    }
 }

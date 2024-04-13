@@ -31,6 +31,7 @@ import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.util.RpcLogUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
@@ -129,13 +130,17 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     @Override
     public void installSnapshot(RpcRequest.InstallSnapshotRequest installSnapshotRequest, Callback callback) {
         try {
+            LogId installLogId = null;
             this.readLock.lock();
             try {
-                final SnapshotMeta snapshotMeta = RpcUtil.toSnapshotMeta(installSnapshotRequest.getMeta());
-                final LogId installLogId = new LogId(snapshotMeta.getSnapshotLogIndex(), snapshotMeta.getSnapshotLogTerm());
+                final long snapshotLogIndex = installSnapshotRequest.getSnapshotLogIndex();
+                final long snapshotLogTerm = installSnapshotRequest.getSnapshotLogTerm();
+                installLogId = new LogId(snapshotLogIndex, snapshotLogTerm);
                 if (installLogId.compareTo(this.lastSnapshotLogId) < 0) {
                     //TODO installed
-                    return;
+                    LOGGER.warn("{} receive InstallSnapshotRequest({}), but has been installed. local_snapshot_log_id={}",
+                            replica.getReplicaId(), RpcLogUtil.toLogString(installSnapshotRequest), this.lastSnapshotLogId);
+                    throw new PacificaCodeException(PacificaErrorCode.INTERNAL, "");
                 }
             } finally {
                 this.readLock.unlock();
@@ -143,9 +148,10 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_DOWNLOADING)) {
                 final ReplicaId primaryId = RpcUtil.toReplicaId(installSnapshotRequest.getPrimaryId());
                 //1、download snapshot from Primary
-                final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(installSnapshotRequest.getReaderId(), this.pacificaClient, primaryId);
+                final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(installLogId, installSnapshotRequest.getReaderId(), this.pacificaClient, primaryId);
                 try(final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot(context)) {
                     this.snapshotDownloader = snapshotDownloader;
+                    snapshotDownloader.start();
                     snapshotDownloader.awaitComplete();
                 } catch (ExecutionException e) {
                     throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());

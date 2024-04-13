@@ -208,7 +208,14 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
 
     @Override
     public SnapshotDownloader startDownloadSnapshot(DownloadContext downloadContext) {
-        return null;
+        final LogId downloadLogId = downloadContext.getDownloadLogId();
+        //SnapshotWriter
+        final SnapshotWriter snapshotWriter = this.openSnapshotWriter(downloadLogId);
+        if (snapshotWriter == null) {
+
+        }
+        final DefaultSnapshotDownloader snapshotDownloader = new DefaultSnapshotDownloader(downloadContext.getPacificaClient(), downloadContext.getRemoteId(), downloadContext.getReaderId(), snapshotWriter);
+        return snapshotDownloader;
     }
 
 

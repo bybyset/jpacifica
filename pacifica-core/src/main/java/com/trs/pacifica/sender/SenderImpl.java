@@ -38,6 +38,7 @@ import com.trs.pacifica.rpc.RpcResponseCallbackAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.util.RpcLogUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
 import com.trs.pacifica.util.thread.ThreadUtil;
@@ -90,6 +91,8 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     private final AtomicReference<OnCaughtUp> caughtUpRef = new AtomicReference<>(null);
 
     private SnapshotReader snapshotReader = null;
+
+    private ScheduledFuture<?> blockTimer = null;
 
 
     public SenderImpl(ReplicaId fromId, ReplicaId toId, SenderType type) {
@@ -172,6 +175,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     public synchronized void shutdown() {
         if (isStarted()) {
             this.state = State.SHUTTING;
+            releaseSnapshotReader();
+            ScheduledFuture<?> blockTimer = this.blockTimer;
+            if (blockTimer != null) {
+                blockTimer.cancel(true);
+            }
             notifyOnCaughtUp(new PacificaCodeException(PacificaErrorCode.STEP_DOWN, "The sender is shutting"));
             this.state = State.SHUTDOWN;
         }
@@ -573,24 +581,32 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
     private boolean handleInstallSnapshotResponse(final RpcRequest.InstallSnapshotRequest request, Finished finished, RpcRequest.InstallSnapshotResponse response) {
-        if (!finished.isOk()) {
-
-            return false;
+        try {
+            if (!finished.isOk()) {
+                LOGGER.warn("InstallSnapshotRequest({}). Receive response but error, we will block until timeout.", RpcLogUtil.toLogString(request), finished.error());
+                blockUntilTimeout();
+                return false;
+            }
+            if (!response.getSuccess()) {
+                LOGGER.warn("InstallSnapshotRequest({}). Receive response but failure, we will block until timeout.", RpcLogUtil.toLogString(request));
+                blockUntilTimeout();
+                return false;
+            }
+            //success
+            this.nextLogIndex = request.getSnapshotLogIndex() + 1;
+            LOGGER.info("InstallSnapshotRequest({}), Receive success response.", RpcLogUtil.toLogString(request));
+            return true;
+        } finally {
+            releaseSnapshotReader();
         }
-        if (!response.getSuccess()) {
 
-            return false;
-        }
-        //success
-        this.nextLogIndex = request.getSnapshotLogIndex() + 1;
-        return true;
     }
 
 
     private boolean checkConnected() {
         if (!this.option.getPacificaClient().checkConnection(toId, true)) {
             // block until time out, will continue
-
+            blockUntilTimeout();
             return false;
         }
         return true;
@@ -606,6 +622,31 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             this.snapshotReader = null;
         }
     }
+
+    /**
+     * block until timeout will continue.
+     */
+    private void blockUntilTimeout() {
+        if (this.blockTimer != null) {
+            LOGGER.warn("");
+            return;
+        }
+        final int delayMs = this.option.getHeartbeatTimeoutMs();
+        this.blockTimer = this.option.getSenderScheduler().schedule(()-> {
+            handleBlockTimeout();
+        }, delayMs, TimeUnit.MILLISECONDS);
+
+    }
+
+    private void handleBlockTimeout() {
+        try {
+            ensureStarted();
+            sendProbeRequest();
+        } finally {
+            this.blockTimer = null;
+        }
+    }
+
 
     class OnCaughtUpTimeoutAble extends OnCaughtUp {
 

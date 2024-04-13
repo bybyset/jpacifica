@@ -42,16 +42,35 @@ public interface SnapshotStorage {
 
     public static class DownloadContext {
 
+        private final LogId downloadLogId;
+
         private final long readerId;
 
         private final PacificaClient pacificaClient;
 
         private final ReplicaId remoteId;
 
-        public DownloadContext(long readerId, PacificaClient pacificaClient, ReplicaId remoteId) {
+        public DownloadContext(LogId downloadLogId, long readerId, PacificaClient pacificaClient, ReplicaId remoteId) {
+            this.downloadLogId = downloadLogId;
             this.readerId = readerId;
             this.pacificaClient = pacificaClient;
             this.remoteId = remoteId;
+        }
+
+        public LogId getDownloadLogId() {
+            return downloadLogId;
+        }
+
+        public long getReaderId() {
+            return readerId;
+        }
+
+        public PacificaClient getPacificaClient() {
+            return pacificaClient;
+        }
+
+        public ReplicaId getRemoteId() {
+            return remoteId;
         }
     }
 

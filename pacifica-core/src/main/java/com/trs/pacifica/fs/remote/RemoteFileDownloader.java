@@ -17,10 +17,13 @@
 
 package com.trs.pacifica.fs.remote;
 
+import com.trs.pacifica.async.Task;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
@@ -32,6 +35,8 @@ public class RemoteFileDownloader {
 
     private final long remoteReaderId;
 
+    private final List<Task> subTasks = new ArrayList<>();
+
 
     public RemoteFileDownloader(PacificaClient pacificaClient, ReplicaId remoteId, long remoteReaderId) {
         this.pacificaClient = pacificaClient;
@@ -39,18 +44,10 @@ public class RemoteFileDownloader {
         this.remoteReaderId = remoteReaderId;
     }
 
-
     public void downloadToOutputStream(final String filename, final OutputStream outputStream) throws IOException {
-        Objects.requireNonNull(filename, "filename");
-        Objects.requireNonNull(outputStream, "outputStream");
-        DownloadSession downloadSession = new DownloadSession(this.pacificaClient, this.remoteId, remoteReaderId, filename) {
-            @Override
-            protected void onDownload(byte[] bytes) throws IOException {
-                outputStream.write(bytes);
-            }
-        };
+        Task task = asyncDownloadToOutputStream(filename, outputStream);
         try {
-            downloadSession.awaitComplete();
+            task.awaitComplete();
         } catch (InterruptedException e) {
             throw new IOException(e);
         } catch (ExecutionException e) {
@@ -63,6 +60,18 @@ public class RemoteFileDownloader {
         }
     }
 
+    public Task asyncDownloadToOutputStream(final String filename, final OutputStream outputStream) throws IOException {
+        Objects.requireNonNull(filename, "filename");
+        Objects.requireNonNull(outputStream, "outputStream");
+        DownloadSession downloadSession = new DownloadSession(this.pacificaClient, this.remoteId, remoteReaderId, filename) {
+            @Override
+            protected void onDownload(byte[] bytes) throws IOException {
+                outputStream.write(bytes);
+            }
+        };
+        return downloadSession;
+    }
+
     public void downloadToFile(final String filename, final File destFile) throws IOException, FileNotFoundException {
         Objects.requireNonNull(filename, "filename");
         Objects.requireNonNull(destFile, "file");
@@ -71,6 +80,5 @@ public class RemoteFileDownloader {
             outputStream.flush();
         }
     }
-
 
 }
