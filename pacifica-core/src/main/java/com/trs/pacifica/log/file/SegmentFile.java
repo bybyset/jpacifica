@@ -18,56 +18,76 @@
 package com.trs.pacifica.log.file;
 
 import com.trs.pacifica.log.dir.Directory;
+import com.trs.pacifica.util.BitUtil;
+import com.trs.pacifica.util.io.ByteDataBuffer;
+import com.trs.pacifica.util.io.DataBuffer;
+import com.trs.pacifica.util.io.DataInput;
+import com.trs.pacifica.util.io.LinkedDataBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public class SegmentFile extends AbstractFile {
 
-    /**
-     * Magic bytes for data buffer.
-     */
-    private static final byte[] _SEGMENT_MAGIC_BYTES = new byte[]{(byte) 0x57, (byte) 0x8A};
-
-    // 4 Bytes for written data length
-    static final int _SEGMENT_DATA_LENGTH_SIZE = 4;
-
     public SegmentFile(Directory parentDir, String filename) throws IOException {
         super(parentDir, filename);
+    }
+
+    @Override
+    protected void loadBody() throws IOException {
+
     }
 
 
     /**
      *
      * @param logIndex
-     * @param logEntryBytes
-     * @return
+     * @param segmentBlock segment block
+     * @return number of bytes written
      * @throws IOException
      */
-    public int appendLogEntry(final long logIndex, final byte[] logEntryBytes) throws IOException {
-        final byte[] segmentEntry = encodeData(logEntryBytes);
-        return doAppendData(logIndex, segmentEntry);
-    }
-
-    public byte[] lookupLogEntry(final int position) {
-
-        return null;
-    }
-
-
-    private byte[] encodeData(final byte[] data) {
-        //TODO optimization
-        ByteBuffer buffer = ByteBuffer.allocate(getWriteByteSize(data));
-        buffer.put(_SEGMENT_MAGIC_BYTES);
-        buffer.putInt(data.length);
-        buffer.put(data);
-        buffer.flip();
-        return buffer.array();
+    public int appendLogEntry(final long logIndex, final Block segmentBlock) throws IOException {
+        Objects.requireNonNull(segmentBlock, "segmentBlock");
+        if (logIndex <= 0) {
+            throw new IllegalArgumentException("illegal params logIndex=" + logIndex);
+        }
+        return doAppendData(logIndex, segmentBlock.encode());
     }
 
 
-    public static int getWriteByteSize(final byte[] data) {
-        return _SEGMENT_DATA_LENGTH_SIZE + _SEGMENT_MAGIC_BYTES.length + data.length;
+    /**
+     *
+     * @param segmentBlock segment block
+     * @return number of bytes written
+     * @throws IOException
+     */
+    public int appendLogEntry(final Block segmentBlock) throws IOException {
+        Objects.requireNonNull(segmentBlock, "segmentBlock");
+        return doAppendData(segmentBlock.encode());
+    }
+
+
+
+    public Block lookupBlock(final int position) throws IOException {
+        final byte[] blockHeader = new byte[Block.HEADER_SIZE];
+        this.readBytes(blockHeader, position);
+        final int dataLen = Block.decodeDataLen(blockHeader);
+        final DataBuffer logEntryData;
+        if (dataLen > 0) {
+            logEntryData = this.readDataBuffer(position + Block.HEADER_SIZE, dataLen);
+        } else {
+            logEntryData = Block.EMPTY_DATA_BUFFER;
+        }
+        return Block.decode(blockHeader, logEntryData);
+    }
+
+    public static int getWriteByteSize(final int logDataByteSize) {
+        return Block.HEADER_SIZE + logDataByteSize;
+    }
+
+    public static Block wrapBlock(final DataBuffer logEntryData) {
+        return new Block(logEntryData);
     }
 
 }

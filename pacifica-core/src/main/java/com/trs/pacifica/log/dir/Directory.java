@@ -58,7 +58,7 @@ public abstract class Directory implements Closeable {
      * @return
      * @throws IOException
      */
-    public abstract long fileLength(String name) throws IOException;
+    public abstract int fileLength(String name) throws IOException;
 
 
     /**

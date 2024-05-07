@@ -25,10 +25,7 @@ import com.trs.pacifica.model.LogId;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -66,6 +63,29 @@ public abstract class AbstractStore {
     }
 
     /**
+     * get sequence number from filename
+     * @param filename
+     * @return
+     */
+    long getFileSequenceFromFilename(final String filename) {
+        Objects.requireNonNull(filename, "filename");
+        final String fileSuffix = this.getFileSuffix();
+        if (filename.endsWith(fileSuffix)) {
+            int idx = filename.indexOf(fileSuffix);
+            return Long.parseLong(filename.substring(0, idx));
+        }
+        return 0;
+    }
+
+    long getFileSequenceFromFile(final AbstractFile abstractFile) {
+        Objects.requireNonNull(abstractFile, "abstractFile");
+        return getFileSequenceFromFilename(abstractFile.getFilename());
+    }
+
+
+
+
+    /**
      * get file suffix when create next file
      * @return
      */
@@ -84,6 +104,37 @@ public abstract class AbstractStore {
     protected AbstractFile allocateNextFile() throws IOException {
         final String nextFilename = getNextFilename();
         return doAllocateFile(nextFilename);
+    }
+
+    /**
+     * get next file of the specified currentFile.
+     * @param currentFile
+     * @return null if there is no next file
+     */
+    public AbstractFile getNextFile(final AbstractFile currentFile) {
+        this.readLock.lock();
+        try {
+            if (this.files.isEmpty()) {
+                return null;
+            }
+            if (currentFile == null) {
+                return this.files.peekFirst();
+            }
+            AbstractFile[] fileArray = new AbstractFile[this.files.size()];
+            this.files.toArray(fileArray);
+            int index = Arrays.binarySearch(fileArray, currentFile, new Comparator<AbstractFile>() {
+                @Override
+                public int compare(AbstractFile left, AbstractFile right) {
+                    return (int)(getFileSequenceFromFile(right) - getFileSequenceFromFile(left));
+                }
+            });
+            if (index >= 0 && ++index < fileArray.length) {
+                return fileArray[index];
+            }
+        } finally {
+            this.readLock.unlock();
+        }
+        return null;
     }
 
     /**
@@ -144,7 +195,11 @@ public abstract class AbstractStore {
             int lo = 0, hi = fileArray.length - 1;
             while (lo <= hi) {
                 int mid = (lo + hi) >>> 1;
-                final AbstractFile file = fileArray[mid];
+                AbstractFile file = fileArray[mid];
+                while (!file.isAvailable() && mid > lo) {
+                    mid--;
+                    file = fileArray[mid];
+                }
                 if (file.getLastLogIndex() < logIndex) {
                     lo = mid + 1;
                 } else if (file.getFirstLogIndex() > logIndex) {

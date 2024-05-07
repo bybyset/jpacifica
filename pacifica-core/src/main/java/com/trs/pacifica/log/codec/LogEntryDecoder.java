@@ -18,6 +18,7 @@
 package com.trs.pacifica.log.codec;
 
 import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.util.io.DataBuffer;
 
 public interface LogEntryDecoder {
 
@@ -27,6 +28,6 @@ public interface LogEntryDecoder {
      * @param data byte data of log entry
      * @return
      */
-    public LogEntry decode(byte[] data);
+    public LogEntry decode(final DataBuffer data);
 
 }

@@ -28,15 +28,15 @@ public interface LogStorage {
     /**
      * get the LogEntry at index
      *
-     * @param index
-     * @return null if it does not exist
+     * @param index index of log entry
+     * @return null if it does not exist or index less than or equal to 0
      */
     LogEntry getLogEntry(final long index);
 
 
     /**
      *  get the LogId at index
-     * @param index
+     * @param index It is greater than 0
      * @return null if it does not exist
      */
     LogId getLogIdAt(final long index);

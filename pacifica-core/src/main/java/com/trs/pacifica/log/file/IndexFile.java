@@ -38,6 +38,11 @@ public class IndexFile extends AbstractFile {
         super(parentDir, filename);
     }
 
+    @Override
+    protected void loadBody() throws IOException {
+
+    }
+
 
     public int appendIndexData(final LogId logId, final int logPosition) throws IOException {
         final long logIndex = logId.getIndex();

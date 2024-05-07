@@ -33,8 +33,6 @@ import java.util.concurrent.ExecutionException;
 
 public class DefaultSnapshotDownloader implements SnapshotDownloader {
 
-    static final String REMOTE_SNAPSHOT_META_FILE_SUFFIX = ".remote";
-
     private final RemoteFileDownloader remoteFileDownloader;
 
     private final SnapshotWriter snapshotWriter;
@@ -77,7 +75,6 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
             }
             this.remoteFileDownloader.downloadToFile(filename, downloadFile);
         }
-
     }
 
     String getLocalDownloadFile(String filename) {
@@ -141,7 +138,7 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
     }
 
     static String getRemoteSnapshotMetaFilePath(final String dir) {
-        return dir + File.separator + DefaultSnapshotMeta.SNAPSHOT_META_FILE + REMOTE_SNAPSHOT_META_FILE_SUFFIX;
+        return dir + File.separator + DefaultSnapshotMeta.SNAPSHOT_META_FILE;
     }
 
 

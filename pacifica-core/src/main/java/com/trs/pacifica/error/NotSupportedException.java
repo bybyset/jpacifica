@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.codec;
+package com.trs.pacifica.error;
 
-import com.trs.pacifica.model.LogEntry;
-import com.trs.pacifica.util.io.DataBuffer;
-import com.trs.pacifica.util.io.DataInput;
+public class NotSupportedException extends RuntimeException{
 
-public interface LogEntryEncoder {
 
-    /**
-     * encode LogEntry
-     * @param logEntry
-     * @return byte[]
-     * TODO The chunked data structure is chosen because it can be a very large array of bytes
-     */
-    public DataBuffer encode(LogEntry logEntry);
+    public NotSupportedException() {
+    }
+
+    public NotSupportedException(String message) {
+        super(message);
+    }
+
+    public NotSupportedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public NotSupportedException(Throwable cause) {
+        super(cause);
+    }
+
+    public NotSupportedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

@@ -28,6 +28,8 @@ import com.trs.pacifica.log.store.SegmentStore;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.Tuple2;
+import com.trs.pacifica.util.io.DataBuffer;
+import com.trs.pacifica.util.io.DataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,18 +88,25 @@ public class FsLogStorage implements LogStorage {
 
     @Override
     public LogEntry getLogEntry(long index) {
-        //validate
+        if (index > 0) {
+            // TODO if out of range ??
 
-        //look index  at IndexStore
-        final int logPosition = this.indexStore.lookupPositionAt(index);
+            //look index  at IndexStore
+            final int logPosition = this.indexStore.lookupPositionAt(index);
+            if (logPosition == IndexFile._NOT_FOUND) {
+                return null;
+            }
+            //look LogEntry bytes at SegmentStore
+            try {
+                final DataBuffer logEntryBytes = this.segmentStore.lookupLogEntry(index, logPosition);
+                if (logEntryBytes != null) {
+                    // decode LogEntry bytes
+                    return this.logEntryDecoder.decode(logEntryBytes);
+                }
+            } catch (IOException e) {
 
-        //look LogEntry bytes at SegmentStore
-
-        final byte[] logEntryBytes = this.segmentStore.lookupLogEntry(index, logPosition);
-
-        // decode LogEntry bytes
-        this.logEntryDecoder.decode(logEntryBytes);
-
+            }
+        }
         return null;
     }
 
@@ -151,10 +160,10 @@ public class FsLogStorage implements LogStorage {
             final int totalCount = logEntries.size();
             int appendCount = 0;
             for (LogEntry logEntry : logEntries) {
-                final byte[] logEntryBytes = this.logEntryEncoder.encode(logEntry);
+                final DataBuffer logEntryData = this.logEntryEncoder.encode(logEntry);
                 final LogId logId = logEntry.getLogId().copy();
                 final boolean isWaitingFlush = appendCount == totalCount - 1;
-                if (doAppendLogEntry(logId, logEntryBytes, isWaitingFlush)) {
+                if (doAppendLogEntry(logId, logEntryData, isWaitingFlush)) {
                     appendCount++;
                 } else {
                     // flush
@@ -169,14 +178,14 @@ public class FsLogStorage implements LogStorage {
         }
     }
 
-    private boolean doAppendLogEntry(final LogId logId, final byte[] data, final boolean isWaitingFlush) throws IOException {
+    private boolean doAppendLogEntry(final LogId logId, final DataBuffer logEntryData, final boolean isWaitingFlush) throws IOException {
         Objects.requireNonNull(logId, "logId");
         if (this.segmentStore == null || this.indexStore == null) {
             return false;
         }
         final long logIndex = logId.getIndex();
         //write segment
-        final Tuple2<Integer, Long> segmentResult = this.segmentStore.appendLogData(logIndex, data);
+        final Tuple2<Integer, Long> segmentResult = this.segmentStore.appendLogData(logIndex, logEntryData);
         if (segmentResult.getFirst() < 0 || segmentResult.getSecond() < 0) {
             return false;
         }

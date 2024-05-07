@@ -61,6 +61,25 @@ public interface Output extends Closeable {
         }
     }
 
+    /**
+     *
+     * @param index The index in this output at which the first byte will be written.
+     * @param bytes
+     * @throws IOException
+     */
+    default public void writeBytes(final int index, final byte[] bytes) throws IOException {
+        writeBytes(index, bytes, 0, bytes.length);
+    }
+
+
+    /**
+     *
+     * @param index
+     * @param bytes
+     * @throws IOException
+     */
+    public void writeBytes(final int index, final byte[] bytes, final int offset, final int length) throws IOException;
+
     public void flush() throws IOException;
 
 

@@ -105,8 +105,6 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         } finally {
             this.writeLock.unlock();
         }
-
-
     }
 
     @Override

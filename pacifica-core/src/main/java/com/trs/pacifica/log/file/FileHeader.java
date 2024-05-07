@@ -17,28 +17,46 @@
 
 package com.trs.pacifica.log.file;
 
+import com.trs.pacifica.util.io.ByteDataBuffer;
+import com.trs.pacifica.util.io.DataBuffer;
+
 import java.nio.ByteBuffer;
 
 /**
  * HEADER:
  * <pre>
- * --------------+--------------+-----------------+----------+
- * | magic byte | start offset | first log index | reserved |
- * |[0x20][0x20]| [ 8   bytes ]| [    8  bytes  ]| [8 bytes]|
- * -------------+-------------+------------------+----------+
+ * --------------+---------+--------------+-----------------+
+ * | magic byte | reserved | start offset | first log index |
+ * |[0x20][0x20]|[8 bytes] | [ 8   bytes ]| [    8  bytes  ]|
+ * -------------+------ ---+---------- ---+-----------------+
  * </pre>
  */
 public class FileHeader {
-
-    static final long _BLANK_TAG = -1L;
 
     static final int _HEADER_BYTE_SIZE = 26;
 
     private static final byte _MAGIC = 0X20;
 
-    private long firstLogIndex = _BLANK_TAG;
+    private static final byte TAG_BLANK = 0x00;
 
-    private long startOffset = _BLANK_TAG;
+    /**
+     * Mark that the file contains at least the beginning of a complete log
+     */
+    private static final byte TAG_AVAILABLE = 1;
+
+    /**
+     *
+     */
+    private static final byte TAG_CONSECUTIVE =  1 << 1;
+
+
+    private final byte magic = _MAGIC;
+
+    private byte tag = TAG_BLANK;
+
+    private long firstLogIndex = 0L;
+
+    private long startOffset = 0L;
 
     public long getFirstLogIndex() {
         return firstLogIndex;
@@ -57,35 +75,56 @@ public class FileHeader {
     }
 
 
-    public ByteBuffer encode() {
+    public byte[] encode() {
         final ByteBuffer headerData = ByteBuffer.allocate(_HEADER_BYTE_SIZE);
-        headerData.put(_MAGIC);
-        headerData.put(_MAGIC);
+        headerData.put(magic);
+        headerData.put(tag);
+        headerData.putLong(0L);
         headerData.putLong(this.startOffset);
         headerData.putLong(this.firstLogIndex);
-        headerData.putLong(0L);
         headerData.flip();
-        return headerData;
+        return headerData.array();
     }
 
-    public boolean decode(final ByteBuffer headerData) {
-        if (headerData == null || headerData.remaining() < _HEADER_BYTE_SIZE) {
+    public boolean decode(final byte[] headerData) {
+        if (headerData == null || headerData.length < _HEADER_BYTE_SIZE) {
             return false;
         }
-        if (headerData.get() != _MAGIC) {
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(headerData);
+        if (byteBuffer.get() != _MAGIC) {
             return false;
         }
-        if (headerData.get() != _MAGIC) {
+        if (byteBuffer.get() != _MAGIC) {
             return false;
         }
-        this.startOffset = headerData.getLong();
-        this.firstLogIndex = headerData.getLong();
-        headerData.getLong();
+        byteBuffer.getLong();//reserved
+        this.startOffset = byteBuffer.getLong();
+        this.firstLogIndex = byteBuffer.getLong();
         return true;
     }
 
     public boolean isBlank() {
-        return this.firstLogIndex < 0;
+        return this.tag == TAG_BLANK;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isConsecutive() {
+        return (this.tag & TAG_CONSECUTIVE) != 0;
+    }
+
+    public void setConsecutive() {
+        this.tag |= TAG_CONSECUTIVE;
+    }
+
+    public boolean isAvailable() {
+        return (this.tag & TAG_AVAILABLE) != 0;
+    }
+
+    public void setAvailable() {
+        this.tag |= TAG_AVAILABLE;
     }
 
     public static int getBytesSize() {
@@ -93,7 +132,7 @@ public class FileHeader {
     }
 
     public void rest() {
-        this.firstLogIndex = _BLANK_TAG;
+        this.tag = TAG_BLANK;
     }
 
 }
