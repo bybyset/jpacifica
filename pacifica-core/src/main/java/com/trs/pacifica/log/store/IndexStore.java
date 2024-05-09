@@ -34,13 +34,8 @@ public class IndexStore extends AbstractStore {
     public static final String _DEFAULT_INDEX_DIR_NAME = "log_index";
     public static final int _DEFAULT_INDEX_ENTRY_COUNT_PER_FILE = 1000;
 
-    static final int _DEFAULT_SEGMENT_FILE_SIZE = FileHeader.getBytesSize() + _DEFAULT_INDEX_ENTRY_COUNT_PER_FILE * IndexFile.getWriteByteSize();
-
-    private final int fileSize;
-
     public IndexStore(Path dir, int indexEntryCountPerFile) throws IOException {
-        super(dir);
-        this.fileSize = FileHeader.getBytesSize() + indexEntryCountPerFile * IndexFile.getWriteByteSize();;
+        super(dir, getFileSize(indexEntryCountPerFile));
     }
 
     public IndexStore(Path dir) throws IOException {
@@ -77,11 +72,9 @@ public class IndexStore extends AbstractStore {
         return Tuple2.of(-1, -1L);
     }
 
-
     @Override
-    protected AbstractFile doAllocateFile(String filename) throws IOException {
-        this.directory.createFile(filename, this.fileSize);
-        return new IndexFile(this.directory, filename);
+    protected AbstractFile newAbstractFile(String filename) throws IOException {
+        return new IndexFile(directory, filename);
     }
 
 
@@ -96,5 +89,10 @@ public class IndexStore extends AbstractStore {
         //
 
         return AbstractFile._NOT_FOUND;
+    }
+
+
+    static final int getFileSize(int indexEntryCountPerFile) {
+        return FileHeader.getBytesSize() + indexEntryCountPerFile * IndexFile.getWriteByteSize();
     }
 }

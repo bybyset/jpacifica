@@ -196,13 +196,21 @@ public class FsLogStorage implements LogStorage {
         }
         if (isWaitingFlush) {
             //TODO
+            if (!waitForFlush(segmentResult.getSecond(), indexResult.getSecond())) {
+                return false;
+            }
         }
-        return false;
+        return true;
     }
 
-    private boolean waitForFlush(final long exceptedLogPosition, final long exceptedIndexPosition) {
-
-        return false;
+    private boolean waitForFlush(final long exceptedLogPosition, final long exceptedIndexPosition) throws IOException {
+        if (!this.segmentStore.waitForFlush(exceptedLogPosition, 5)) {
+            return false;
+        }
+        if (!this.indexStore.waitForFlush(exceptedLogPosition, 5)) {
+            return false;
+        }
+        return true;
     }
 
     @Override

@@ -34,9 +34,7 @@ import java.nio.ByteBuffer;
 public class FileHeader {
 
     static final int _HEADER_BYTE_SIZE = 26;
-
     private static final byte _MAGIC = 0X20;
-
     private static final byte TAG_BLANK = 0x00;
 
     /**
@@ -48,15 +46,12 @@ public class FileHeader {
      *
      */
     private static final byte TAG_CONSECUTIVE =  1 << 1;
-
-
     private final byte magic = _MAGIC;
-
     private byte tag = TAG_BLANK;
 
-    private long firstLogIndex = 0L;
+    private long firstLogIndex = -1L;
 
-    private long startOffset = 0L;
+    private long startOffset = -1L;
 
     public long getFirstLogIndex() {
         return firstLogIndex;
@@ -79,9 +74,9 @@ public class FileHeader {
         final ByteBuffer headerData = ByteBuffer.allocate(_HEADER_BYTE_SIZE);
         headerData.put(magic);
         headerData.put(tag);
-        headerData.putLong(0L);
         headerData.putLong(this.startOffset);
         headerData.putLong(this.firstLogIndex);
+        headerData.putLong(0L);
         headerData.flip();
         return headerData.array();
     }
@@ -94,12 +89,10 @@ public class FileHeader {
         if (byteBuffer.get() != _MAGIC) {
             return false;
         }
-        if (byteBuffer.get() != _MAGIC) {
-            return false;
-        }
-        byteBuffer.getLong();//reserved
+        this.tag = byteBuffer.get();
         this.startOffset = byteBuffer.getLong();
         this.firstLogIndex = byteBuffer.getLong();
+        byteBuffer.getLong();//reserved
         return true;
     }
 
@@ -134,5 +127,7 @@ public class FileHeader {
     public void rest() {
         this.tag = TAG_BLANK;
     }
+
+
 
 }

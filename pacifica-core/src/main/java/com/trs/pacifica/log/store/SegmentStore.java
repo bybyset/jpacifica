@@ -27,7 +27,6 @@ import com.trs.pacifica.util.io.DataInput;
 import com.trs.pacifica.util.io.LinkedDataBuffer;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,11 +38,9 @@ public class SegmentStore extends AbstractStore {
     public static final int _DEFAULT_SEGMENT_FILE_SIZE = 32 * 1024 * 1024;// 32 M
 
     static final int DEFAULT_MIN_WRITE_BYTES = SegmentFile.getWriteByteSize(8);
-    private final int fileSize;
 
     public SegmentStore(Path dir, int fileSize) throws IOException {
-        super(dir);
-        this.fileSize = fileSize;
+        super(dir, fileSize);
     }
 
     public SegmentStore(Path dir) throws IOException {
@@ -70,7 +67,7 @@ public class SegmentStore extends AbstractStore {
             do {
                 final AbstractFile lastFile = getLastFile(minFreeByteSize, true);
                 if (lastFile != null && lastFile instanceof SegmentFile) {
-                    final int startWritePos = lastFile.getCurrentPosition();
+                    final int startWritePos = lastFile.getPosition();
                     final int writableBytes = lastFile.getFreeByteSize() - Block.HEADER_SIZE;
                     final int remaining = logEntryData.remaining();
                     final int maxWriteBytes = Math.min(remaining, writableBytes);
@@ -134,12 +131,9 @@ public class SegmentStore extends AbstractStore {
     }
 
     @Override
-    protected AbstractFile doAllocateFile(String filename) throws IOException {
-        this.directory.createFile(filename, this.fileSize);
-        return new SegmentFile(this.directory, filename);
+    protected AbstractFile newAbstractFile(String filename) throws IOException {
+        return new SegmentFile(directory, filename);
     }
-
-
 
     static int getAppendLogDataByteSize(final DataInput logDataInput) {
         return SegmentFile.getWriteByteSize(logDataInput.getByteSize());

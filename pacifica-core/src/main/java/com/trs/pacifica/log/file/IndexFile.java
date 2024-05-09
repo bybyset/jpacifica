@@ -18,19 +18,16 @@
 package com.trs.pacifica.log.file;
 
 import com.trs.pacifica.log.dir.Directory;
+import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.store.IndexStore;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.BitUtil;
+import com.trs.pacifica.util.io.ByteDataBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class IndexFile extends AbstractFile {
-
-    /**
-     * Magic bytes for data buffer.
-     */
-    private static final byte[] _INDEX_ENTRY_HEADER_BYTES = new byte[]{(byte) 0x27, (byte) 0x34};
 
     static final int _INDEX_ENTRY_BYTE_SIZE = IndexEntryHeader.byteSize() + IndexEntry.byteSize();
 
@@ -40,7 +37,20 @@ public class IndexFile extends AbstractFile {
 
     @Override
     protected void loadBody() throws IOException {
-
+        final int fileSize = this.getFileSize();
+        int currentPos = FileHeader.getBytesSize();
+        final byte[] readBuffer = new byte[_INDEX_ENTRY_BYTE_SIZE];
+        try (final Input input = this.parentDir.openInOutput(this.filename);){
+            do {
+                input.seek(currentPos);
+                final byte magic = input.readByte();
+                if (magic != IndexEntryHeader.HEADER_MAGIC) {
+                    break;
+                }
+                this.lastLogIndex++;
+                currentPos += _INDEX_ENTRY_BYTE_SIZE;
+            } while (currentPos < fileSize);
+        }
     }
 
 
@@ -50,7 +60,7 @@ public class IndexFile extends AbstractFile {
         encodeIndexEntryHeader(appendData);
         byte[] indexEntry = encodeIndexEntry(logId, logPosition);
         System.arraycopy(indexEntry, 0, appendData, IndexEntryHeader.byteSize(), indexEntry.length);
-        return doAppendData(logIndex, appendData);
+        return doAppendData(logIndex, new ByteDataBuffer(appendData));
     }
 
     /**
@@ -84,8 +94,10 @@ public class IndexFile extends AbstractFile {
 
 
     private static void encodeIndexEntryHeader(final byte[] container) {
-        System.arraycopy(_INDEX_ENTRY_HEADER_BYTES, 0, container, 0, _INDEX_ENTRY_HEADER_BYTES.length);
+        container[0] = IndexEntryHeader.HEADER_MAGIC;
+        container[1] = IndexEntryHeader.HEADER_VERSION;
     }
+
     private byte[] encodeIndexEntry(final LogId logId, final int position) {
         final IndexEntry indexEntry = new IndexEntry(logId, position);
         return INDEX_ENTRY_CODEC.encode(indexEntry);
@@ -136,6 +148,10 @@ public class IndexFile extends AbstractFile {
 
     public static class IndexEntryHeader {
 
+        static final byte HEADER_MAGIC = 0x27;
+
+        static final byte HEADER_VERSION = 0x01;
+
         private final byte magic;
 
         private final byte version;
@@ -161,7 +177,7 @@ public class IndexFile extends AbstractFile {
         }
 
         static int byteSize() {
-            return _INDEX_ENTRY_HEADER_BYTES.length;
+            return 2;
         }
     }
 

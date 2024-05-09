@@ -51,7 +51,7 @@ public abstract class FilterDirectory extends Directory {
     }
 
     @Override
-    public long fileLength(String name) throws IOException {
+    public int fileLength(String name) throws IOException {
         return this.delegate.fileLength(name);
     }
 

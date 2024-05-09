@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public abstract class Directory implements Closeable {
@@ -68,6 +69,10 @@ public abstract class Directory implements Closeable {
      * @throws IOException
      */
     public abstract void sync(Collection<String> names) throws IOException;
+
+    public void sync(String filename) throws IOException {
+        sync(List.of(filename));
+    }
 
 
     /**

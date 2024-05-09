@@ -96,12 +96,12 @@ public abstract class FsDirectory extends BaseDirectory {
     }
 
     @Override
-    public long fileLength(String name) throws IOException {
+    public int fileLength(String name) throws IOException {
         ensureOpen();
         if (pendingDeletes.contains(name)) {
             throw new NoSuchFileException("file \"" + name + "\" is pending delete");
         }
-        return Files.size(directory.resolve(name));
+        return (int) Files.size(directory.resolve(name));
     }
 
     @Override
