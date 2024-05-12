@@ -17,10 +17,10 @@
 
 package com.trs.pacifica.log.store;
 
-import com.trs.pacifica.log.file.AbstractFile;
-import com.trs.pacifica.log.file.FileHeader;
-import com.trs.pacifica.log.file.IndexFile;
-import com.trs.pacifica.log.file.SegmentFile;
+import com.trs.pacifica.log.store.file.AbstractFile;
+import com.trs.pacifica.log.store.file.FileHeader;
+import com.trs.pacifica.log.store.file.IndexEntry;
+import com.trs.pacifica.log.store.file.IndexFile;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.Tuple2;
 
@@ -70,6 +70,16 @@ public class IndexStore extends AbstractStore {
             return Tuple2.of(startWritePos, expectFlushPos);
         }
         return Tuple2.of(-1, -1L);
+    }
+
+    /**
+     *
+     * @param indexEntry
+     * @return two-tuples: (start write position of segment file, expect flush position)
+     * @throws IOException
+     */
+    public Tuple2<Integer, Long> appendLogIndex(final IndexEntry indexEntry) throws IOException {
+      return appendLogIndex(indexEntry.getLogId(), indexEntry.getPosition());
     }
 
     @Override

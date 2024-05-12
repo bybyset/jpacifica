@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.file;
+package com.trs.pacifica.log.store.file;
 
 import com.trs.pacifica.log.dir.Directory;
-import com.trs.pacifica.util.BitUtil;
-import com.trs.pacifica.util.io.ByteDataBuffer;
+import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.util.io.DataBuffer;
-import com.trs.pacifica.util.io.DataInput;
-import com.trs.pacifica.util.io.LinkedDataBuffer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Objects;
 
 public class SegmentFile extends AbstractFile {
@@ -35,13 +31,25 @@ public class SegmentFile extends AbstractFile {
     }
 
     @Override
-    protected void loadBody() throws IOException {
-
+    protected CheckEntryResult checkEntry(Input fileReader) throws IOException {
+        final byte[] blockHeader = new byte[Block.HEADER_SIZE];
+        fileReader.readBytes(blockHeader);
+        if (isFileEnd(blockHeader[0]) || Block.SEGMENT_BLOCK_MAGIC != blockHeader[0]) {
+            return CheckEntryResult.fileEnd();
+        }
+        Block block = Block.decode(blockHeader, null);
+        final int dataByteSize = block.getDataLen();
+        final int entryNum;
+        if (block.isFirstBlock()) {
+            entryNum = 1;
+        } else {
+            entryNum = 0;
+        }
+        return CheckEntryResult.success(entryNum, dataByteSize + Block.HEADER_SIZE);
     }
 
 
     /**
-     *
      * @param logIndex
      * @param segmentBlock segment block
      * @return number of bytes written
@@ -57,7 +65,6 @@ public class SegmentFile extends AbstractFile {
 
 
     /**
-     *
      * @param segmentBlock segment block
      * @return number of bytes written
      * @throws IOException
@@ -68,18 +75,34 @@ public class SegmentFile extends AbstractFile {
     }
 
 
-
+    /**
+     * Reads a block starting at the specified position
+     *
+     * @param position position in the file
+     * @return null if the position is greater than file size or is end of file or not found
+     * @throws IOException
+     */
     public Block lookupBlock(final int position) throws IOException {
+        if (position >= fileSize) {
+            return null;
+        }
         final byte[] blockHeader = new byte[Block.HEADER_SIZE];
         this.readBytes(blockHeader, position);
-        final int dataLen = Block.decodeDataLen(blockHeader);
-        final DataBuffer logEntryData;
-        if (dataLen > 0) {
-            logEntryData = this.readDataBuffer(position + Block.HEADER_SIZE, dataLen);
-        } else {
-            logEntryData = Block.EMPTY_DATA_BUFFER;
+        if (isFileEnd(blockHeader)) {
+            return null;
         }
-        return Block.decode(blockHeader, logEntryData);
+        final Block block = Block.decode(blockHeader);
+        if (block != null) {
+            final int dataLen = block.getDataLen();
+            final DataBuffer logEntryData;
+            if (block.getDataLen() > 0) {
+                logEntryData = this.readDataBuffer(position + Block.HEADER_SIZE, dataLen);
+            } else {
+                logEntryData = Block.EMPTY_DATA_BUFFER;
+            }
+            return Block.decode(blockHeader, logEntryData);
+        }
+        return null;
     }
 
     public static int getWriteByteSize(final int logDataByteSize) {

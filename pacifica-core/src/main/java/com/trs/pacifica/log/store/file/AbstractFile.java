@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.file;
+package com.trs.pacifica.log.store.file;
 
 import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 import com.trs.pacifica.util.io.*;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -31,6 +32,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * fixed-size AbstractFile
+ * The file consists of a FileHeader and a FileBody.
+ * We always write data in order, and the pointer moves forward.
+ * By default, the pointer is at the end of the file, eg: position is equal to file size.
+ * <p>
+ * [first_log_index, last_log_index]. The boundary values are all included.
+ * eg: [1, 1] [2, 3] [4, 7]...
+ */
 @NotThreadSafe
 public abstract class AbstractFile implements Closeable {
 
@@ -39,8 +49,8 @@ public abstract class AbstractFile implements Closeable {
     static int WRITE_BYTE_BUFFER_SIZE = 1024;
     protected static final byte _FILE_END_BYTE = 'x';
     protected final FileHeader header = new FileHeader();
-    private final AtomicInteger position = new AtomicInteger(FileHeader.getBytesSize());
-    private final AtomicInteger flushedPosition = new AtomicInteger(FileHeader.getBytesSize());
+    private final AtomicInteger position = new AtomicInteger();
+    private final AtomicInteger flushedPosition = new AtomicInteger();
     protected final Directory parentDir;
     protected final String filename;
     protected final int fileSize;
@@ -51,25 +61,56 @@ public abstract class AbstractFile implements Closeable {
         this.parentDir = parentDir;
         this.filename = filename;
         this.fileSize = parentDir.fileLength(filename);
+        this.setPosition(fileSize);
+        this.setFlushedPosition(fileSize);
     }
 
+
     /**
-     * load
-     * @return true if non-empty file
+     * Starting at the head of the file,
+     * we iterate over the stored entry and move the pointer to the last writable position
+     *
+     * @return
      * @throws IOException
      */
-    public boolean load() throws IOException {
+    public boolean recover() throws IOException {
         if (this.loadHeader()) {
-            this.lastLogIndex = this.header.getFirstLogIndex();
-            this.loadBody();
+            // recover last log index
+            // recover position
+            // recover flushed position
+            recoverBody();
             return true;
         }
         return false;
     }
 
-    protected abstract void loadBody() throws IOException;
+    protected void recoverBody() throws IOException {
+        int position = FileHeader.getBytesSize();
+        int logEntryCount = 0;
+        try (final Input input = this.parentDir.openInOutput(this.filename)) {
+            while (position < this.fileSize) {
+                input.seek(position);
+                final CheckEntryResult result = checkEntry(input);
+                if (result.resultType == CheckEntryResultType.END) {
+                    break;
+                }
+                if (result.resultType == CheckEntryResultType.SUCCESS) {
+                    position += result.size;
+                    logEntryCount += result.entryNum;
+                    continue;
+                }
+                // cut  or throw？
+                throw new IOException("");
+            }
+        }
+        this.lastLogIndex = this.getFirstLogIndex() + logEntryCount - 1;
+        this.setPosition(position);
+        this.setFlushedPosition(position);
+    }
 
-    protected boolean loadHeader() throws IOException {
+    protected abstract CheckEntryResult checkEntry(final Input fileReader) throws IOException;
+
+    boolean loadHeader() throws IOException {
         try (final Input input = this.parentDir.openInOutput(this.filename);) {
             byte[] bytes = new byte[FileHeader.getBytesSize()];
             input.seek(0);
@@ -77,6 +118,21 @@ public abstract class AbstractFile implements Closeable {
             return this.header.decode(bytes);
         }
     }
+
+
+    protected boolean isFileEnd(final byte b) {
+        return _FILE_END_BYTE == b;
+    }
+
+    protected boolean isFileEnd(final byte[] bytes) {
+        for (byte b : bytes) {
+            if (!isFileEnd(b)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /**
      * append data to
@@ -202,7 +258,6 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     *
      * @param position
      * @param len
      * @return
@@ -210,7 +265,7 @@ public abstract class AbstractFile implements Closeable {
      */
     DataBuffer readDataBuffer(final int position, final int len) throws IOException {
         final int currentFlushPosition = this.flushedPosition.get();
-        if (position < currentFlushPosition ) {
+        if (position < currentFlushPosition) {
             throw new IndexOutOfBoundsException(String.format("position(%d) less than current_flush_position(%d).", position, currentFlushPosition));
         }
         if (position + len > this.fileSize) {
@@ -243,11 +298,13 @@ public abstract class AbstractFile implements Closeable {
 
     public long getLastLogIndex() {
         return this.lastLogIndex;
+    }
 
+    public void setLastLogIndex(final long lastLogIndex) {
+        this.lastLogIndex = lastLogIndex;
     }
 
     /**
-     *
      * @return
      */
     public long getStartOffset() {
@@ -255,7 +312,6 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     *
      * @return
      */
     public long getEndOffset() {
@@ -264,6 +320,14 @@ public abstract class AbstractFile implements Closeable {
 
     public void setStartOffset(final long startOffset) {
         this.header.setStartOffset(startOffset);
+    }
+
+    private void setPosition(int position) {
+        this.position.set(position);
+    }
+
+    private void setFlushedPosition(int position) {
+        this.flushedPosition.set(position);
     }
 
     public int getFileSize() {
@@ -318,8 +382,18 @@ public abstract class AbstractFile implements Closeable {
     }
 
 
+    /**
+     * @return
+     */
     public boolean isAvailable() {
         return this.header.isAvailable();
+    }
+
+    /**
+     * @return
+     */
+    public boolean isBlank() {
+        return this.header.isBlank();
     }
 
     public void restFile(int position) {
@@ -361,4 +435,39 @@ public abstract class AbstractFile implements Closeable {
         flush();
     }
 
+
+    static enum CheckEntryResultType {
+        SUCCESS,
+        FAIL,
+        END;
+    }
+
+    static class CheckEntryResult {
+        private final int entryNum;
+
+        private final int size;
+
+        private final CheckEntryResultType resultType;
+
+
+        CheckEntryResult(int entryNum, int size, CheckEntryResultType resultType) {
+            this.entryNum = entryNum;
+            this.size = size;
+            this.resultType = resultType;
+        }
+
+        CheckEntryResult(int size, CheckEntryResultType resultType) {
+            this(1, size, resultType);
+        }
+
+        static CheckEntryResult fileEnd() {
+            return new CheckEntryResult(0, 0, CheckEntryResultType.END);
+        }
+
+        static CheckEntryResult success(final int entryNum, final int size) {
+            return new CheckEntryResult(entryNum, size, CheckEntryResultType.SUCCESS);
+        }
+
+
+    }
 }

@@ -20,7 +20,6 @@ package com.trs.pacifica.fsm;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.NotFoundLogEntryException;
-import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 
 import java.util.Iterator;

@@ -17,12 +17,10 @@
 
 package com.trs.pacifica.error;
 
-import com.trs.pacifica.log.error.PacificaRuntimeException;
-
 /**
  * not found LogEntry
  */
-public class NotFoundLogEntryException extends PacificaException {
+public class NotFoundLogEntryException extends Exception {
     public NotFoundLogEntryException() {
     }
 

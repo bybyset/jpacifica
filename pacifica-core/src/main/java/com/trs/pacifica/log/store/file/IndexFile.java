@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.file;
+package com.trs.pacifica.log.store.file;
 
 import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.io.Input;
-import com.trs.pacifica.log.store.IndexStore;
 import com.trs.pacifica.model.LogId;
-import com.trs.pacifica.util.BitUtil;
 import com.trs.pacifica.util.io.ByteDataBuffer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
+
+import static com.trs.pacifica.log.store.file.IndexEntry.*;
 
 public class IndexFile extends AbstractFile {
 
@@ -36,21 +35,12 @@ public class IndexFile extends AbstractFile {
     }
 
     @Override
-    protected void loadBody() throws IOException {
-        final int fileSize = this.getFileSize();
-        int currentPos = FileHeader.getBytesSize();
-        final byte[] readBuffer = new byte[_INDEX_ENTRY_BYTE_SIZE];
-        try (final Input input = this.parentDir.openInOutput(this.filename);){
-            do {
-                input.seek(currentPos);
-                final byte magic = input.readByte();
-                if (magic != IndexEntryHeader.HEADER_MAGIC) {
-                    break;
-                }
-                this.lastLogIndex++;
-                currentPos += _INDEX_ENTRY_BYTE_SIZE;
-            } while (currentPos < fileSize);
+    protected CheckEntryResult checkEntry(Input fileReader) throws IOException {
+        final byte magic = fileReader.readByte();
+        if (isFileEnd(magic) || IndexEntryHeader.HEADER_MAGIC != magic) {
+            return CheckEntryResult.fileEnd();
         }
+        return CheckEntryResult.success(1, _INDEX_ENTRY_BYTE_SIZE);
     }
 
 
@@ -117,118 +107,6 @@ public class IndexFile extends AbstractFile {
     public static int getWriteByteSize() {
         return _INDEX_ENTRY_BYTE_SIZE;
     }
-
-
-    public static class IndexEntry {
-
-        private final LogId logId;
-
-        private final int position;
-
-        public IndexEntry(LogId logId, int position) {
-            this.logId = logId;
-            this.position = position;
-        }
-
-
-        public LogId getLogId() {
-            return logId;
-        }
-
-        public int getPosition() {
-            return position;
-        }
-
-
-        static int byteSize() {
-            return Long.BYTES + Long.BYTES + Integer.BYTES;
-        }
-
-    }
-
-    public static class IndexEntryHeader {
-
-        static final byte HEADER_MAGIC = 0x27;
-
-        static final byte HEADER_VERSION = 0x01;
-
-        private final byte magic;
-
-        private final byte version;
-
-
-        public IndexEntryHeader(byte magic, byte version) {
-            this.magic = magic;
-            this.version = version;
-        }
-
-        public byte getMagic() {
-            return magic;
-        }
-
-        public byte getVersion() {
-            return version;
-        }
-
-
-        static IndexEntryHeader from(byte[] bytes) {
-            assert bytes.length > 2;
-            return new IndexEntryHeader(bytes[0], bytes[1]);
-        }
-
-        static int byteSize() {
-            return 2;
-        }
-    }
-
-    static final IndexEntryCodec INDEX_ENTRY_CODEC = new IndexEntryCodecV1();
-
-    static final IndexEntryCodecFactory INDEX_ENTRY_CODEC_FACTORY = new IndexEntryCodecFactory() {
-
-        @Override
-        public IndexEntryCodec getIndexEntryCodec(IndexEntryHeader indexEntryHeader) {
-            return INDEX_ENTRY_CODEC;
-        }
-    };
-
-    public static interface IndexEntryCodecFactory {
-
-        IndexEntryCodec getIndexEntryCodec(IndexEntryHeader indexEntryHeader);
-
-    }
-
-    public static interface IndexEntryCodec {
-
-        byte[] encode(IndexEntry indexEntry);
-
-        IndexEntry decode(final byte[] bytes, final int offset);
-
-        default IndexEntry decode(final byte[] bytes) {
-            return decode(bytes, 0);
-        }
-
-    }
-
-    public static class IndexEntryCodecV1 implements IndexEntryCodec{
-
-        @Override
-        public byte[] encode(IndexEntry indexEntry) {
-            byte[] encodeBytes = new byte[IndexEntry.byteSize()];
-            BitUtil.putLong(encodeBytes, 0, indexEntry.logId.getIndex());
-            BitUtil.putLong(encodeBytes, 8, indexEntry.logId.getTerm());
-            BitUtil.putInt(encodeBytes, 16, indexEntry.getPosition());
-            return encodeBytes;
-        }
-
-        @Override
-        public IndexEntry decode(final byte[] bytes, final int offset) {
-            final long logIndex = BitUtil.getLong(bytes, 0);
-            final long logTerm = BitUtil.getLong(bytes, 8);
-            final int position = BitUtil.getInt(bytes, 16);
-            return new IndexEntry(new LogId(logIndex,logTerm), position);
-        }
-    }
-
 
 
 }

@@ -35,7 +35,8 @@ public interface LogStorage {
 
 
     /**
-     *  get the LogId at index
+     * get the LogId at index
+     *
      * @param index It is greater than 0
      * @return null if it does not exist
      */
@@ -58,26 +59,28 @@ public interface LogStorage {
 
     /**
      * append LogEntry
+     *
      * @param logEntry
      * @return true if success
-     * @throws PacificaException
      */
-    boolean appendLogEntry(final LogEntry logEntry) throws PacificaException;;
+    boolean appendLogEntry(final LogEntry logEntry);
 
 
     /**
      * append LogEntry in bulk.
      * It will always start appending from 0,
      * and the failed logs will break and return the number of successfully appended logEntries
+     *
      * @param logEntries
      * @return number of success
      * @throws PacificaException
      */
-    int appendLogEntries(final List<LogEntry> logEntries) throws PacificaException;
+    int appendLogEntries(final List<LogEntry> logEntries);
 
 
     /**
      * truncate logs from storage's head, [first_log_index, first_index_kept) will be discarded.
+     *
      * @param firstIndexKept
      * @return first LogId. it is LogId(0 ,0) if nothing
      */
@@ -85,16 +88,24 @@ public interface LogStorage {
 
     /**
      * truncate logs from storage's tail, (last_index_kept, last_log_index]  will be discarded.
+     *
      * @param lastIndexKept
      * @return last LogId. it is LogId(0 ,0) if nothing
      */
     LogId truncateSuffix(final long lastIndexKept);
 
 
+    /**
+     * open the log storage
+     * @throws PacificaException
+     */
+    void open() throws PacificaException;
 
-    void open();
-
-    void close();
+    /**
+     * close the log storage
+     * @throws PacificaException
+     */
+    void close() throws PacificaException;
 
 
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.file;
+package com.trs.pacifica.log.store.file;
 
 import com.trs.pacifica.util.BitUtil;
 import com.trs.pacifica.util.io.ByteDataBuffer;
@@ -26,7 +26,11 @@ public class Block {
     static final DataBuffer EMPTY_DATA_BUFFER = new ByteDataBuffer(new byte[0]);
     public static final int HEADER_SIZE = 6;//6 bytes = magic(1 byte) + tag(1 byte) + data_length(4 byte)
     static final byte SEGMENT_BLOCK_MAGIC = 0x08;
-    static final byte TAG_HAS_NEXT = 1;
+
+    static final byte TAG_FIRST = 1;
+    static final byte TAG_HAS_NEXT = 1 << 1;
+
+
     private byte magic = SEGMENT_BLOCK_MAGIC;
     private byte tag = 0x00;
     private int dataLen;
@@ -48,6 +52,18 @@ public class Block {
         this.logEntryData = logEntryData;
     }
 
+    Block(final byte magic, final byte tag, final int dataLen) {
+        this(magic, tag, dataLen, null);
+    }
+
+    public boolean isFirstBlock() {
+        return (this.tag & TAG_FIRST) != 0;
+    }
+
+    public void setFirstBlock() {
+        this.tag |= TAG_FIRST;
+    }
+
     public boolean hasNextBlock() {
         return (this.tag & TAG_HAS_NEXT) != 0;
     }
@@ -58,6 +74,10 @@ public class Block {
 
     public int getDataLen() {
         return dataLen;
+    }
+
+    public int getByteSize() {
+        return HEADER_SIZE + this.dataLen;
     }
 
     public void setLogEntryData(DataBuffer logEntryData) {
@@ -82,9 +102,17 @@ public class Block {
             throw new IllegalArgumentException("illegal header of block");
         }
         final byte magic = header[0];
+        if (SEGMENT_BLOCK_MAGIC != magic) {
+            return null;
+        }
         final byte tag = header[1];
         final int dataLen = BitUtil.getInt(header, 2);
         return new Block(magic, tag, dataLen, logEntryData);
+    }
+
+
+    public static Block decode(final byte[] header) {
+        return  decode(header, null);
     }
 
     public static int decodeDataLen(final byte[] header) {

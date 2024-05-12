@@ -17,7 +17,6 @@
 
 package com.trs.pacifica;
 
-import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse;
 import com.trs.pacifica.proto.RpcRequest.AppendEntriesRequest;
 import com.trs.pacifica.proto.RpcRequest.ReplicaRecoverRequest;

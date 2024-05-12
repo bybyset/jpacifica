@@ -22,7 +22,6 @@ import java.util.Map;
 
 public enum PacificaErrorCode {
 
-
     UNDEFINED(999999, "undefined"),
     CONFLICT_LOG(100101, "conflict log"),
     UNAVAILABLE(100102, "unavailable"),
@@ -33,6 +32,7 @@ public enum PacificaErrorCode {
     NOT_SUPPORT(100107, "not support"),
     USER_ERROR(100108, "user exception"),
     INTERNAL(100109, "internal error"),
+    IO(100110, "io exception"),
 
 
 

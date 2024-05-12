@@ -19,7 +19,7 @@ package com.trs.pacifica.fs.impl;
 
 import com.google.protobuf.ByteString;
 import com.trs.pacifica.async.Finished;
-import com.trs.pacifica.error.PacificaCodeException;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileReader;
 import com.trs.pacifica.fs.FileService;
@@ -63,12 +63,12 @@ public class DefaultFileService implements FileService {
 
         try {
             if (request.getOffset() < 0 || request.getLength() <= 0) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "");
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, "");
             }
             final long readerId = request.getReaderId();
             final FileReader fileReader = getFileReader(readerId);
             if (fileReader == null) {
-                throw  new PacificaCodeException(PacificaErrorCode.TIMEOUT, "");
+                throw  new PacificaException(PacificaErrorCode.TIMEOUT, "");
             }
             final ByteBuffer buffer = ByteBuffer.allocate(request.getLength());
             final RpcRequest.GetFileResponse.Builder responseBuilder = RpcRequest.GetFileResponse.newBuilder();

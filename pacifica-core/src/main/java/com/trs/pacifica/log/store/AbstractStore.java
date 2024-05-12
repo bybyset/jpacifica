@@ -17,29 +17,27 @@
 
 package com.trs.pacifica.log.store;
 
+import com.google.common.collect.Lists;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.log.dir.BaseDirectory;
 import com.trs.pacifica.log.dir.FsDirectory;
-import com.trs.pacifica.log.file.AbstractFile;
-import com.trs.pacifica.model.LogId;
-import org.checkerframework.checker.units.qual.A;
+import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.log.store.file.AbstractFile;
+import com.trs.pacifica.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.io.File;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public abstract class AbstractStore {
+public abstract class AbstractStore implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStore.class);
-
-    static final String _FILENAME_FLUSH_CHECKPOINT = "_flush.checkpoint";
 
     /**
      * Used to name new file.
@@ -51,25 +49,40 @@ public abstract class AbstractStore {
     protected final Lock writeLock = lock.writeLock();
     protected final BaseDirectory directory;
     protected final int fileSize;
-
     protected final AtomicLong flushedPosition = new AtomicLong(0);
+
+    protected volatile boolean closed = true;
 
 
     protected AbstractStore(Path dir, int fileSize) throws IOException {
         this.directory = FsDirectory.open(dir);
         this.fileSize = fileSize;
-        load();
     }
 
-
-    protected void load() throws IOException {
-        loadExistedFiles();
-        if (this.files.isEmpty()) {
-
+    public void ensureOpen() throws AlreadyClosedException {
+        if (this.closed) {
+            throw new AlreadyClosedException(String.format("{} not opened.", this.getClass().getSimpleName()));
         }
+    }
 
-        // set flushed position
-
+    public void load() throws IOException {
+        this.writeLock.lock();
+        try {
+            if (this.closed) {
+                loadExistedFiles();
+                if (!this.files.isEmpty()) {
+                    // set flushed position
+                    final AbstractFile lastFile = this.files.peekLast();
+                    this.setFlushedPosition(lastFile.getStartOffset() + lastFile.getFlushedPosition());
+                }
+                this.closed = false;
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("success to load. after={}", this);
+                }
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
 
@@ -83,31 +96,62 @@ public abstract class AbstractStore {
         if (filenames == null || filenames.length == 0) {
             return;
         }
+        List<AbstractFile> loadFiles = new ArrayList<>(filenames.length);
+        //load forward from the last file
         Arrays.sort(filenames, Comparator.comparing(this::getFileSequenceFromFilename));
         AbstractFile lastFile = null;
         long nextFileSequence = 0;
-        for (String filename : filenames) {
+        for (int i = filenames.length - 1; i >= 0; i--) {
+            final String filename = filenames[i];
+
             final AbstractFile file = loadFile(filename, lastFile);
             if (file == null) {
                 continue;
             }
             lastFile = file;
-            this.files.add(file);
+            loadFiles.add(file);
             nextFileSequence = Math.max(nextFileSequence, getFileSequenceFromFilename(filename) + 1);
         }
         this.nextFileSequence.set(nextFileSequence);
+        // blank file we will set startOffset
+        loadFiles = Lists.reverse(loadFiles);
+        AbstractFile prevFile = null;
+        for (AbstractFile file : loadFiles) {
+            if (file.isBlank()) {
+                file.setStartOffset(calculateFileStartOffset(prevFile));
+            }
+            prevFile = file;
+            this.files.add(file);
+        }
     }
 
 
-    protected AbstractFile loadFile(final String filename, final AbstractFile lastFile) throws IOException {
+    protected AbstractFile loadFile(final String filename, final AbstractFile nextFile) throws IOException {
         if (filename != null && filename.endsWith(getFileSuffix())) {
             AbstractFile abstractFile = newAbstractFile(filename);
-            if (!abstractFile.load()) {
-                abstractFile.setStartOffset(calculateFileStartOffset(lastFile));
-            }
+            do {
+                if (nextFile == null || !nextFile.isAvailable()) {
+                    // the last file  or not contains anyone log entry(first block)
+                    abstractFile.recover();
+                    break;
+                }
+                abstractFile.setLastLogIndex(nextFile.getFirstLogIndex() - 1);
+            } while (false);
             return abstractFile;
         }
         return null;
+    }
+
+    public void close() throws IOException {
+        this.writeLock.lock();
+        try {
+            this.closed = true;
+            this.files.clear();
+            this.setFlushedPosition(0);
+            IOUtils.close(this.directory);
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
 
@@ -172,6 +216,7 @@ public abstract class AbstractStore {
      * @return null if there is no next file
      */
     public AbstractFile getNextFile(final AbstractFile currentFile) {
+        ensureOpen();
         this.readLock.lock();
         try {
             if (this.files.isEmpty()) {
@@ -206,6 +251,7 @@ public abstract class AbstractStore {
      * @throws IOException
      */
     public AbstractFile getLastFile(final int minFreeByteSize, final boolean createIfNecessary) throws IOException {
+        ensureOpen();
         AbstractFile lastFile = null;
         this.readLock.lock();
         try {
@@ -241,6 +287,7 @@ public abstract class AbstractStore {
      * @return null if not found
      */
     public AbstractFile lookupFile(final long logIndex) {
+        ensureOpen();
         if (logIndex <= 0) {
             return null;
         }
@@ -283,6 +330,7 @@ public abstract class AbstractStore {
      * @return -1L if nothing
      */
     public long getFirstLogIndex() {
+        ensureOpen();
         this.readLock.lock();
         try {
             final AbstractFile firstFile = this.files.peekFirst();
@@ -301,6 +349,7 @@ public abstract class AbstractStore {
      * @return -1L if nothing
      */
     public long getLastLogIndex() {
+        ensureOpen();
         this.readLock.lock();
         try {
             final AbstractFile lastFile = this.files.peekLast();
@@ -314,6 +363,7 @@ public abstract class AbstractStore {
     }
 
     public boolean truncatePrefix(final long firstIndexKept) throws IOException {
+        ensureOpen();
         this.writeLock.lock();
         try {
             do {
@@ -330,6 +380,7 @@ public abstract class AbstractStore {
     }
 
     public boolean truncateSuffix(long lastIndexKept) {
+        ensureOpen();
         this.writeLock.lock();
         try {
             if (this.getLastLogIndex() <= lastIndexKept) {
@@ -407,6 +458,10 @@ public abstract class AbstractStore {
         return this.flushedPosition.get();
     }
 
+    void setFlushedPosition(final long flushedPosition) {
+        this.flushedPosition.set(flushedPosition);
+    }
+
     public boolean waitForFlush(final long maxExpectedFlushPosition, final int maxFlushTimes) throws IOException {
         int cnt = 0;
         long currentFlushedPosition;
@@ -431,10 +486,23 @@ public abstract class AbstractStore {
         return calculateFileStartOffset(lastFile);
     }
 
-    static long calculateFileStartOffset(final AbstractFile lastFile) {
-        if (lastFile == null) {
+    @Override
+    public String toString() {
+        final StringBuilder infoBuilder = new StringBuilder(this.getClass().getSimpleName());
+        infoBuilder.append("{");
+        infoBuilder.append("directory=").append(this.directory.toString());
+        infoBuilder.append(",").append("file_count=").append(this.files.size());
+        infoBuilder.append(",").append("file_size=").append(this.fileSize);
+        infoBuilder.append(",").append("next_file_sequence=").append(this.nextFileSequence.get());
+        infoBuilder.append(",").append("closed=").append(this.closed);
+        infoBuilder.append("}");
+        return infoBuilder.toString();
+    }
+
+    static long calculateFileStartOffset(final AbstractFile prevFile) {
+        if (prevFile == null) {
             return 0L;
         }
-        return lastFile.getStartOffset() + lastFile.getFileSize();
+        return prevFile.getStartOffset() + prevFile.getFileSize();
     }
 }

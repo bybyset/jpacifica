@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.file;
+package com.trs.pacifica.log.store.file;
 
 import com.trs.pacifica.util.io.ByteDataBuffer;
 import com.trs.pacifica.util.io.DataBuffer;
@@ -33,7 +33,9 @@ import java.nio.ByteBuffer;
  */
 public class FileHeader {
 
-    static final int _HEADER_BYTE_SIZE = 26;
+    static final int _HEADER_BYTE_SIZE = Byte.BYTES + Short.BYTES + Byte.BYTES + Long.BYTES + Long.BYTES + Integer.BYTES + Long.BYTES;
+    static final short CURRENT_VERSION = 1;
+
     private static final byte _MAGIC = 0X20;
     private static final byte TAG_BLANK = 0x00;
 
@@ -45,12 +47,25 @@ public class FileHeader {
     /**
      *
      */
-    private static final byte TAG_CONSECUTIVE =  1 << 1;
-    private final byte magic = _MAGIC;
+    private static final byte TAG_CONSECUTIVE = 1 << 1;
+    private byte magic = _MAGIC;
     private byte tag = TAG_BLANK;
 
+    private short version = CURRENT_VERSION;
+
+    /**
+     * the index of first log in the file
+     */
     private long firstLogIndex = -1L;
 
+    /**
+     * the position of first log in the file
+     */
+    private int firstLogPosition = -1;
+
+    /**
+     * the start offset of the file in the dir
+     */
     private long startOffset = -1L;
 
     public long getFirstLogIndex() {
@@ -59,6 +74,14 @@ public class FileHeader {
 
     public void setFirstLogIndex(long firstLogIndex) {
         this.firstLogIndex = firstLogIndex;
+    }
+
+    public int getFirstLogPosition() {
+        return this.firstLogPosition;
+    }
+
+    public void setFirstLogPosition(final int firstLogPosition) {
+        this.firstLogPosition = firstLogPosition;
     }
 
     public long getStartOffset() {
@@ -72,10 +95,12 @@ public class FileHeader {
 
     public byte[] encode() {
         final ByteBuffer headerData = ByteBuffer.allocate(_HEADER_BYTE_SIZE);
-        headerData.put(magic);
-        headerData.put(tag);
+        headerData.put(this.magic);
+        headerData.putShort(this.version);
+        headerData.put(this.tag);
         headerData.putLong(this.startOffset);
         headerData.putLong(this.firstLogIndex);
+        headerData.putInt(this.firstLogPosition);
         headerData.putLong(0L);
         headerData.flip();
         return headerData.array();
@@ -86,12 +111,15 @@ public class FileHeader {
             return false;
         }
         final ByteBuffer byteBuffer = ByteBuffer.wrap(headerData);
-        if (byteBuffer.get() != _MAGIC) {
+        this.magic = byteBuffer.get();
+        if (this.magic != _MAGIC) {
             return false;
         }
+        this.version = byteBuffer.get();
         this.tag = byteBuffer.get();
         this.startOffset = byteBuffer.getLong();
         this.firstLogIndex = byteBuffer.getLong();
+        this.firstLogPosition = byteBuffer.getInt();
         byteBuffer.getLong();//reserved
         return true;
     }
@@ -101,7 +129,6 @@ public class FileHeader {
     }
 
     /**
-     *
      * @return
      */
     public boolean isConsecutive() {
@@ -127,7 +154,6 @@ public class FileHeader {
     public void rest() {
         this.tag = TAG_BLANK;
     }
-
 
 
 }

@@ -20,15 +20,13 @@ package com.trs.pacifica.core;
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
-import com.trs.pacifica.error.PacificaCodeException;
-import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotDownloader;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 import com.trs.pacifica.util.RpcLogUtil;
@@ -40,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -140,7 +137,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                     //TODO installed
                     LOGGER.warn("{} receive InstallSnapshotRequest({}), but has been installed. local_snapshot_log_id={}",
                             replica.getReplicaId(), RpcLogUtil.toLogString(installSnapshotRequest), this.lastSnapshotLogId);
-                    throw new PacificaCodeException(PacificaErrorCode.INTERNAL, "");
+                    throw new PacificaException(PacificaErrorCode.INTERNAL, "");
                 }
             } finally {
                 this.readLock.unlock();
@@ -154,7 +151,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                     snapshotDownloader.start();
                     snapshotDownloader.awaitComplete();
                 } catch (ExecutionException e) {
-                    throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());
+                    throw new PacificaException(PacificaErrorCode.USER_ERROR, "", e.getCause());
                 } catch (InterruptedException e) {
                     //TODO
                 } finally {
@@ -229,7 +226,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         }
     }
 
-    private void doSnapshotLoad(final StateMachineCaller.SnapshotLoadCallback snapshotLoadCallback, final State expectState) throws PacificaCodeException {
+    private void doSnapshotLoad(final StateMachineCaller.SnapshotLoadCallback snapshotLoadCallback, final State expectState) throws PacificaException {
         if (STATE_UPDATER.compareAndSet(this, expectState, State.SNAPSHOT_LOADING)) {
             try {
                 if (this.stateMachineCaller.onSnapshotLoad(snapshotLoadCallback)) {
@@ -238,21 +235,21 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                     } catch (InterruptedException e) {
 
                     } catch (ExecutionException e) {
-                        throw new PacificaCodeException(PacificaErrorCode.USER_ERROR, "", e.getCause());
+                        throw new PacificaException(PacificaErrorCode.USER_ERROR, "", e.getCause());
                     }
                 } else {
-                    throw new PacificaCodeException(PacificaErrorCode.BUSY, "");
+                    throw new PacificaException(PacificaErrorCode.BUSY, "");
                 }
             } finally {
                 STATE_UPDATER.set(this, State.IDLE);
             }
         } else {
-            throw new PacificaCodeException(PacificaErrorCode.BUSY, "");
+            throw new PacificaException(PacificaErrorCode.BUSY, "");
         }
     }
 
 
-    private void doFirstSnapshotLoad() throws PacificaCodeException {
+    private void doFirstSnapshotLoad() throws PacificaException {
         final SnapshotReader snapshotReader = this.snapshotStorage.openSnapshotReader();
         final FirstSnapshotLoadCallback firstSnapshotLoadCallback = new FirstSnapshotLoadCallback(snapshotReader);
         doSnapshotLoad(firstSnapshotLoadCallback, State.IDLE);

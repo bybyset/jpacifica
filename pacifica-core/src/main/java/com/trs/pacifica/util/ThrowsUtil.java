@@ -15,24 +15,20 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.util;
 
-import com.trs.pacifica.fsm.OperationIterator;
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+public class ThrowsUtil {
 
-public interface StateMachine {
+    private ThrowsUtil() {
 
-    public void onApply(OperationIterator iterator);
+    }
 
-    public void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException;
-
-    public void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException;
-
-    public void onShutdown();
-
-
-
+    public static Throwable addSuppressed(Throwable exception, Throwable suppressed) {
+        if (exception != null && suppressed != null) {
+            exception.addSuppressed(suppressed);
+        }
+        return exception == null ? suppressed : exception;
+    }
 
 
 }

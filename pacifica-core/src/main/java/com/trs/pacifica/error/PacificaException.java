@@ -17,27 +17,60 @@
 
 package com.trs.pacifica.error;
 
-public class PacificaException extends RuntimeException {
+public class PacificaException extends Exception{
 
-    public PacificaException() {
-    }
+    private PacificaErrorCode code = PacificaErrorCode.UNDEFINED;
 
-    public PacificaException(String message) {
+    public PacificaException(PacificaErrorCode code, String message) {
         super(message);
+        this.code = code;
     }
 
-    public PacificaException(String message, Throwable cause) {
+    public PacificaException(PacificaErrorCode code, String message, Throwable cause) {
         super(message, cause);
+        this.code = code;
     }
 
-    public PacificaException(Throwable cause) {
+    public PacificaException(PacificaErrorCode code, Throwable cause) {
         super(cause);
+        this.code = code;
     }
 
-    public PacificaException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public PacificaException(PacificaErrorCode code, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+        this.code = code;
+    }
+
+    public PacificaException(int code, String message) {
+        super(message);
+        this.code = PacificaErrorCode.fromCode(code);
+    }
+
+    public PacificaException(int code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = PacificaErrorCode.fromCode(code);
+    }
+
+    public PacificaException(int code, Throwable cause) {
+        super(cause);
+        this.code = PacificaErrorCode.fromCode(code);
+    }
+
+    public PacificaException(int code, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+        this.code = PacificaErrorCode.fromCode(code);
+    }
+
+    public PacificaErrorCode getCode() {
+        return code;
     }
 
 
 
+    @Override
+    public String toString() {
+        return "PacificaCodeException{" +
+                "code=" + code +
+                '}';
+    }
 }

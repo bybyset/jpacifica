@@ -17,10 +17,12 @@
 
 package com.trs.pacifica.log.store;
 
-import com.trs.pacifica.log.file.AbstractFile;
-import com.trs.pacifica.log.file.Block;
-import com.trs.pacifica.log.file.FileHeader;
-import com.trs.pacifica.log.file.SegmentFile;
+import com.trs.pacifica.log.codec.LogEntryDecoder;
+import com.trs.pacifica.log.store.file.AbstractFile;
+import com.trs.pacifica.log.store.file.Block;
+import com.trs.pacifica.log.store.file.FileHeader;
+import com.trs.pacifica.log.store.file.SegmentFile;
+import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.util.Tuple2;
 import com.trs.pacifica.util.io.DataBuffer;
 import com.trs.pacifica.util.io.DataInput;
@@ -29,6 +31,7 @@ import com.trs.pacifica.util.io.LinkedDataBuffer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class SegmentStore extends AbstractStore {
@@ -62,6 +65,7 @@ public class SegmentStore extends AbstractStore {
         int firstStartWritePos = -1;
         long expectFlushPos = -1L;
         int logEntryDataWritePos = 0;
+        // TODO  the write lock should be moved to a lower level segment file
         this.writeLock.lock();
         try {
             do {
@@ -79,6 +83,7 @@ public class SegmentStore extends AbstractStore {
                     }
                     final int realWriteBytes;
                     if (firstStartWritePos < 0) {
+                        segmentBlock.setFirstBlock();
                         firstStartWritePos = startWritePos;
                         realWriteBytes = ((SegmentFile) lastFile).appendLogEntry(logIndex, segmentBlock);
                     } else {
@@ -88,7 +93,7 @@ public class SegmentStore extends AbstractStore {
                     logEntryData.position(logEntryDataWritePos);
                     expectFlushPos = lastFile.getStartOffset() + startWritePos + realWriteBytes;
                 }
-            } while(logEntryData.hasRemaining());
+            } while (logEntryData.hasRemaining());
         } finally {
             this.writeLock.unlock();
         }
@@ -97,8 +102,7 @@ public class SegmentStore extends AbstractStore {
 
 
     /**
-     *
-     * @param logIndex  index of log entry
+     * @param logIndex    index of log entry
      * @param logPosition position in segment file of log entry
      * @return null if not found
      */
@@ -121,7 +125,7 @@ public class SegmentStore extends AbstractStore {
             } else {
                 break;
             }
-        }while (segmentFile != null);
+        } while (segmentFile != null);
         return new LinkedDataBuffer(dataBufferList);
     }
 
@@ -135,6 +139,26 @@ public class SegmentStore extends AbstractStore {
         return new SegmentFile(directory, filename);
     }
 
+    /**
+     * @param startLogIndex
+     * @param startLogPosition
+     * @param endLogIndex
+     * @return
+     */
+    public Iterator<LogEntry> sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition, final long endLogIndex) {
+        AbstractFile[] files = new AbstractFile[1];
+        SegmentFile segmentFile = (SegmentFile) this.lookupFile(startLogIndex);
+        if (segmentFile != null) {
+            return new LogEntryIterator(logEntryDecoder, files, startLogIndex, startLogPosition, endLogIndex);
+        }
+        return null;
+    }
+
+    public Iterator<LogEntry> sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition) {
+        final long lastLogIndex = getLastLogIndex();
+        return sliceLogEntry(logEntryDecoder, startLogIndex, startLogPosition, lastLogIndex);
+    }
+
     static int getAppendLogDataByteSize(final DataInput logDataInput) {
         return SegmentFile.getWriteByteSize(logDataInput.getByteSize());
     }
@@ -142,10 +166,69 @@ public class SegmentStore extends AbstractStore {
     /**
      * When appending the log, at least the number of bytes to write,
      * when the end of the file is not enough to write, we will skip writing to the file and fill the end.
+     *
      * @return
      */
     static int getMinWriteByteSize() {
         return DEFAULT_MIN_WRITE_BYTES;
+    }
+
+    class LogEntryIterator implements Iterator<LogEntry> {
+
+        private final LogEntryDecoder logEntryDecoder;
+        private final AbstractFile[] files;
+        private final long endLogIndex;
+        private long currentLogIndex;
+        private int currentFileIndex = 0;
+        private int currentPosition;
+
+        public LogEntryIterator(LogEntryDecoder logEntryDecoder, AbstractFile[] files, long startLogIndex, int startLogPosition, long endLogIndex) {
+            this.logEntryDecoder = logEntryDecoder;
+            this.files = files;
+            this.endLogIndex = endLogIndex;
+            this.currentLogIndex = startLogIndex;
+            this.currentPosition = startLogPosition;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return this.currentFileIndex < this.files.length && currentLogIndex < this.endLogIndex;
+        }
+
+        @Override
+        public LogEntry next() {
+            SegmentStore.this.ensureOpen();
+            List<DataBuffer> dataBufferList = new ArrayList<>(2);
+            do {
+                if (this.currentFileIndex >= this.files.length) {
+                    return null;
+                }
+                final SegmentFile currentFile = (SegmentFile) this.files[currentFileIndex];
+                try {
+                    final Block block = currentFile.lookupBlock(this.currentPosition);
+                    if (block == null) {
+                        // next file
+                        nextFile();
+                        continue;
+                    }
+                    dataBufferList.add(block.getLogEntryData());
+                    this.currentPosition += block.getByteSize();
+                    if (!block.hasNextBlock()) {
+                        break;
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            } while (true);
+            this.currentLogIndex++;
+            return this.logEntryDecoder.decode(new LinkedDataBuffer(dataBufferList));
+        }
+
+        private void nextFile() {
+            this.currentFileIndex++;
+            this.currentPosition = FileHeader.getBytesSize();
+        }
+
     }
 
 }

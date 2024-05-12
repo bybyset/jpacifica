@@ -20,12 +20,10 @@ package com.trs.pacifica.sender;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import com.trs.pacifica.*;
-import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
-import com.trs.pacifica.error.PacificaCodeException;
-import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
@@ -36,7 +34,6 @@ import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorResponseCallback;
 import com.trs.pacifica.rpc.RpcResponseCallbackAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.util.RpcLogUtil;
 import com.trs.pacifica.util.RpcUtil;
@@ -180,7 +177,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             if (blockTimer != null) {
                 blockTimer.cancel(true);
             }
-            notifyOnCaughtUp(new PacificaCodeException(PacificaErrorCode.STEP_DOWN, "The sender is shutting"));
+            notifyOnCaughtUp(new PacificaException(PacificaErrorCode.STEP_DOWN, "The sender is shutting"));
             this.state = State.SHUTDOWN;
         }
     }
@@ -659,7 +656,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         OnCaughtUpTimeoutAble(OnCaughtUp wrapper, long timeout, TimeUnit timeUnit) {
             this.wrapper = wrapper;
             this.timeoutFuture = option.getSenderScheduler().schedule(()->{
-                this.run(Finished.failure(new PacificaCodeException(PacificaErrorCode.TIMEOUT, String.format("%s caught up time out.", toId))));
+                this.run(Finished.failure(new PacificaException(PacificaErrorCode.TIMEOUT, String.format("%s caught up time out.", toId))));
             }, timeout, timeUnit);
         }
 

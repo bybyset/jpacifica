@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.error;
 
-public class PacificaLogEntryException extends PacificaException{
+public class PacificaLogEntryException extends Exception {
 
     public PacificaLogEntryException() {
     }

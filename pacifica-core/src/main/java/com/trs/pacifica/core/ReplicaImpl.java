@@ -23,9 +23,8 @@ import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
-import com.trs.pacifica.error.PacificaCodeException;
-import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
@@ -36,7 +35,6 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.util.QueueUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.TimeUtils;
@@ -339,7 +337,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             ensureActive();
             final ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
             if (!this.replicaId.equals(targetId)) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
             }
             if (this.replicaGroup.getVersion() < request.getVersion()) {
                 // TODO refresh replica group
@@ -349,7 +347,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
             final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
             if (!primaryReplicaId.equals(fromReplicaId)) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
             }
 
             final long primaryTerm = this.replicaGroup.getPrimaryTerm();
@@ -408,11 +406,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         try {
             ensureActive();
             if (this.state != ReplicaState.Primary) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "");
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, "");
             }
             final ReplicaId primaryId = RpcUtil.toReplicaId(request.getPrimaryId());
             if (!this.replicaId.equals(primaryId)) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, "");
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, "");
             }
             final long localTerm = this.replicaGroup.getPrimaryTerm();
             if (request.getTerm() != localTerm) {
@@ -445,11 +443,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             ensureActive();
             //TODO Refactoring duplicate code
             if (this.snapshotManager == null) {
-                throw new PacificaCodeException(PacificaErrorCode.NOT_SUPPORT, "not support install snapshot.");
+                throw new PacificaException(PacificaErrorCode.NOT_SUPPORT, "not support install snapshot.");
             }
             final ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
             if (!this.replicaId.equals(targetId)) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
             }
             if (this.replicaGroup.getVersion() < request.getVersion()) {
                 // TODO refresh replica group
@@ -459,7 +457,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
             final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
             if (!primaryReplicaId.equals(fromReplicaId)) {
-                throw new PacificaCodeException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
             }
 
             final long primaryTerm = this.replicaGroup.getPrimaryTerm();

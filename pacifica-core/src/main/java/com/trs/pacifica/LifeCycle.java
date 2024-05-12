@@ -17,14 +17,16 @@
 
 package com.trs.pacifica;
 
-public interface LifeCycle<T>{
+import com.trs.pacifica.error.PacificaException;
 
-    public void init(T option);
+public interface LifeCycle<T> {
+
+    public void init(T option) throws PacificaException;
 
 
-    public void startup();
+    public void startup() throws PacificaException;
 
 
-    public void shutdown();
+    public void shutdown() throws PacificaException;
 
 }

@@ -18,24 +18,29 @@
 package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaLogEntryException;
 import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.log.file.IndexFile;
+import com.trs.pacifica.log.store.file.FileHeader;
+import com.trs.pacifica.log.store.file.IndexEntry;
+import com.trs.pacifica.log.store.file.IndexFile;
 import com.trs.pacifica.log.store.IndexStore;
 import com.trs.pacifica.log.store.SegmentStore;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.util.IOUtils;
+import com.trs.pacifica.util.ThrowsUtil;
 import com.trs.pacifica.util.Tuple2;
 import com.trs.pacifica.util.io.DataBuffer;
-import com.trs.pacifica.util.io.DataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
@@ -87,6 +92,97 @@ public class FsLogStorage implements LogStorage {
 
 
     @Override
+    public void open() throws PacificaException {
+        this.writeLock.lock();
+        try {
+            this.indexStore.load();
+            this.segmentStore.load();
+            // Check for consistency between IndexStore and SegmentStore
+            if (!checkConsistencyAndAlign()) {
+                throw new PacificaException(PacificaErrorCode.CONFLICT_LOG, "Check for consistency between IndexStore and SegmentStore, but failed to align.");
+            }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("success to open storage_path={}.", this.storagePath);
+            }
+        } catch (IOException e) {
+            throw new PacificaException(PacificaErrorCode.IO, e.getMessage(), e);
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    @Override
+    public void close() throws PacificaException {
+        this.writeLock.lock();
+        try {
+            Throwable th = null;
+            try {
+                IOUtils.close(this.segmentStore);
+            } catch (IOException e) {
+                th = e;
+            }
+            try {
+                IOUtils.close(this.indexStore);
+            } catch (IOException e) {
+                th = ThrowsUtil.addSuppressed(th, e);
+            }
+            if (th != null) {
+                throw new PacificaException(PacificaErrorCode.IO, th.getMessage(), th);
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    /**
+     * Check for consistency between IndexStore and SegmentStore.
+     * we will align them to be consistent
+     */
+    private boolean checkConsistencyAndAlign() throws IOException {
+        long lastIndex = this.indexStore.getLastLogIndex();
+        final long lastSegmentIndex = this.segmentStore.getLastLogIndex();
+        if (lastIndex == lastSegmentIndex) {
+            return true;
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{}, not consistency, last_index({}) of IndexStore, last_index({}) of SegmentStore", storagePath, lastIndex, lastSegmentIndex);
+        }
+        if (lastIndex > lastSegmentIndex) {
+            //case 1: lastIndex > lastSegmentIndex
+            //align IndexStore to the index of lastSegmentIndex
+            return this.indexStore.truncateSuffix(Math.max(0, lastSegmentIndex));
+        } else {
+            //case 2: lastSegmentIndex > lastIndex
+            //we should generate IndexEntry array sorted by index from SegmentStore, then store indexEntry array to IndexStore.
+            //1.look position in SegmentFile at lastIndex
+            int lastIndexPosition = FileHeader.getBytesSize();
+            if (lastIndex > 0) {
+                lastIndexPosition = this.indexStore.lookupPositionAt(lastIndex);
+            } else {
+                lastIndex = this.segmentStore.getFirstLogIndex();
+            }
+            //2.list IndexEntry array after the lastIndex
+            List<IndexEntry> indexEntries = new ArrayList<>();
+            this.sliceLogEntry(lastIndex, lastIndexPosition);
+
+            //3.append IndexEntry array to IndexStore
+            Tuple2<Integer, Long> lastAppendResult = null;
+            for (IndexEntry indexEntry : indexEntries) {
+                lastAppendResult = this.indexStore.appendLogIndex(indexEntry);
+            }
+            assert lastAppendResult != null;
+            //4.flush IndexStore
+            return this.indexStore.waitForFlush(lastAppendResult.getSecond(), 5);
+        }
+
+
+    }
+
+    private List<LogEntry> sliceLogEntry(final long startLogIndex, final int position) {
+
+    }
+
+    @Override
     public LogEntry getLogEntry(long index) {
         if (index > 0) {
             // TODO if out of range ??
@@ -110,10 +206,36 @@ public class FsLogStorage implements LogStorage {
         return null;
     }
 
+
+    /**
+     * look LogId at index from IndexStore
+     *
+     * @param index
+     * @return null if not found
+     * @throws IOException
+     */
+    private LogId lookLogIdFromIndexStore(final long index) throws IOException {
+        assert index > 0;
+        final IndexFile indexFile = (IndexFile) this.indexStore.lookupFile(index);
+        if (indexFile != null) {
+            final IndexEntry indexEntry = indexFile.lookupIndexEntry(index);
+            if (indexEntry != null) {
+                return indexEntry.getLogId();
+            }
+        }
+        return null;
+    }
+
     @Override
     public LogId getLogIdAt(final long index) {
-
-        return null;
+        this.readLock.lock();
+        try {
+            return lookLogIdFromIndexStore(index);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
@@ -122,36 +244,39 @@ public class FsLogStorage implements LogStorage {
         try {
             final long firstLogIndex = this.segmentStore.getFirstLogIndex();
             if (firstLogIndex > 0) {
-                final IndexFile indexFile = (IndexFile) this.indexStore.lookupFile(firstLogIndex);
-                if (indexFile != null) {
-                    final IndexFile.IndexEntry indexEntry = indexFile.lookupIndexEntry(firstLogIndex);
-                    if (indexEntry != null) {
-                        return indexEntry.getLogId();
-                    }
-                }
+                return lookLogIdFromIndexStore(firstLogIndex);
             }
+            return null;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             this.readLock.unlock();
         }
-        return null;
     }
 
     @Override
     public LogId getLastLogId() {
-
-
-        return null;
+        this.readLock.lock();
+        try {
+            final long firstLogIndex = this.segmentStore.getLastLogIndex();
+            if (firstLogIndex > 0) {
+                return lookLogIdFromIndexStore(firstLogIndex);
+            }
+            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
-    public boolean appendLogEntry(LogEntry logEntry) throws PacificaException {
+    public boolean appendLogEntry(LogEntry logEntry) {
         return appendLogEntries(List.of(logEntry)) == 1;
     }
 
     @Override
-    public int appendLogEntries(List<LogEntry> logEntries) throws PacificaException {
+    public int appendLogEntries(List<LogEntry> logEntries) {
         if (logEntries == null || logEntries.isEmpty()) {
             return 0;
         }
@@ -240,13 +365,5 @@ public class FsLogStorage implements LogStorage {
         return new LogId(0, 0);
     }
 
-    @Override
-    public void open() {
 
-    }
-
-    @Override
-    public void close() {
-
-    }
 }

@@ -22,9 +22,8 @@ import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.LogEntryCorruptedException;
-import com.trs.pacifica.error.PacificaCodeException;
-import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.thread.ThreadUtil;
@@ -94,7 +93,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
-    public void init(LogManagerImpl.Option option) {
+    public void init(LogManagerImpl.Option option) throws PacificaException {
         this.writeLock.lock();
         try {
             this.option = Objects.requireNonNull(option);
@@ -108,7 +107,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
-    public void startup() {
+    public void startup() throws PacificaException {
         this.writeLock.lock();
         try {
             this.logStorage.open();
@@ -129,9 +128,10 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws PacificaException {
         this.writeLock.lock();
         try {
+            this.logStorage.close();
             this.firstLogIndex = 0L;
             this.lastLogIndex = 0L;
             this.committedPoint = new LogId(0, 0);
@@ -159,14 +159,14 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             if (firstLogIndex > this.lastLogIndex + 1) {
                 //discontinuous
                 final String errorMsg = String.format("there's gap between first_index=%d and last_log_index=%d", firstLogIndex, this.lastLogIndex);
-                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
                 return false;
             }
             final LogEntry lastLogEntry = logEntries.get(logEntries.size() - 1);
             if (lastLogEntry.getLogId().getIndex() <= this.committedPoint.getIndex()) {
                 //has been committed
                 final String errorMsg = String.format("The received logEntries(last_log_index=%d) have all been committed(commit_point=%d), and we keep them unchanged", lastLogEntry.getLogId().getIndex(), committedPoint.getIndex());
-                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
                 return false;
             }
 
@@ -194,7 +194,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             }
             if (logEntries.isEmpty()) {
                 final String errorMsg = String.format("The received logEntries([first_log_index=%d, last_log_index=%d]) have all been append(last_log_index=%d), and we keep them unchanged", firstLogIndex, lastLogEntry.getLogId().getIndex(), this.lastLogIndex);
-                ThreadUtil.runCallback(callback, Finished.failure(new PacificaCodeException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
                 return false;
             }
             this.lastLogIndex = lastLogEntry.getLogId().getIndex();
