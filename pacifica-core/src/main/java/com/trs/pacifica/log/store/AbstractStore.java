@@ -323,6 +323,21 @@ public abstract class AbstractStore implements Closeable {
         return null;
     }
 
+    public List<AbstractFile> sliceFile(final AbstractFile startFile) {
+        if (startFile != null) {
+            List<AbstractFile> slice = new ArrayList<>(this.files.size());
+            boolean find = false;
+            for (AbstractFile file : this.files) {
+                if (find || startFile == file) {
+                    slice.add(file);
+                    find = true;
+                }
+            }
+            return slice;
+        }
+        return Collections.emptyList();
+    }
+
 
     /**
      * get first log index
@@ -341,6 +356,24 @@ public abstract class AbstractStore implements Closeable {
             this.readLock.unlock();
         }
         return -1L;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public int getFirstLogPosition() {
+        ensureOpen();
+        this.readLock.lock();
+        try {
+            final AbstractFile firstFile = this.files.peekFirst();
+            if (firstFile != null) {
+                return firstFile.getFirstLogPosition();
+            }
+        } finally {
+            this.readLock.unlock();
+        }
+        return -1;
     }
 
     /**

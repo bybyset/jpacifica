@@ -296,6 +296,10 @@ public abstract class AbstractFile implements Closeable {
         return this.header.getFirstLogIndex();
     }
 
+    public int getFirstLogPosition() {
+        return this.header.getFirstLogPosition();
+    }
+
     public long getLastLogIndex() {
         return this.lastLogIndex;
     }

@@ -145,16 +145,18 @@ public class SegmentStore extends AbstractStore {
      * @param endLogIndex
      * @return
      */
-    public Iterator<LogEntry> sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition, final long endLogIndex) {
-        AbstractFile[] files = new AbstractFile[1];
+    public LogEntryIterator sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition, final long endLogIndex) {
         SegmentFile segmentFile = (SegmentFile) this.lookupFile(startLogIndex);
         if (segmentFile != null) {
-            return new LogEntryIterator(logEntryDecoder, files, startLogIndex, startLogPosition, endLogIndex);
+            List<AbstractFile> slice = this.sliceFile(segmentFile);
+            AbstractFile[] files = new AbstractFile[slice.size()];
+            slice.toArray(files);
+            return new LogEntryIteratorImpl(logEntryDecoder, files, startLogIndex, startLogPosition, endLogIndex);
         }
         return null;
     }
 
-    public Iterator<LogEntry> sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition) {
+    public LogEntryIterator sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition) {
         final long lastLogIndex = getLastLogIndex();
         return sliceLogEntry(logEntryDecoder, startLogIndex, startLogPosition, lastLogIndex);
     }
@@ -173,7 +175,17 @@ public class SegmentStore extends AbstractStore {
         return DEFAULT_MIN_WRITE_BYTES;
     }
 
-    class LogEntryIterator implements Iterator<LogEntry> {
+    public static interface LogEntryIterator extends Iterator<LogEntry> {
+
+        /**
+         * get start position of the current log entry at segment file
+         * @return -1 if log entry is null
+         */
+        int getLogEntryStartPosition();
+
+    }
+
+    class LogEntryIteratorImpl implements LogEntryIterator {
 
         private final LogEntryDecoder logEntryDecoder;
         private final AbstractFile[] files;
@@ -182,7 +194,11 @@ public class SegmentStore extends AbstractStore {
         private int currentFileIndex = 0;
         private int currentPosition;
 
-        public LogEntryIterator(LogEntryDecoder logEntryDecoder, AbstractFile[] files, long startLogIndex, int startLogPosition, long endLogIndex) {
+        private LogEntry currentLogEntry = null;
+
+        private int currentLogEntryPosition = -1;
+
+        public LogEntryIteratorImpl(LogEntryDecoder logEntryDecoder, AbstractFile[] files, long startLogIndex, int startLogPosition, long endLogIndex) {
             this.logEntryDecoder = logEntryDecoder;
             this.files = files;
             this.endLogIndex = endLogIndex;
@@ -199,8 +215,11 @@ public class SegmentStore extends AbstractStore {
         public LogEntry next() {
             SegmentStore.this.ensureOpen();
             List<DataBuffer> dataBufferList = new ArrayList<>(2);
+
             do {
                 if (this.currentFileIndex >= this.files.length) {
+                    this.currentLogEntry = null;
+                    this.currentLogEntryPosition = -1;
                     return null;
                 }
                 final SegmentFile currentFile = (SegmentFile) this.files[currentFileIndex];
@@ -210,6 +229,9 @@ public class SegmentStore extends AbstractStore {
                         // next file
                         nextFile();
                         continue;
+                    }
+                    if (block.isFirstBlock()) {
+                        this.currentLogEntryPosition = this.currentPosition;
                     }
                     dataBufferList.add(block.getLogEntryData());
                     this.currentPosition += block.getByteSize();
@@ -221,7 +243,8 @@ public class SegmentStore extends AbstractStore {
                 }
             } while (true);
             this.currentLogIndex++;
-            return this.logEntryDecoder.decode(new LinkedDataBuffer(dataBufferList));
+            this.currentLogEntry = this.logEntryDecoder.decode(new LinkedDataBuffer(dataBufferList));
+            return this.currentLogEntry;
         }
 
         private void nextFile() {
@@ -229,6 +252,10 @@ public class SegmentStore extends AbstractStore {
             this.currentPosition = FileHeader.getBytesSize();
         }
 
+        @Override
+        public int getLogEntryStartPosition() {
+            return currentLogEntryPosition;
+        }
     }
 
 }

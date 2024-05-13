@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
@@ -139,7 +140,7 @@ public class FsLogStorage implements LogStorage {
      * we will align them to be consistent
      */
     private boolean checkConsistencyAndAlign() throws IOException {
-        long lastIndex = this.indexStore.getLastLogIndex();
+        final long lastIndex = this.indexStore.getLastLogIndex();
         final long lastSegmentIndex = this.segmentStore.getLastLogIndex();
         if (lastIndex == lastSegmentIndex) {
             return true;
@@ -155,20 +156,27 @@ public class FsLogStorage implements LogStorage {
             //case 2: lastSegmentIndex > lastIndex
             //we should generate IndexEntry array sorted by index from SegmentStore, then store indexEntry array to IndexStore.
             //1.look position in SegmentFile at lastIndex
-            int lastIndexPosition = FileHeader.getBytesSize();
+            long startLogIndex = lastIndex;
+            int startIndexPosition = FileHeader.getBytesSize();
             if (lastIndex > 0) {
-                lastIndexPosition = this.indexStore.lookupPositionAt(lastIndex);
+                startIndexPosition = this.indexStore.lookupPositionAt(lastIndex);
             } else {
-                lastIndex = this.segmentStore.getFirstLogIndex();
+                startLogIndex = this.segmentStore.getFirstLogIndex();
+                //first log position
+                startIndexPosition = this.segmentStore.getFirstLogPosition();
             }
             //2.list IndexEntry array after the lastIndex
-            List<IndexEntry> indexEntries = new ArrayList<>();
-            this.sliceLogEntry(lastIndex, lastIndexPosition);
-
+            SegmentStore.LogEntryIterator logEntryIterator = this.sliceLogEntry(startLogIndex, startIndexPosition);
+            List<IndexEntry> indexEntries = toIndexEntryList(logEntryIterator);
             //3.append IndexEntry array to IndexStore
+            if (lastIndex > 0) {
+                startLogIndex++;
+            }
             Tuple2<Integer, Long> lastAppendResult = null;
             for (IndexEntry indexEntry : indexEntries) {
-                lastAppendResult = this.indexStore.appendLogIndex(indexEntry);
+                if (startLogIndex++ == indexEntry.getLogId().getIndex()) {
+                    lastAppendResult = this.indexStore.appendLogIndex(indexEntry);
+                }
             }
             assert lastAppendResult != null;
             //4.flush IndexStore
@@ -178,8 +186,19 @@ public class FsLogStorage implements LogStorage {
 
     }
 
-    private List<LogEntry> sliceLogEntry(final long startLogIndex, final int position) {
+    private SegmentStore.LogEntryIterator sliceLogEntry(final long startLogIndex, final int position) {
+        return this.segmentStore.sliceLogEntry(this.logEntryDecoder, startLogIndex, position);
+    }
 
+    private static List<IndexEntry> toIndexEntryList(SegmentStore.LogEntryIterator logEntryIterator) {
+        final List<IndexEntry> indexEntries = new ArrayList<>();
+        while (logEntryIterator.hasNext()) {
+            final LogEntry logEntry = logEntryIterator.next();
+            assert logEntry != null;
+            final int startPosition = logEntryIterator.getLogEntryStartPosition();
+            indexEntries.add(new IndexEntry(logEntry.getLogId().copy(), startPosition));
+        }
+        return indexEntries;
     }
 
     @Override
