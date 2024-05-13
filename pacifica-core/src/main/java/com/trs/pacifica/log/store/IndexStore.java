@@ -90,14 +90,20 @@ public class IndexStore extends AbstractStore {
 
     /**
      * lookup position of the log in segment file
-     * @param index  sequence number of log
+     * @param logIndex  sequence number of log
      * @return _NOT_FOUND
      */
-    public int lookupPositionAt(long index) {
+    public int lookupPositionAt(final long logIndex) {
         // lookup IndexFile
-
-        //
-
+        final IndexFile indexFile = (IndexFile) this.lookupFile(logIndex);
+        if (indexFile != null) {
+            try {
+                final IndexEntry indexEntry = indexFile.lookupIndexEntry(logIndex);
+                assert indexEntry != null;
+                return indexEntry.getPosition();
+            } catch (IOException e){
+            }
+        }
         return AbstractFile._NOT_FOUND;
     }
 

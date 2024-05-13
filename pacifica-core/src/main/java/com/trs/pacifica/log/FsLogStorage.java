@@ -205,7 +205,6 @@ public class FsLogStorage implements LogStorage {
     public LogEntry getLogEntry(long index) {
         if (index > 0) {
             // TODO if out of range ??
-
             //look index  at IndexStore
             final int logPosition = this.indexStore.lookupPositionAt(index);
             if (logPosition == IndexFile._NOT_FOUND) {
@@ -316,7 +315,7 @@ public class FsLogStorage implements LogStorage {
             }
             return appendCount;
         } catch (IOException e) {
-            throw new PacificaLogEntryException(String.format("store_path=%s append log entries(first_log_index=%d, count=%d) encountered an ", this.storagePath, logEntries.get(0).getLogId().getIndex(), logEntries.size()), e);
+            throw new RuntimeException(String.format("store_path=%s append log entries(first_log_index=%d, count=%d) encountered an ", this.storagePath, logEntries.get(0).getLogId().getIndex(), logEntries.size()), e);
         } finally {
             this.readLock.unlock();
         }
@@ -376,7 +375,12 @@ public class FsLogStorage implements LogStorage {
     public LogId truncateSuffix(long lastIndexKept) {
         this.writeLock.lock();
         try {
-            this.segmentStore.truncateSuffix(lastIndexKept);
+            int position = this.indexStore.lookupPositionAt(lastIndexKept);
+            if (position > 0) {
+                this.segmentStore.truncateSuffix(lastIndexKept, position);
+            } else {
+                this.segmentStore.truncateSuffix(lastIndexKept);
+            }
             this.indexStore.truncateSuffix(lastIndexKept);
         } finally {
             this.writeLock.unlock();

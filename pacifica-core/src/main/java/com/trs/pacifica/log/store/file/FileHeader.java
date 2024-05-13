@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
  */
 public class FileHeader {
 
+    public static final long NO_FIRST_LOG_INDEX = -1L;
     static final int _HEADER_BYTE_SIZE = Byte.BYTES + Short.BYTES + Byte.BYTES + Long.BYTES + Long.BYTES + Integer.BYTES + Long.BYTES;
     static final short CURRENT_VERSION = 1;
 
@@ -153,6 +154,8 @@ public class FileHeader {
 
     public void rest() {
         this.tag = TAG_BLANK;
+        this.firstLogIndex = NO_FIRST_LOG_INDEX;
+        this.firstLogPosition = -1;
     }
 
 

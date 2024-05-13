@@ -18,6 +18,7 @@
 package com.trs.pacifica.log.store;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.log.dir.BaseDirectory;
 import com.trs.pacifica.log.dir.FsDirectory;
@@ -348,7 +349,7 @@ public abstract class AbstractStore implements Closeable {
         ensureOpen();
         this.readLock.lock();
         try {
-            final AbstractFile firstFile = this.files.peekFirst();
+            final AbstractFile firstFile = peekFirstAvailableFile();
             if (firstFile != null) {
                 return firstFile.getFirstLogIndex();
             }
@@ -366,7 +367,7 @@ public abstract class AbstractStore implements Closeable {
         ensureOpen();
         this.readLock.lock();
         try {
-            final AbstractFile firstFile = this.files.peekFirst();
+            final AbstractFile firstFile = peekFirstAvailableFile();
             if (firstFile != null) {
                 return firstFile.getFirstLogPosition();
             }
@@ -374,6 +375,27 @@ public abstract class AbstractStore implements Closeable {
             this.readLock.unlock();
         }
         return -1;
+    }
+
+    private AbstractFile peekFirstAvailableFile() {
+        for (AbstractFile file : this.files) {
+            if (file.isAvailable()) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private AbstractFile peekLastAvailableFile() {
+        AbstractFile[] foreachFiles = new AbstractFile[this.files.size()];
+        this.files.toArray(foreachFiles);
+        for (int i = foreachFiles.length - 1; i >= 0; i--) {
+            AbstractFile file = foreachFiles[i];
+            if (file.isAvailable()) {
+                return file;
+            }
+        }
+        return null;
     }
 
     /**
@@ -385,7 +407,7 @@ public abstract class AbstractStore implements Closeable {
         ensureOpen();
         this.readLock.lock();
         try {
-            final AbstractFile lastFile = this.files.peekLast();
+            final AbstractFile lastFile = peekLastAvailableFile();
             if (lastFile != null) {
                 return lastFile.getLastLogIndex();
             }
@@ -401,7 +423,7 @@ public abstract class AbstractStore implements Closeable {
         try {
             do {
                 AbstractFile topFile = this.files.peekFirst();
-                if (topFile == null || topFile.getLastLogIndex() >= firstIndexKept) {
+                if (topFile == null || (topFile.isAvailable() && topFile.getLastLogIndex() >= firstIndexKept)) {
                     return true;
                 }
                 deleteFile(topFile);
@@ -412,36 +434,50 @@ public abstract class AbstractStore implements Closeable {
         }
     }
 
-    public boolean truncateSuffix(long lastIndexKept) {
+
+    public boolean truncateSuffix(final long lastIndexKept) {
+        return truncateSuffix(lastIndexKept, -1);
+    }
+
+    public boolean truncateSuffix(long lastIndexKept, final int lastLogPosition) {
         ensureOpen();
         this.writeLock.lock();
         try {
             if (this.getLastLogIndex() <= lastIndexKept) {
                 return true;
             }
-            do {
-                AbstractFile tailFile = this.files.peekLast();
-                if (tailFile == null || tailFile.getLastLogIndex() <= lastIndexKept) {
+            final AbstractFile[] files = new AbstractFile[this.files.size()];
+            for (int i = files.length - 1; i >= 0; i--) {
+                final AbstractFile tailFile = files[i];
+                if (tailFile.isAvailable() && tailFile.getLastLogIndex() <= lastIndexKept) {
                     return true;
                 }
                 if (tailFile.getFirstLogIndex() < lastIndexKept) {
-                    // rest file at 0
-                    tailFile.restFile(0);
+                    // rest file
+                    tailFile.restFile();
                 } else {
-                    // rest file at position of lastIndexKept
-
+                    // fill blank 
+                    int pos = tailFile.truncate(lastIndexKept, lastLogPosition);
+                    if (pos > 0) {
+                        this.setFlushedPosition(tailFile.getStartOffset() + pos);
+                    }
                 }
 
-            } while (true);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             this.writeLock.unlock();
         }
+        return true;
     }
 
 
     public boolean deleteFile(final AbstractFile file) throws IOException {
         this.writeLock.lock();
         try {
+            //Files are deleted from front to back, plz
+            assert file == this.files.peekFirst();
             if (this.files.remove(file)) {
                 this.directory.deleteFile(file.getFilename());
                 return true;

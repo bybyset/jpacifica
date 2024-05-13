@@ -71,7 +71,7 @@ public class SegmentStore extends AbstractStore {
             do {
                 final AbstractFile lastFile = getLastFile(minFreeByteSize, true);
                 if (lastFile != null && lastFile instanceof SegmentFile) {
-                    final int startWritePos = lastFile.getPosition();
+                    final int startWritePos = lastFile.getWrotePosition();
                     final int writableBytes = lastFile.getFreeByteSize() - Block.HEADER_SIZE;
                     final int remaining = logEntryData.remaining();
                     final int maxWriteBytes = Math.min(remaining, writableBytes);
