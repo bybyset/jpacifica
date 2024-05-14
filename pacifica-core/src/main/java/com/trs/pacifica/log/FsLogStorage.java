@@ -360,15 +360,15 @@ public class FsLogStorage implements LogStorage {
     public LogId truncatePrefix(long firstIndexKept) {
         this.writeLock.lock();
         try {
-            this.segmentStore.truncatePrefix(firstIndexKept);
+            firstIndexKept = this.segmentStore.truncatePrefix(firstIndexKept);
+            //TODO  if nothing at segment store we will clear index store
             this.indexStore.truncatePrefix(firstIndexKept);
+            return new LogId(0, 0);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             this.writeLock.unlock();
         }
-
-        return new LogId(0, 0);
     }
 
     @Override

@@ -417,14 +417,22 @@ public abstract class AbstractStore implements Closeable {
         return -1L;
     }
 
-    public boolean truncatePrefix(final long firstIndexKept) throws IOException {
+    /**
+     * truncate logs from storage's head. We only deleted the expired file that
+     * the last log index of file is less than firstIndexKept
+     * we will return first log index of the store.
+     * @param firstIndexKept
+     * @return first log index of the store.
+     * @throws IOException
+     */
+    public long truncatePrefix(final long firstIndexKept) throws IOException {
         ensureOpen();
         this.writeLock.lock();
         try {
             do {
                 AbstractFile topFile = this.files.peekFirst();
                 if (topFile == null || (topFile.isAvailable() && topFile.getLastLogIndex() >= firstIndexKept)) {
-                    return true;
+                    break;
                 }
                 deleteFile(topFile);
             } while (true);
@@ -432,6 +440,7 @@ public abstract class AbstractStore implements Closeable {
         } finally {
             this.writeLock.unlock();
         }
+        return this.getFirstLogIndex();
     }
 
 
@@ -456,7 +465,7 @@ public abstract class AbstractStore implements Closeable {
                     // rest file
                     tailFile.restFile();
                 } else {
-                    // fill blank 
+                    // fill blank
                     int pos = tailFile.truncate(lastIndexKept, lastLogPosition);
                     if (pos > 0) {
                         this.setFlushedPosition(tailFile.getStartOffset() + pos);

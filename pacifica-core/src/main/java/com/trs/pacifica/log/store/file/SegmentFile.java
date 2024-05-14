@@ -48,6 +48,11 @@ public class SegmentFile extends AbstractFile {
         return CheckEntryResult.success(entryNum, dataByteSize + Block.HEADER_SIZE);
     }
 
+    @Override
+    protected int lookupPositionFromHead(long logIndex) {
+        return 0;
+    }
+
 
     /**
      * @param logIndex
