@@ -2,3 +2,6 @@ rootProject.name = 'jpacifica'
 
 include "pacifica-core"
 include "pacifica-config"
+include "pacifica-extension:rpc-grpc-impl"
+
+include "pacifica-examples:example-counter"

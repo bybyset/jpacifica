@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.rpc;
 
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse;
 import com.trs.pacifica.proto.RpcRequest.AppendEntriesRequest;
 import com.trs.pacifica.proto.RpcRequest.ReplicaRecoverRequest;
@@ -27,6 +28,9 @@ import com.trs.pacifica.proto.RpcRequest.GetFileRequest;
 import com.trs.pacifica.proto.RpcRequest.GetFileResponse;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 
+/**
+ *
+ */
 public interface ReplicaService {
 
 
@@ -34,7 +38,7 @@ public interface ReplicaService {
      * @param request
      * @param callback
      * @return
-     * @throws PacificaException
+     * @throws
      */
     public AppendEntriesResponse handleAppendLogEntryRequest(AppendEntriesRequest request, RpcResponseCallback<AppendEntriesResponse> callback) throws PacificaException;
 
@@ -45,5 +49,7 @@ public interface ReplicaService {
     public InstallSnapshotResponse handleInstallSnapshotRequest(InstallSnapshotRequest request, RpcResponseCallback<InstallSnapshotResponse> callback) throws PacificaException;
 
     public GetFileResponse handleGetFileRequest(GetFileRequest request, RpcResponseCallback<GetFileResponse> callback) throws PacificaException;
+
+
 
 }

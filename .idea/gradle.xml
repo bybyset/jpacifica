@@ -11,6 +11,10 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/pacifica-config" />
             <option value="$PROJECT_DIR$/pacifica-core" />
+            <option value="$PROJECT_DIR$/pacifica-examples" />
+            <option value="$PROJECT_DIR$/pacifica-examples/example-counter" />
+            <option value="$PROJECT_DIR$/pacifica-extension" />
+            <option value="$PROJECT_DIR$/pacifica-extension/rpc-grpc-impl" />
           </set>
         </option>
       </GradleProjectSettings>

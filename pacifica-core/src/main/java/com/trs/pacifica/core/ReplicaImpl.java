@@ -30,6 +30,7 @@ import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorResponseCallback;
+import com.trs.pacifica.rpc.ReplicaService;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.Sender;
