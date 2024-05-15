@@ -19,7 +19,6 @@ package com.trs.pacifica.rpc.client;
 
 import com.google.protobuf.Message;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.ReplicaConnection;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 
 public interface PacificaClient extends ReplicaConnection {

@@ -15,34 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc;
+package com.trs.pacifica.error;
 
-import com.trs.pacifica.model.ReplicaId;
+public class NotFoundEndpointException extends RuntimeException{
 
-public interface ReplicaConnection {
+    public NotFoundEndpointException() {
+    }
 
-    /**
-     * connect to targetReplicaId
-     * @param targetReplicaId
-     * @return true if success
-     */
-    public boolean connect(ReplicaId targetReplicaId);
+    public NotFoundEndpointException(String message) {
+        super(message);
+    }
 
-    /**
-     * disconnect to targetReplicaId
-     * @param targetReplicaId
-     * @return true if success
-     */
-    public boolean disconnect(ReplicaId targetReplicaId);
+    public NotFoundEndpointException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    /**
-     * Check the connection for the given targetReplicaId,
-     * and if there is no connection, create a new address.
-     * @param targetReplicaId
-     * @param createIfAbsent
-     * @return true if keep connected
-     */
-    public boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent);
+    public NotFoundEndpointException(Throwable cause) {
+        super(cause);
+    }
 
-
+    public NotFoundEndpointException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

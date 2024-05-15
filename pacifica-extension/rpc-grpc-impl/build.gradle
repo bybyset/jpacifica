@@ -18,10 +18,16 @@ apply plugin: 'java-library'
 
 description = 'jpacifica grpc impl'
 
+ext {
+    grpc_version = '1.63.0'
+}
 
 dependencies {
     api project(':pacifica-core')
 
-
+    implementation "io.grpc:grpc-core:$grpc_version"
+    implementation "io.grpc:grpc-netty:$grpc_version"
+    implementation "io.grpc:grpc-api:$grpc_version"
+    implementation "io.grpc:grpc-services:$grpc_version"
 
 }
