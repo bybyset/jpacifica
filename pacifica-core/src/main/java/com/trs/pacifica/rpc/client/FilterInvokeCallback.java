@@ -15,39 +15,25 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc;
-
-import com.google.protobuf.Message;
-import com.trs.pacifica.error.PacificaException;
+package com.trs.pacifica.rpc.client;
 
 import java.util.concurrent.Executor;
 
-/**
- *
- * @param <Req>  class of request
- * @param <Rep>  class of response
- */
-public interface RpcHandler<Req, Rep> {
+public class FilterInvokeCallback implements InvokeCallback{
 
-    /**
-     * handle the rpc request
-     *
-     * @param rpcContext  to send response
-     * @param request
-     */
-    void handleRequest(final RpcContext<Rep> rpcContext, Req request);
+    protected final InvokeCallback delegate;
 
-
-    /**
-     * The class name of user request.
-     * @return
-     */
-    String interest();
-
-
-
-    default Executor executor() {
-        return null;
+    public FilterInvokeCallback(InvokeCallback delegate) {
+        this.delegate = delegate;
     }
 
+    @Override
+    public void complete(Object result, Throwable err) {
+        this.delegate.complete(result, err);
+    }
+
+    @Override
+    public Executor executor() {
+        return delegate.executor();
+    }
 }

@@ -17,37 +17,26 @@
 
 package com.trs.pacifica.rpc;
 
-import com.google.protobuf.Message;
 import com.trs.pacifica.error.PacificaException;
 
-import java.util.concurrent.Executor;
+public class FilterRpcHandler<Req, Rep> implements RpcHandler<Req, Rep>{
 
-/**
- *
- * @param <Req>  class of request
- * @param <Rep>  class of response
- */
-public interface RpcHandler<Req, Rep> {
-
-    /**
-     * handle the rpc request
-     *
-     * @param rpcContext  to send response
-     * @param request
-     */
-    void handleRequest(final RpcContext<Rep> rpcContext, Req request);
-
-
-    /**
-     * The class name of user request.
-     * @return
-     */
-    String interest();
-
-
-
-    default Executor executor() {
-        return null;
+    protected final RpcHandler<Req, Rep> delegate;
+    protected FilterRpcHandler(RpcHandler<Req, Rep> delegate) {
+        this.delegate = delegate;
     }
 
+    public RpcHandler<Req, Rep> getDelegate() {
+        return delegate;
+    }
+
+    @Override
+    public void handleRequest(RpcContext<Rep> rpcContext, Req request) {
+        this.delegate.handleRequest(rpcContext, request);
+    }
+
+    @Override
+    public String interest() {
+        return delegate.interest();
+    }
 }

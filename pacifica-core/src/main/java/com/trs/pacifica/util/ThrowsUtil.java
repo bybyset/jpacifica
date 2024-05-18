@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.util;
 
+import java.util.concurrent.ExecutionException;
+
 public class ThrowsUtil {
 
     private ThrowsUtil() {
@@ -28,6 +30,21 @@ public class ThrowsUtil {
             exception.addSuppressed(suppressed);
         }
         return exception == null ? suppressed : exception;
+    }
+
+
+    public static Throwable getCause(final ExecutionException e) {
+        if (e != null) {
+            final Throwable cause = e.getCause();
+            if (cause != null) {
+                if (cause instanceof ExecutionException) {
+                    return getCause((ExecutionException) cause);
+                } else {
+                    return cause;
+                }
+            }
+        }
+        return null;
     }
 
 

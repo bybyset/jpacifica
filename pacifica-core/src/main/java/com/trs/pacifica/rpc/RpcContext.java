@@ -17,11 +17,21 @@
 
 package com.trs.pacifica.rpc;
 
-public interface RpcContext {
+public interface RpcContext<Rep> {
 
 
-    void sendResponse(Object response);
+    /**
+     * send response
+     * @param response
+     */
+    void sendResponse(Rep response);
 
+
+    /**
+     * get remote address
+     * @return
+     */
+    String getRemoteAddress();
 
 
 }

@@ -25,12 +25,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executor;
 
-public abstract class RpcRequestHandler<Req extends Message, Rep extends Message> implements RpcHandler<Req> {
+public abstract class RpcRequestHandler<Req extends Message, Rep extends Message> implements RpcHandler<Req, Rep> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcRequestHandler.class);
 
 
     @Override
-    public void handleRequest(RpcContext rpcContext, Req request) {
+    public void handleRequest(RpcContext<Rep> rpcContext, Req request) {
 
         final Executor executor = this.getExecutor();
 

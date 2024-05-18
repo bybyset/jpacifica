@@ -17,37 +17,18 @@
 
 package com.trs.pacifica.rpc;
 
-import com.google.protobuf.Message;
-import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.rpc.client.RpcClient;
+import com.trs.pacifica.rpc.node.Endpoint;
 
-import java.util.concurrent.Executor;
-
-/**
- *
- * @param <Req>  class of request
- * @param <Rep>  class of response
- */
-public interface RpcHandler<Req, Rep> {
-
-    /**
-     * handle the rpc request
-     *
-     * @param rpcContext  to send response
-     * @param request
-     */
-    void handleRequest(final RpcContext<Rep> rpcContext, Req request);
+public interface RpcFactory {
 
 
-    /**
-     * The class name of user request.
-     * @return
-     */
-    String interest();
+    RpcServer createRpcServer(final Endpoint endpoint);
+
+
+    RpcClient createRpcClient();
 
 
 
-    default Executor executor() {
-        return null;
-    }
 
 }

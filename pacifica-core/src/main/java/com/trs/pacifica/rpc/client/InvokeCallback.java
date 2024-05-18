@@ -15,39 +15,15 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc;
-
-import com.google.protobuf.Message;
-import com.trs.pacifica.error.PacificaException;
+package com.trs.pacifica.rpc.client;
 
 import java.util.concurrent.Executor;
 
-/**
- *
- * @param <Req>  class of request
- * @param <Rep>  class of response
- */
-public interface RpcHandler<Req, Rep> {
+public interface InvokeCallback {
 
-    /**
-     * handle the rpc request
-     *
-     * @param rpcContext  to send response
-     * @param request
-     */
-    void handleRequest(final RpcContext<Rep> rpcContext, Req request);
-
-
-    /**
-     * The class name of user request.
-     * @return
-     */
-    String interest();
-
-
+    void complete(final Object result, final Throwable err);
 
     default Executor executor() {
         return null;
     }
-
 }

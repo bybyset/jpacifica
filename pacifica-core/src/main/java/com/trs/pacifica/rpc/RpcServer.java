@@ -17,17 +17,42 @@
 
 package com.trs.pacifica.rpc;
 
-public interface RpcServer {
+import com.google.protobuf.Message;
+import com.trs.pacifica.LifeCycle;
+import com.trs.pacifica.rpc.client.RpcClient;
+
+public interface RpcServer extends LifeCycle<RpcServer.Option> {
 
 
-    void registerRpcHandler(final RpcHandler<?> rpcHandler);
+    void registerRpcHandler(final RpcHandler<?, ?> rpcHandler);
 
 
-    void start();
+    public static final int DEFAULT_MAX_INBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
 
+    public static final int DEFAULT_MAX_OUTBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
 
-    void shutdown();
+    public static class Option {
 
+        private int maxInboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
+
+        private int maxOutboundMessageSize = DEFAULT_MAX_OUTBOUND_MESSAGE_SIZE;
+
+        public int getMaxInboundMessageSize() {
+            return maxInboundMessageSize;
+        }
+
+        public void setMaxInboundMessageSize(int maxInboundMessageSize) {
+            this.maxInboundMessageSize = maxInboundMessageSize;
+        }
+
+        public int getMaxOutboundMessageSize() {
+            return maxOutboundMessageSize;
+        }
+
+        public void setMaxOutboundMessageSize(int maxOutboundMessageSize) {
+            this.maxOutboundMessageSize = maxOutboundMessageSize;
+        }
+    }
 
 
 }

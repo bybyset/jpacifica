@@ -15,39 +15,20 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc;
+package com.trs.pacifica.rpc.impl.grpc;
 
-import com.google.protobuf.Message;
-import com.trs.pacifica.error.PacificaException;
+import io.grpc.MethodDescriptor;
 
-import java.util.concurrent.Executor;
+public class GrpcUtil {
 
-/**
- *
- * @param <Req>  class of request
- * @param <Rep>  class of response
- */
-public interface RpcHandler<Req, Rep> {
+    private GrpcUtil() {
 
-    /**
-     * handle the rpc request
-     *
-     * @param rpcContext  to send response
-     * @param request
-     */
-    void handleRequest(final RpcContext<Rep> rpcContext, Req request);
-
-
-    /**
-     * The class name of user request.
-     * @return
-     */
-    String interest();
-
-
-
-    default Executor executor() {
-        return null;
     }
+
+
+    public static String getFullMethodName(final String requestClzName) {
+        return MethodDescriptor.generateFullMethodName(requestClzName, GrpcFactory.FIXED_METHOD_NAME);
+    }
+
 
 }
