@@ -15,6 +15,686 @@ public final class RpcRequest {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
+  public interface ErrorResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:jpacifica.ErrorResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int32 code = 1;</code>
+     * @return Whether the code field is set.
+     */
+    boolean hasCode();
+    /**
+     * <code>optional int32 code = 1;</code>
+     * @return The code.
+     */
+    int getCode();
+
+    /**
+     * <code>optional string message = 2;</code>
+     * @return Whether the message field is set.
+     */
+    boolean hasMessage();
+    /**
+     * <code>optional string message = 2;</code>
+     * @return The message.
+     */
+    java.lang.String getMessage();
+    /**
+     * <code>optional string message = 2;</code>
+     * @return The bytes for message.
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+  }
+  /**
+   * Protobuf type {@code jpacifica.ErrorResponse}
+   */
+  public static final class ErrorResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:jpacifica.ErrorResponse)
+      ErrorResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ErrorResponse.newBuilder() to construct.
+    private ErrorResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ErrorResponse() {
+      message_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new ErrorResponse();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.trs.pacifica.proto.RpcRequest.internal_static_jpacifica_ErrorResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.trs.pacifica.proto.RpcRequest.internal_static_jpacifica_ErrorResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse.class, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int CODE_FIELD_NUMBER = 1;
+    private int code_ = 0;
+    /**
+     * <code>optional int32 code = 1;</code>
+     * @return Whether the code field is set.
+     */
+    @java.lang.Override
+    public boolean hasCode() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional int32 code = 1;</code>
+     * @return The code.
+     */
+    @java.lang.Override
+    public int getCode() {
+      return code_;
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object message_ = "";
+    /**
+     * <code>optional string message = 2;</code>
+     * @return Whether the message field is set.
+     */
+    @java.lang.Override
+    public boolean hasMessage() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional string message = 2;</code>
+     * @return The message.
+     */
+    @java.lang.Override
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string message = 2;</code>
+     * @return The bytes for message.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeInt32(1, code_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, message_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, code_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, message_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.trs.pacifica.proto.RpcRequest.ErrorResponse)) {
+        return super.equals(obj);
+      }
+      com.trs.pacifica.proto.RpcRequest.ErrorResponse other = (com.trs.pacifica.proto.RpcRequest.ErrorResponse) obj;
+
+      if (hasCode() != other.hasCode()) return false;
+      if (hasCode()) {
+        if (getCode()
+            != other.getCode()) return false;
+      }
+      if (hasMessage() != other.hasMessage()) return false;
+      if (hasMessage()) {
+        if (!getMessage()
+            .equals(other.getMessage())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasCode()) {
+        hash = (37 * hash) + CODE_FIELD_NUMBER;
+        hash = (53 * hash) + getCode();
+      }
+      if (hasMessage()) {
+        hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+        hash = (53 * hash) + getMessage().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcRequest.ErrorResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code jpacifica.ErrorResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:jpacifica.ErrorResponse)
+        com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.trs.pacifica.proto.RpcRequest.internal_static_jpacifica_ErrorResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.trs.pacifica.proto.RpcRequest.internal_static_jpacifica_ErrorResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.trs.pacifica.proto.RpcRequest.ErrorResponse.class, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder.class);
+      }
+
+      // Construct using com.trs.pacifica.proto.RpcRequest.ErrorResponse.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        code_ = 0;
+        message_ = "";
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.trs.pacifica.proto.RpcRequest.internal_static_jpacifica_ErrorResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse build() {
+        com.trs.pacifica.proto.RpcRequest.ErrorResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse buildPartial() {
+        com.trs.pacifica.proto.RpcRequest.ErrorResponse result = new com.trs.pacifica.proto.RpcRequest.ErrorResponse(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.trs.pacifica.proto.RpcRequest.ErrorResponse result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.code_ = code_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.message_ = message_;
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.trs.pacifica.proto.RpcRequest.ErrorResponse) {
+          return mergeFrom((com.trs.pacifica.proto.RpcRequest.ErrorResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcRequest.ErrorResponse other) {
+        if (other == com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance()) return this;
+        if (other.hasCode()) {
+          setCode(other.getCode());
+        }
+        if (other.hasMessage()) {
+          message_ = other.message_;
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                code_ = input.readInt32();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 18: {
+                message_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private int code_ ;
+      /**
+       * <code>optional int32 code = 1;</code>
+       * @return Whether the code field is set.
+       */
+      @java.lang.Override
+      public boolean hasCode() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional int32 code = 1;</code>
+       * @return The code.
+       */
+      @java.lang.Override
+      public int getCode() {
+        return code_;
+      }
+      /**
+       * <code>optional int32 code = 1;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCode(int value) {
+
+        code_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 code = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCode() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        code_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object message_ = "";
+      /**
+       * <code>optional string message = 2;</code>
+       * @return Whether the message field is set.
+       */
+      public boolean hasMessage() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       * @return The message.
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       * @return The bytes for message.
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       * @param value The message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessage(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        message_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearMessage() {
+        message_ = getDefaultInstance().getMessage();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       * @param value The bytes for message to set.
+       * @return This builder for chaining.
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        message_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:jpacifica.ErrorResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:jpacifica.ErrorResponse)
+    private static final com.trs.pacifica.proto.RpcRequest.ErrorResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcRequest.ErrorResponse();
+    }
+
+    public static com.trs.pacifica.proto.RpcRequest.ErrorResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ErrorResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ErrorResponse>() {
+      @java.lang.Override
+      public ErrorResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<ErrorResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ErrorResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface AppendEntriesRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:jpacifica.AppendEntriesRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -1811,56 +2491,71 @@ public final class RpcRequest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    boolean hasError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponse getError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder();
+
+    /**
+     * <code>optional bool success = 2;</code>
      * @return Whether the success field is set.
      */
     boolean hasSuccess();
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return The success.
      */
     boolean getSuccess();
 
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return Whether the term field is set.
      */
     boolean hasTerm();
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return The term.
      */
     long getTerm();
 
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return Whether the version field is set.
      */
     boolean hasVersion();
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return The version.
      */
     long getVersion();
 
     /**
-     * <code>optional int64 commit_point = 4;</code>
+     * <code>optional int64 commit_point = 5;</code>
      * @return Whether the commitPoint field is set.
      */
     boolean hasCommitPoint();
     /**
-     * <code>optional int64 commit_point = 4;</code>
+     * <code>optional int64 commit_point = 5;</code>
      * @return The commitPoint.
      */
     long getCommitPoint();
 
     /**
-     * <code>optional int64 last_log_index = 5;</code>
+     * <code>optional int64 last_log_index = 6;</code>
      * @return Whether the lastLogIndex field is set.
      */
     boolean hasLastLogIndex();
     /**
-     * <code>optional int64 last_log_index = 5;</code>
+     * <code>optional int64 last_log_index = 6;</code>
      * @return The lastLogIndex.
      */
     long getLastLogIndex();
@@ -1901,18 +2596,44 @@ public final class RpcRequest {
     }
 
     private int bitField0_;
-    public static final int SUCCESS_FIELD_NUMBER = 1;
+    public static final int ERROR_FIELD_NUMBER = 1;
+    private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    @java.lang.Override
+    public boolean hasError() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+
+    public static final int SUCCESS_FIELD_NUMBER = 2;
     private boolean success_ = false;
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return Whether the success field is set.
      */
     @java.lang.Override
     public boolean hasSuccess() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return The success.
      */
     @java.lang.Override
@@ -1920,18 +2641,18 @@ public final class RpcRequest {
       return success_;
     }
 
-    public static final int TERM_FIELD_NUMBER = 2;
+    public static final int TERM_FIELD_NUMBER = 3;
     private long term_ = 0L;
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return Whether the term field is set.
      */
     @java.lang.Override
     public boolean hasTerm() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return The term.
      */
     @java.lang.Override
@@ -1939,18 +2660,18 @@ public final class RpcRequest {
       return term_;
     }
 
-    public static final int VERSION_FIELD_NUMBER = 3;
+    public static final int VERSION_FIELD_NUMBER = 4;
     private long version_ = 0L;
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return Whether the version field is set.
      */
     @java.lang.Override
     public boolean hasVersion() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return The version.
      */
     @java.lang.Override
@@ -1958,18 +2679,18 @@ public final class RpcRequest {
       return version_;
     }
 
-    public static final int COMMIT_POINT_FIELD_NUMBER = 4;
+    public static final int COMMIT_POINT_FIELD_NUMBER = 5;
     private long commitPoint_ = 0L;
     /**
-     * <code>optional int64 commit_point = 4;</code>
+     * <code>optional int64 commit_point = 5;</code>
      * @return Whether the commitPoint field is set.
      */
     @java.lang.Override
     public boolean hasCommitPoint() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
-     * <code>optional int64 commit_point = 4;</code>
+     * <code>optional int64 commit_point = 5;</code>
      * @return The commitPoint.
      */
     @java.lang.Override
@@ -1977,18 +2698,18 @@ public final class RpcRequest {
       return commitPoint_;
     }
 
-    public static final int LAST_LOG_INDEX_FIELD_NUMBER = 5;
+    public static final int LAST_LOG_INDEX_FIELD_NUMBER = 6;
     private long lastLogIndex_ = 0L;
     /**
-     * <code>optional int64 last_log_index = 5;</code>
+     * <code>optional int64 last_log_index = 6;</code>
      * @return Whether the lastLogIndex field is set.
      */
     @java.lang.Override
     public boolean hasLastLogIndex() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
-     * <code>optional int64 last_log_index = 5;</code>
+     * <code>optional int64 last_log_index = 6;</code>
      * @return The lastLogIndex.
      */
     @java.lang.Override
@@ -2011,19 +2732,22 @@ public final class RpcRequest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeBool(1, success_);
+        output.writeMessage(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeInt64(2, term_);
+        output.writeBool(2, success_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, version_);
+        output.writeInt64(3, term_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        output.writeInt64(4, commitPoint_);
+        output.writeInt64(4, version_);
       }
       if (((bitField0_ & 0x00000010) != 0)) {
-        output.writeInt64(5, lastLogIndex_);
+        output.writeInt64(5, commitPoint_);
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        output.writeInt64(6, lastLogIndex_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2036,23 +2760,27 @@ public final class RpcRequest {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, success_);
+          .computeMessageSize(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, term_);
+          .computeBoolSize(2, success_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, version_);
+          .computeInt64Size(3, term_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(4, commitPoint_);
+          .computeInt64Size(4, version_);
       }
       if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(5, lastLogIndex_);
+          .computeInt64Size(5, commitPoint_);
+      }
+      if (((bitField0_ & 0x00000020) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(6, lastLogIndex_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -2069,6 +2797,11 @@ public final class RpcRequest {
       }
       com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse other = (com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse) obj;
 
+      if (hasError() != other.hasError()) return false;
+      if (hasError()) {
+        if (!getError()
+            .equals(other.getError())) return false;
+      }
       if (hasSuccess() != other.hasSuccess()) return false;
       if (hasSuccess()) {
         if (getSuccess()
@@ -2105,6 +2838,10 @@ public final class RpcRequest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasError()) {
+        hash = (37 * hash) + ERROR_FIELD_NUMBER;
+        hash = (53 * hash) + getError().hashCode();
+      }
       if (hasSuccess()) {
         hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -2249,18 +2986,29 @@ public final class RpcRequest {
 
       // Construct using com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getErrorFieldBuilder();
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
         success_ = false;
         term_ = 0L;
         version_ = 0L;
@@ -2301,24 +3049,30 @@ public final class RpcRequest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.success_ = success_;
+          result.error_ = errorBuilder_ == null
+              ? error_
+              : errorBuilder_.build();
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.term_ = term_;
+          result.success_ = success_;
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.version_ = version_;
+          result.term_ = term_;
           to_bitField0_ |= 0x00000004;
         }
         if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.commitPoint_ = commitPoint_;
+          result.version_ = version_;
           to_bitField0_ |= 0x00000008;
         }
         if (((from_bitField0_ & 0x00000010) != 0)) {
-          result.lastLogIndex_ = lastLogIndex_;
+          result.commitPoint_ = commitPoint_;
           to_bitField0_ |= 0x00000010;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.lastLogIndex_ = lastLogIndex_;
+          to_bitField0_ |= 0x00000020;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -2367,6 +3121,9 @@ public final class RpcRequest {
 
       public Builder mergeFrom(com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse other) {
         if (other == com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse.getDefaultInstance()) return this;
+        if (other.hasError()) {
+          mergeError(other.getError());
+        }
         if (other.hasSuccess()) {
           setSuccess(other.getSuccess());
         }
@@ -2408,31 +3165,38 @@ public final class RpcRequest {
               case 0:
                 done = true;
                 break;
-              case 8: {
-                success_ = input.readBool();
+              case 10: {
+                input.readMessage(
+                    getErrorFieldBuilder().getBuilder(),
+                    extensionRegistry);
                 bitField0_ |= 0x00000001;
                 break;
-              } // case 8
+              } // case 10
               case 16: {
-                term_ = input.readInt64();
+                success_ = input.readBool();
                 bitField0_ |= 0x00000002;
                 break;
               } // case 16
               case 24: {
-                version_ = input.readInt64();
+                term_ = input.readInt64();
                 bitField0_ |= 0x00000004;
                 break;
               } // case 24
               case 32: {
-                commitPoint_ = input.readInt64();
+                version_ = input.readInt64();
                 bitField0_ |= 0x00000008;
                 break;
               } // case 32
               case 40: {
-                lastLogIndex_ = input.readInt64();
+                commitPoint_ = input.readInt64();
                 bitField0_ |= 0x00000010;
                 break;
               } // case 40
+              case 48: {
+                lastLogIndex_ = input.readInt64();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -2450,17 +3214,138 @@ public final class RpcRequest {
       }
       private int bitField0_;
 
+      private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> errorBuilder_;
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return Whether the error field is set.
+       */
+      public boolean hasError() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return The error.
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+        if (errorBuilder_ == null) {
+          return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        } else {
+          return errorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          error_ = value;
+        } else {
+          errorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder builderForValue) {
+        if (errorBuilder_ == null) {
+          error_ = builderForValue.build();
+        } else {
+          errorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder mergeError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            error_ != null &&
+            error_ != com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance()) {
+            getErrorBuilder().mergeFrom(value);
+          } else {
+            error_ = value;
+          }
+        } else {
+          errorBuilder_.mergeFrom(value);
+        }
+        if (error_ != null) {
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder clearError() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder getErrorBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getErrorFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+        if (errorBuilder_ != null) {
+          return errorBuilder_.getMessageOrBuilder();
+        } else {
+          return error_ == null ?
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> 
+          getErrorFieldBuilder() {
+        if (errorBuilder_ == null) {
+          errorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder>(
+                  getError(),
+                  getParentForChildren(),
+                  isClean());
+          error_ = null;
+        }
+        return errorBuilder_;
+      }
+
       private boolean success_ ;
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return Whether the success field is set.
        */
       @java.lang.Override
       public boolean hasSuccess() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return The success.
        */
       @java.lang.Override
@@ -2468,23 +3353,23 @@ public final class RpcRequest {
         return success_;
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @param value The success to set.
        * @return This builder for chaining.
        */
       public Builder setSuccess(boolean value) {
 
         success_ = value;
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearSuccess() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         success_ = false;
         onChanged();
         return this;
@@ -2492,15 +3377,15 @@ public final class RpcRequest {
 
       private long term_ ;
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return Whether the term field is set.
        */
       @java.lang.Override
       public boolean hasTerm() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return The term.
        */
       @java.lang.Override
@@ -2508,23 +3393,23 @@ public final class RpcRequest {
         return term_;
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @param value The term to set.
        * @return This builder for chaining.
        */
       public Builder setTerm(long value) {
 
         term_ = value;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearTerm() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         term_ = 0L;
         onChanged();
         return this;
@@ -2532,15 +3417,15 @@ public final class RpcRequest {
 
       private long version_ ;
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return Whether the version field is set.
        */
       @java.lang.Override
       public boolean hasVersion() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return The version.
        */
       @java.lang.Override
@@ -2548,23 +3433,23 @@ public final class RpcRequest {
         return version_;
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @param value The version to set.
        * @return This builder for chaining.
        */
       public Builder setVersion(long value) {
 
         version_ = value;
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         version_ = 0L;
         onChanged();
         return this;
@@ -2572,15 +3457,15 @@ public final class RpcRequest {
 
       private long commitPoint_ ;
       /**
-       * <code>optional int64 commit_point = 4;</code>
+       * <code>optional int64 commit_point = 5;</code>
        * @return Whether the commitPoint field is set.
        */
       @java.lang.Override
       public boolean hasCommitPoint() {
-        return ((bitField0_ & 0x00000008) != 0);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
-       * <code>optional int64 commit_point = 4;</code>
+       * <code>optional int64 commit_point = 5;</code>
        * @return The commitPoint.
        */
       @java.lang.Override
@@ -2588,23 +3473,23 @@ public final class RpcRequest {
         return commitPoint_;
       }
       /**
-       * <code>optional int64 commit_point = 4;</code>
+       * <code>optional int64 commit_point = 5;</code>
        * @param value The commitPoint to set.
        * @return This builder for chaining.
        */
       public Builder setCommitPoint(long value) {
 
         commitPoint_ = value;
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 commit_point = 4;</code>
+       * <code>optional int64 commit_point = 5;</code>
        * @return This builder for chaining.
        */
       public Builder clearCommitPoint() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         commitPoint_ = 0L;
         onChanged();
         return this;
@@ -2612,15 +3497,15 @@ public final class RpcRequest {
 
       private long lastLogIndex_ ;
       /**
-       * <code>optional int64 last_log_index = 5;</code>
+       * <code>optional int64 last_log_index = 6;</code>
        * @return Whether the lastLogIndex field is set.
        */
       @java.lang.Override
       public boolean hasLastLogIndex() {
-        return ((bitField0_ & 0x00000010) != 0);
+        return ((bitField0_ & 0x00000020) != 0);
       }
       /**
-       * <code>optional int64 last_log_index = 5;</code>
+       * <code>optional int64 last_log_index = 6;</code>
        * @return The lastLogIndex.
        */
       @java.lang.Override
@@ -2628,23 +3513,23 @@ public final class RpcRequest {
         return lastLogIndex_;
       }
       /**
-       * <code>optional int64 last_log_index = 5;</code>
+       * <code>optional int64 last_log_index = 6;</code>
        * @param value The lastLogIndex to set.
        * @return This builder for chaining.
        */
       public Builder setLastLogIndex(long value) {
 
         lastLogIndex_ = value;
-        bitField0_ |= 0x00000010;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 last_log_index = 5;</code>
+       * <code>optional int64 last_log_index = 6;</code>
        * @return This builder for chaining.
        */
       public Builder clearLastLogIndex() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000020);
         lastLogIndex_ = 0L;
         onChanged();
         return this;
@@ -3630,34 +4515,49 @@ public final class RpcRequest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    boolean hasError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponse getError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder();
+
+    /**
+     * <code>optional bool success = 2;</code>
      * @return Whether the success field is set.
      */
     boolean hasSuccess();
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return The success.
      */
     boolean getSuccess();
 
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return Whether the term field is set.
      */
     boolean hasTerm();
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return The term.
      */
     long getTerm();
 
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return Whether the version field is set.
      */
     boolean hasVersion();
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return The version.
      */
     long getVersion();
@@ -3698,18 +4598,44 @@ public final class RpcRequest {
     }
 
     private int bitField0_;
-    public static final int SUCCESS_FIELD_NUMBER = 1;
+    public static final int ERROR_FIELD_NUMBER = 1;
+    private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    @java.lang.Override
+    public boolean hasError() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+
+    public static final int SUCCESS_FIELD_NUMBER = 2;
     private boolean success_ = false;
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return Whether the success field is set.
      */
     @java.lang.Override
     public boolean hasSuccess() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return The success.
      */
     @java.lang.Override
@@ -3717,18 +4643,18 @@ public final class RpcRequest {
       return success_;
     }
 
-    public static final int TERM_FIELD_NUMBER = 2;
+    public static final int TERM_FIELD_NUMBER = 3;
     private long term_ = 0L;
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return Whether the term field is set.
      */
     @java.lang.Override
     public boolean hasTerm() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return The term.
      */
     @java.lang.Override
@@ -3736,18 +4662,18 @@ public final class RpcRequest {
       return term_;
     }
 
-    public static final int VERSION_FIELD_NUMBER = 3;
+    public static final int VERSION_FIELD_NUMBER = 4;
     private long version_ = 0L;
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return Whether the version field is set.
      */
     @java.lang.Override
     public boolean hasVersion() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return The version.
      */
     @java.lang.Override
@@ -3770,13 +4696,16 @@ public final class RpcRequest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeBool(1, success_);
+        output.writeMessage(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeInt64(2, term_);
+        output.writeBool(2, success_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, version_);
+        output.writeInt64(3, term_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeInt64(4, version_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3789,15 +4718,19 @@ public final class RpcRequest {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, success_);
+          .computeMessageSize(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, term_);
+          .computeBoolSize(2, success_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, version_);
+          .computeInt64Size(3, term_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, version_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -3814,6 +4747,11 @@ public final class RpcRequest {
       }
       com.trs.pacifica.proto.RpcRequest.ReplicaRecoverResponse other = (com.trs.pacifica.proto.RpcRequest.ReplicaRecoverResponse) obj;
 
+      if (hasError() != other.hasError()) return false;
+      if (hasError()) {
+        if (!getError()
+            .equals(other.getError())) return false;
+      }
       if (hasSuccess() != other.hasSuccess()) return false;
       if (hasSuccess()) {
         if (getSuccess()
@@ -3840,6 +4778,10 @@ public final class RpcRequest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasError()) {
+        hash = (37 * hash) + ERROR_FIELD_NUMBER;
+        hash = (53 * hash) + getError().hashCode();
+      }
       if (hasSuccess()) {
         hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -3974,18 +4916,29 @@ public final class RpcRequest {
 
       // Construct using com.trs.pacifica.proto.RpcRequest.ReplicaRecoverResponse.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getErrorFieldBuilder();
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
         success_ = false;
         term_ = 0L;
         version_ = 0L;
@@ -4024,16 +4977,22 @@ public final class RpcRequest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.success_ = success_;
+          result.error_ = errorBuilder_ == null
+              ? error_
+              : errorBuilder_.build();
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.term_ = term_;
+          result.success_ = success_;
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.version_ = version_;
+          result.term_ = term_;
           to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.version_ = version_;
+          to_bitField0_ |= 0x00000008;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -4082,6 +5041,9 @@ public final class RpcRequest {
 
       public Builder mergeFrom(com.trs.pacifica.proto.RpcRequest.ReplicaRecoverResponse other) {
         if (other == com.trs.pacifica.proto.RpcRequest.ReplicaRecoverResponse.getDefaultInstance()) return this;
+        if (other.hasError()) {
+          mergeError(other.getError());
+        }
         if (other.hasSuccess()) {
           setSuccess(other.getSuccess());
         }
@@ -4117,21 +5079,28 @@ public final class RpcRequest {
               case 0:
                 done = true;
                 break;
-              case 8: {
-                success_ = input.readBool();
+              case 10: {
+                input.readMessage(
+                    getErrorFieldBuilder().getBuilder(),
+                    extensionRegistry);
                 bitField0_ |= 0x00000001;
                 break;
-              } // case 8
+              } // case 10
               case 16: {
-                term_ = input.readInt64();
+                success_ = input.readBool();
                 bitField0_ |= 0x00000002;
                 break;
               } // case 16
               case 24: {
-                version_ = input.readInt64();
+                term_ = input.readInt64();
                 bitField0_ |= 0x00000004;
                 break;
               } // case 24
+              case 32: {
+                version_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -4149,17 +5118,138 @@ public final class RpcRequest {
       }
       private int bitField0_;
 
+      private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> errorBuilder_;
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return Whether the error field is set.
+       */
+      public boolean hasError() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return The error.
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+        if (errorBuilder_ == null) {
+          return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        } else {
+          return errorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          error_ = value;
+        } else {
+          errorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder builderForValue) {
+        if (errorBuilder_ == null) {
+          error_ = builderForValue.build();
+        } else {
+          errorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder mergeError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            error_ != null &&
+            error_ != com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance()) {
+            getErrorBuilder().mergeFrom(value);
+          } else {
+            error_ = value;
+          }
+        } else {
+          errorBuilder_.mergeFrom(value);
+        }
+        if (error_ != null) {
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder clearError() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder getErrorBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getErrorFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+        if (errorBuilder_ != null) {
+          return errorBuilder_.getMessageOrBuilder();
+        } else {
+          return error_ == null ?
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> 
+          getErrorFieldBuilder() {
+        if (errorBuilder_ == null) {
+          errorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder>(
+                  getError(),
+                  getParentForChildren(),
+                  isClean());
+          error_ = null;
+        }
+        return errorBuilder_;
+      }
+
       private boolean success_ ;
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return Whether the success field is set.
        */
       @java.lang.Override
       public boolean hasSuccess() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return The success.
        */
       @java.lang.Override
@@ -4167,23 +5257,23 @@ public final class RpcRequest {
         return success_;
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @param value The success to set.
        * @return This builder for chaining.
        */
       public Builder setSuccess(boolean value) {
 
         success_ = value;
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearSuccess() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         success_ = false;
         onChanged();
         return this;
@@ -4191,15 +5281,15 @@ public final class RpcRequest {
 
       private long term_ ;
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return Whether the term field is set.
        */
       @java.lang.Override
       public boolean hasTerm() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return The term.
        */
       @java.lang.Override
@@ -4207,23 +5297,23 @@ public final class RpcRequest {
         return term_;
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @param value The term to set.
        * @return This builder for chaining.
        */
       public Builder setTerm(long value) {
 
         term_ = value;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearTerm() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         term_ = 0L;
         onChanged();
         return this;
@@ -4231,15 +5321,15 @@ public final class RpcRequest {
 
       private long version_ ;
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return Whether the version field is set.
        */
       @java.lang.Override
       public boolean hasVersion() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return The version.
        */
       @java.lang.Override
@@ -4247,23 +5337,23 @@ public final class RpcRequest {
         return version_;
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @param value The version to set.
        * @return This builder for chaining.
        */
       public Builder setVersion(long value) {
 
         version_ = value;
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         version_ = 0L;
         onChanged();
         return this;
@@ -5649,34 +6739,49 @@ public final class RpcRequest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    boolean hasError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponse getError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder();
+
+    /**
+     * <code>optional bool success = 2;</code>
      * @return Whether the success field is set.
      */
     boolean hasSuccess();
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return The success.
      */
     boolean getSuccess();
 
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return Whether the term field is set.
      */
     boolean hasTerm();
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return The term.
      */
     long getTerm();
 
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return Whether the version field is set.
      */
     boolean hasVersion();
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return The version.
      */
     long getVersion();
@@ -5717,18 +6822,44 @@ public final class RpcRequest {
     }
 
     private int bitField0_;
-    public static final int SUCCESS_FIELD_NUMBER = 1;
+    public static final int ERROR_FIELD_NUMBER = 1;
+    private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    @java.lang.Override
+    public boolean hasError() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+
+    public static final int SUCCESS_FIELD_NUMBER = 2;
     private boolean success_ = false;
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return Whether the success field is set.
      */
     @java.lang.Override
     public boolean hasSuccess() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>optional bool success = 1;</code>
+     * <code>optional bool success = 2;</code>
      * @return The success.
      */
     @java.lang.Override
@@ -5736,18 +6867,18 @@ public final class RpcRequest {
       return success_;
     }
 
-    public static final int TERM_FIELD_NUMBER = 2;
+    public static final int TERM_FIELD_NUMBER = 3;
     private long term_ = 0L;
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return Whether the term field is set.
      */
     @java.lang.Override
     public boolean hasTerm() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional int64 term = 2;</code>
+     * <code>optional int64 term = 3;</code>
      * @return The term.
      */
     @java.lang.Override
@@ -5755,18 +6886,18 @@ public final class RpcRequest {
       return term_;
     }
 
-    public static final int VERSION_FIELD_NUMBER = 3;
+    public static final int VERSION_FIELD_NUMBER = 4;
     private long version_ = 0L;
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return Whether the version field is set.
      */
     @java.lang.Override
     public boolean hasVersion() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>optional int64 version = 3;</code>
+     * <code>optional int64 version = 4;</code>
      * @return The version.
      */
     @java.lang.Override
@@ -5789,13 +6920,16 @@ public final class RpcRequest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeBool(1, success_);
+        output.writeMessage(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeInt64(2, term_);
+        output.writeBool(2, success_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, version_);
+        output.writeInt64(3, term_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeInt64(4, version_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5808,15 +6942,19 @@ public final class RpcRequest {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, success_);
+          .computeMessageSize(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, term_);
+          .computeBoolSize(2, success_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, version_);
+          .computeInt64Size(3, term_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, version_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -5833,6 +6971,11 @@ public final class RpcRequest {
       }
       com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse other = (com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse) obj;
 
+      if (hasError() != other.hasError()) return false;
+      if (hasError()) {
+        if (!getError()
+            .equals(other.getError())) return false;
+      }
       if (hasSuccess() != other.hasSuccess()) return false;
       if (hasSuccess()) {
         if (getSuccess()
@@ -5859,6 +7002,10 @@ public final class RpcRequest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasError()) {
+        hash = (37 * hash) + ERROR_FIELD_NUMBER;
+        hash = (53 * hash) + getError().hashCode();
+      }
       if (hasSuccess()) {
         hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -5993,18 +7140,29 @@ public final class RpcRequest {
 
       // Construct using com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getErrorFieldBuilder();
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
         success_ = false;
         term_ = 0L;
         version_ = 0L;
@@ -6043,16 +7201,22 @@ public final class RpcRequest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.success_ = success_;
+          result.error_ = errorBuilder_ == null
+              ? error_
+              : errorBuilder_.build();
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.term_ = term_;
+          result.success_ = success_;
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.version_ = version_;
+          result.term_ = term_;
           to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.version_ = version_;
+          to_bitField0_ |= 0x00000008;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -6101,6 +7265,9 @@ public final class RpcRequest {
 
       public Builder mergeFrom(com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse other) {
         if (other == com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse.getDefaultInstance()) return this;
+        if (other.hasError()) {
+          mergeError(other.getError());
+        }
         if (other.hasSuccess()) {
           setSuccess(other.getSuccess());
         }
@@ -6136,21 +7303,28 @@ public final class RpcRequest {
               case 0:
                 done = true;
                 break;
-              case 8: {
-                success_ = input.readBool();
+              case 10: {
+                input.readMessage(
+                    getErrorFieldBuilder().getBuilder(),
+                    extensionRegistry);
                 bitField0_ |= 0x00000001;
                 break;
-              } // case 8
+              } // case 10
               case 16: {
-                term_ = input.readInt64();
+                success_ = input.readBool();
                 bitField0_ |= 0x00000002;
                 break;
               } // case 16
               case 24: {
-                version_ = input.readInt64();
+                term_ = input.readInt64();
                 bitField0_ |= 0x00000004;
                 break;
               } // case 24
+              case 32: {
+                version_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6168,17 +7342,138 @@ public final class RpcRequest {
       }
       private int bitField0_;
 
+      private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> errorBuilder_;
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return Whether the error field is set.
+       */
+      public boolean hasError() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return The error.
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+        if (errorBuilder_ == null) {
+          return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        } else {
+          return errorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          error_ = value;
+        } else {
+          errorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder builderForValue) {
+        if (errorBuilder_ == null) {
+          error_ = builderForValue.build();
+        } else {
+          errorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder mergeError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            error_ != null &&
+            error_ != com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance()) {
+            getErrorBuilder().mergeFrom(value);
+          } else {
+            error_ = value;
+          }
+        } else {
+          errorBuilder_.mergeFrom(value);
+        }
+        if (error_ != null) {
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder clearError() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder getErrorBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getErrorFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+        if (errorBuilder_ != null) {
+          return errorBuilder_.getMessageOrBuilder();
+        } else {
+          return error_ == null ?
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> 
+          getErrorFieldBuilder() {
+        if (errorBuilder_ == null) {
+          errorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder>(
+                  getError(),
+                  getParentForChildren(),
+                  isClean());
+          error_ = null;
+        }
+        return errorBuilder_;
+      }
+
       private boolean success_ ;
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return Whether the success field is set.
        */
       @java.lang.Override
       public boolean hasSuccess() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return The success.
        */
       @java.lang.Override
@@ -6186,23 +7481,23 @@ public final class RpcRequest {
         return success_;
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @param value The success to set.
        * @return This builder for chaining.
        */
       public Builder setSuccess(boolean value) {
 
         success_ = value;
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bool success = 1;</code>
+       * <code>optional bool success = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearSuccess() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         success_ = false;
         onChanged();
         return this;
@@ -6210,15 +7505,15 @@ public final class RpcRequest {
 
       private long term_ ;
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return Whether the term field is set.
        */
       @java.lang.Override
       public boolean hasTerm() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return The term.
        */
       @java.lang.Override
@@ -6226,23 +7521,23 @@ public final class RpcRequest {
         return term_;
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @param value The term to set.
        * @return This builder for chaining.
        */
       public Builder setTerm(long value) {
 
         term_ = value;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 term = 2;</code>
+       * <code>optional int64 term = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearTerm() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         term_ = 0L;
         onChanged();
         return this;
@@ -6250,15 +7545,15 @@ public final class RpcRequest {
 
       private long version_ ;
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return Whether the version field is set.
        */
       @java.lang.Override
       public boolean hasVersion() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return The version.
        */
       @java.lang.Override
@@ -6266,23 +7561,23 @@ public final class RpcRequest {
         return version_;
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @param value The version to set.
        * @return This builder for chaining.
        */
       public Builder setVersion(long value) {
 
         version_ = value;
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 version = 3;</code>
+       * <code>optional int64 version = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         version_ = 0L;
         onChanged();
         return this;
@@ -7440,34 +8735,49 @@ public final class RpcRequest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional bool eof = 1;</code>
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    boolean hasError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponse getError();
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder();
+
+    /**
+     * <code>optional bool eof = 2;</code>
      * @return Whether the eof field is set.
      */
     boolean hasEof();
     /**
-     * <code>optional bool eof = 1;</code>
+     * <code>optional bool eof = 2;</code>
      * @return The eof.
      */
     boolean getEof();
 
     /**
-     * <code>optional bytes data = 2;</code>
+     * <code>optional bytes data = 3;</code>
      * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional bytes data = 2;</code>
+     * <code>optional bytes data = 3;</code>
      * @return The data.
      */
     com.google.protobuf.ByteString getData();
 
     /**
-     * <code>optional int64 read_length = 3;</code>
+     * <code>optional int64 read_length = 4;</code>
      * @return Whether the readLength field is set.
      */
     boolean hasReadLength();
     /**
-     * <code>optional int64 read_length = 3;</code>
+     * <code>optional int64 read_length = 4;</code>
      * @return The readLength.
      */
     long getReadLength();
@@ -7509,18 +8819,44 @@ public final class RpcRequest {
     }
 
     private int bitField0_;
-    public static final int EOF_FIELD_NUMBER = 1;
+    public static final int ERROR_FIELD_NUMBER = 1;
+    private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return Whether the error field is set.
+     */
+    @java.lang.Override
+    public boolean hasError() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     * @return The error.
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+    /**
+     * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+     */
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+      return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+    }
+
+    public static final int EOF_FIELD_NUMBER = 2;
     private boolean eof_ = false;
     /**
-     * <code>optional bool eof = 1;</code>
+     * <code>optional bool eof = 2;</code>
      * @return Whether the eof field is set.
      */
     @java.lang.Override
     public boolean hasEof() {
-      return ((bitField0_ & 0x00000001) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
-     * <code>optional bool eof = 1;</code>
+     * <code>optional bool eof = 2;</code>
      * @return The eof.
      */
     @java.lang.Override
@@ -7528,18 +8864,18 @@ public final class RpcRequest {
       return eof_;
     }
 
-    public static final int DATA_FIELD_NUMBER = 2;
+    public static final int DATA_FIELD_NUMBER = 3;
     private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
     /**
-     * <code>optional bytes data = 2;</code>
+     * <code>optional bytes data = 3;</code>
      * @return Whether the data field is set.
      */
     @java.lang.Override
     public boolean hasData() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
-     * <code>optional bytes data = 2;</code>
+     * <code>optional bytes data = 3;</code>
      * @return The data.
      */
     @java.lang.Override
@@ -7547,18 +8883,18 @@ public final class RpcRequest {
       return data_;
     }
 
-    public static final int READ_LENGTH_FIELD_NUMBER = 3;
+    public static final int READ_LENGTH_FIELD_NUMBER = 4;
     private long readLength_ = 0L;
     /**
-     * <code>optional int64 read_length = 3;</code>
+     * <code>optional int64 read_length = 4;</code>
      * @return Whether the readLength field is set.
      */
     @java.lang.Override
     public boolean hasReadLength() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
-     * <code>optional int64 read_length = 3;</code>
+     * <code>optional int64 read_length = 4;</code>
      * @return The readLength.
      */
     @java.lang.Override
@@ -7581,13 +8917,16 @@ public final class RpcRequest {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeBool(1, eof_);
+        output.writeMessage(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeBytes(2, data_);
+        output.writeBool(2, eof_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        output.writeInt64(3, readLength_);
+        output.writeBytes(3, data_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeInt64(4, readLength_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7600,15 +8939,19 @@ public final class RpcRequest {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, eof_);
+          .computeMessageSize(1, getError());
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, data_);
+          .computeBoolSize(2, eof_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, readLength_);
+          .computeBytesSize(3, data_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, readLength_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -7625,6 +8968,11 @@ public final class RpcRequest {
       }
       com.trs.pacifica.proto.RpcRequest.GetFileResponse other = (com.trs.pacifica.proto.RpcRequest.GetFileResponse) obj;
 
+      if (hasError() != other.hasError()) return false;
+      if (hasError()) {
+        if (!getError()
+            .equals(other.getError())) return false;
+      }
       if (hasEof() != other.hasEof()) return false;
       if (hasEof()) {
         if (getEof()
@@ -7651,6 +8999,10 @@ public final class RpcRequest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasError()) {
+        hash = (37 * hash) + ERROR_FIELD_NUMBER;
+        hash = (53 * hash) + getError().hashCode();
+      }
       if (hasEof()) {
         hash = (37 * hash) + EOF_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -7784,18 +9136,29 @@ public final class RpcRequest {
 
       // Construct using com.trs.pacifica.proto.RpcRequest.GetFileResponse.newBuilder()
       private Builder() {
-
+        maybeForceBuilderInitialization();
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getErrorFieldBuilder();
+        }
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
         eof_ = false;
         data_ = com.google.protobuf.ByteString.EMPTY;
         readLength_ = 0L;
@@ -7834,16 +9197,22 @@ public final class RpcRequest {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.eof_ = eof_;
+          result.error_ = errorBuilder_ == null
+              ? error_
+              : errorBuilder_.build();
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.data_ = data_;
+          result.eof_ = eof_;
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.readLength_ = readLength_;
+          result.data_ = data_;
           to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.readLength_ = readLength_;
+          to_bitField0_ |= 0x00000008;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -7892,6 +9261,9 @@ public final class RpcRequest {
 
       public Builder mergeFrom(com.trs.pacifica.proto.RpcRequest.GetFileResponse other) {
         if (other == com.trs.pacifica.proto.RpcRequest.GetFileResponse.getDefaultInstance()) return this;
+        if (other.hasError()) {
+          mergeError(other.getError());
+        }
         if (other.hasEof()) {
           setEof(other.getEof());
         }
@@ -7927,21 +9299,28 @@ public final class RpcRequest {
               case 0:
                 done = true;
                 break;
-              case 8: {
-                eof_ = input.readBool();
+              case 10: {
+                input.readMessage(
+                    getErrorFieldBuilder().getBuilder(),
+                    extensionRegistry);
                 bitField0_ |= 0x00000001;
                 break;
-              } // case 8
-              case 18: {
-                data_ = input.readBytes();
+              } // case 10
+              case 16: {
+                eof_ = input.readBool();
                 bitField0_ |= 0x00000002;
                 break;
-              } // case 18
-              case 24: {
-                readLength_ = input.readInt64();
+              } // case 16
+              case 26: {
+                data_ = input.readBytes();
                 bitField0_ |= 0x00000004;
                 break;
-              } // case 24
+              } // case 26
+              case 32: {
+                readLength_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -7959,17 +9338,138 @@ public final class RpcRequest {
       }
       private int bitField0_;
 
+      private com.trs.pacifica.proto.RpcRequest.ErrorResponse error_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> errorBuilder_;
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return Whether the error field is set.
+       */
+      public boolean hasError() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       * @return The error.
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse getError() {
+        if (errorBuilder_ == null) {
+          return error_ == null ? com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        } else {
+          return errorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          error_ = value;
+        } else {
+          errorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder setError(
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder builderForValue) {
+        if (errorBuilder_ == null) {
+          error_ = builderForValue.build();
+        } else {
+          errorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder mergeError(com.trs.pacifica.proto.RpcRequest.ErrorResponse value) {
+        if (errorBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0) &&
+            error_ != null &&
+            error_ != com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance()) {
+            getErrorBuilder().mergeFrom(value);
+          } else {
+            error_ = value;
+          }
+        } else {
+          errorBuilder_.mergeFrom(value);
+        }
+        if (error_ != null) {
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public Builder clearError() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        error_ = null;
+        if (errorBuilder_ != null) {
+          errorBuilder_.dispose();
+          errorBuilder_ = null;
+        }
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder getErrorBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getErrorFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      public com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder getErrorOrBuilder() {
+        if (errorBuilder_ != null) {
+          return errorBuilder_.getMessageOrBuilder();
+        } else {
+          return error_ == null ?
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse.getDefaultInstance() : error_;
+        }
+      }
+      /**
+       * <code>optional .jpacifica.ErrorResponse error = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder> 
+          getErrorFieldBuilder() {
+        if (errorBuilder_ == null) {
+          errorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.trs.pacifica.proto.RpcRequest.ErrorResponse, com.trs.pacifica.proto.RpcRequest.ErrorResponse.Builder, com.trs.pacifica.proto.RpcRequest.ErrorResponseOrBuilder>(
+                  getError(),
+                  getParentForChildren(),
+                  isClean());
+          error_ = null;
+        }
+        return errorBuilder_;
+      }
+
       private boolean eof_ ;
       /**
-       * <code>optional bool eof = 1;</code>
+       * <code>optional bool eof = 2;</code>
        * @return Whether the eof field is set.
        */
       @java.lang.Override
       public boolean hasEof() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
-       * <code>optional bool eof = 1;</code>
+       * <code>optional bool eof = 2;</code>
        * @return The eof.
        */
       @java.lang.Override
@@ -7977,23 +9477,23 @@ public final class RpcRequest {
         return eof_;
       }
       /**
-       * <code>optional bool eof = 1;</code>
+       * <code>optional bool eof = 2;</code>
        * @param value The eof to set.
        * @return This builder for chaining.
        */
       public Builder setEof(boolean value) {
 
         eof_ = value;
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bool eof = 1;</code>
+       * <code>optional bool eof = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearEof() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         eof_ = false;
         onChanged();
         return this;
@@ -8001,15 +9501,15 @@ public final class RpcRequest {
 
       private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes data = 2;</code>
+       * <code>optional bytes data = 3;</code>
        * @return Whether the data field is set.
        */
       @java.lang.Override
       public boolean hasData() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
-       * <code>optional bytes data = 2;</code>
+       * <code>optional bytes data = 3;</code>
        * @return The data.
        */
       @java.lang.Override
@@ -8017,23 +9517,23 @@ public final class RpcRequest {
         return data_;
       }
       /**
-       * <code>optional bytes data = 2;</code>
+       * <code>optional bytes data = 3;</code>
        * @param value The data to set.
        * @return This builder for chaining.
        */
       public Builder setData(com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
         data_ = value;
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bytes data = 2;</code>
+       * <code>optional bytes data = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearData() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         data_ = getDefaultInstance().getData();
         onChanged();
         return this;
@@ -8041,15 +9541,15 @@ public final class RpcRequest {
 
       private long readLength_ ;
       /**
-       * <code>optional int64 read_length = 3;</code>
+       * <code>optional int64 read_length = 4;</code>
        * @return Whether the readLength field is set.
        */
       @java.lang.Override
       public boolean hasReadLength() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
-       * <code>optional int64 read_length = 3;</code>
+       * <code>optional int64 read_length = 4;</code>
        * @return The readLength.
        */
       @java.lang.Override
@@ -8057,23 +9557,23 @@ public final class RpcRequest {
         return readLength_;
       }
       /**
-       * <code>optional int64 read_length = 3;</code>
+       * <code>optional int64 read_length = 4;</code>
        * @param value The readLength to set.
        * @return This builder for chaining.
        */
       public Builder setReadLength(long value) {
 
         readLength_ = value;
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 read_length = 3;</code>
+       * <code>optional int64 read_length = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearReadLength() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         readLength_ = 0L;
         onChanged();
         return this;
@@ -8143,6 +9643,11 @@ public final class RpcRequest {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_jpacifica_ErrorResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_jpacifica_ErrorResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_jpacifica_AppendEntriesRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -8191,106 +9696,120 @@ public final class RpcRequest {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\n_rpc.proto\022\tjpacifica\032\r_common.proto\"\247" +
-      "\003\n\024AppendEntriesRequest\022-\n\nprimary_id\030\001 " +
-      "\001(\0132\024.jpacifica.ReplicaIdH\000\210\001\001\022,\n\ttarget" +
-      "_id\030\002 \001(\0132\024.jpacifica.ReplicaIdH\001\210\001\001\022\033\n\016" +
-      "prev_log_index\030\003 \001(\003H\002\210\001\001\022\032\n\rprev_log_te" +
-      "rm\030\004 \001(\003H\003\210\001\001\022\031\n\014commit_point\030\005 \001(\003H\004\210\001\001" +
-      "\022\021\n\004term\030\006 \001(\003H\005\210\001\001\022\024\n\007version\030\007 \001(\003H\006\210\001" +
-      "\001\022)\n\010log_meta\030\010 \003(\0132\027.jpacifica.LogEntry" +
-      "Meta\022\025\n\010log_data\030\t \001(\014H\007\210\001\001B\r\n\013_primary_" +
-      "idB\014\n\n_target_idB\021\n\017_prev_log_indexB\020\n\016_" +
-      "prev_log_termB\017\n\r_commit_pointB\007\n\005_termB" +
-      "\n\n\010_versionB\013\n\t_log_data\"\323\001\n\025AppendEntri" +
-      "esResponse\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term" +
-      "\030\002 \001(\003H\001\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001\022\031\n\014com" +
-      "mit_point\030\004 \001(\003H\003\210\001\001\022\033\n\016last_log_index\030\005" +
-      " \001(\003H\004\210\001\001B\n\n\010_successB\007\n\005_termB\n\n\010_versi" +
-      "onB\017\n\r_commit_pointB\021\n\017_last_log_index\"\257" +
-      "\001\n\025ReplicaRecoverRequest\022-\n\nrecover_id\030\001" +
-      " \001(\0132\024.jpacifica.ReplicaIdH\000\210\001\001\022-\n\nprima" +
-      "ry_id\030\002 \001(\0132\024.jpacifica.ReplicaIdH\001\210\001\001\022\021" +
-      "\n\004term\030\003 \001(\003H\002\210\001\001B\r\n\013_recover_idB\r\n\013_pri" +
-      "mary_idB\007\n\005_term\"x\n\026ReplicaRecoverRespon" +
-      "se\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term\030\002 \001(\003H\001" +
-      "\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B\n\n\010_successB\007\n" +
-      "\005_termB\n\n\010_version\"\342\002\n\026InstallSnapshotRe" +
-      "quest\022-\n\nprimary_id\030\001 \001(\0132\024.jpacifica.Re" +
-      "plicaIdH\000\210\001\001\022,\n\ttarget_id\030\002 \001(\0132\024.jpacif" +
-      "ica.ReplicaIdH\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001\022\024\n" +
-      "\007version\030\004 \001(\003H\003\210\001\001\022\037\n\022snapshot_log_inde" +
-      "x\030\005 \001(\003H\004\210\001\001\022\036\n\021snapshot_log_term\030\006 \001(\003H" +
-      "\005\210\001\001\022\025\n\010readerId\030\007 \001(\003H\006\210\001\001B\r\n\013_primary_" +
-      "idB\014\n\n_target_idB\007\n\005_termB\n\n\010_versionB\025\n" +
-      "\023_snapshot_log_indexB\024\n\022_snapshot_log_te" +
-      "rmB\013\n\t_readerId\"y\n\027InstallSnapshotRespon" +
-      "se\022\024\n\007success\030\001 \001(\010H\000\210\001\001\022\021\n\004term\030\002 \001(\003H\001" +
-      "\210\001\001\022\024\n\007version\030\003 \001(\003H\002\210\001\001B\n\n\010_successB\007\n" +
-      "\005_termB\n\n\010_version\"\326\001\n\016GetFileRequest\022,\n" +
-      "\ttarget_id\030\001 \001(\0132\024.jpacifica.ReplicaIdH\000" +
-      "\210\001\001\022\026\n\treader_id\030\002 \001(\003H\001\210\001\001\022\025\n\010filename\030" +
-      "\003 \001(\tH\002\210\001\001\022\023\n\006offset\030\004 \001(\005H\003\210\001\001\022\023\n\006lengt" +
-      "h\030\005 \001(\005H\004\210\001\001B\014\n\n_target_idB\014\n\n_reader_id" +
-      "B\013\n\t_filenameB\t\n\007_offsetB\t\n\007_length\"q\n\017G" +
-      "etFileResponse\022\020\n\003eof\030\001 \001(\010H\000\210\001\001\022\021\n\004data" +
-      "\030\002 \001(\014H\001\210\001\001\022\030\n\013read_length\030\003 \001(\003H\002\210\001\001B\006\n" +
-      "\004_eofB\007\n\005_dataB\016\n\014_read_lengthB$\n\026com.tr" +
-      "s.pacifica.protoB\nRpcRequestb\006proto3"
+      "\n\n_rpc.proto\022\tjpacifica\032\r_common.proto\"M" +
+      "\n\rErrorResponse\022\021\n\004code\030\001 \001(\005H\000\210\001\001\022\024\n\007me" +
+      "ssage\030\002 \001(\tH\001\210\001\001B\007\n\005_codeB\n\n\010_message\"\247\003" +
+      "\n\024AppendEntriesRequest\022-\n\nprimary_id\030\001 \001" +
+      "(\0132\024.jpacifica.ReplicaIdH\000\210\001\001\022,\n\ttarget_" +
+      "id\030\002 \001(\0132\024.jpacifica.ReplicaIdH\001\210\001\001\022\033\n\016p" +
+      "rev_log_index\030\003 \001(\003H\002\210\001\001\022\032\n\rprev_log_ter" +
+      "m\030\004 \001(\003H\003\210\001\001\022\031\n\014commit_point\030\005 \001(\003H\004\210\001\001\022" +
+      "\021\n\004term\030\006 \001(\003H\005\210\001\001\022\024\n\007version\030\007 \001(\003H\006\210\001\001" +
+      "\022)\n\010log_meta\030\010 \003(\0132\027.jpacifica.LogEntryM" +
+      "eta\022\025\n\010log_data\030\t \001(\014H\007\210\001\001B\r\n\013_primary_i" +
+      "dB\014\n\n_target_idB\021\n\017_prev_log_indexB\020\n\016_p" +
+      "rev_log_termB\017\n\r_commit_pointB\007\n\005_termB\n" +
+      "\n\010_versionB\013\n\t_log_data\"\213\002\n\025AppendEntrie" +
+      "sResponse\022,\n\005error\030\001 \001(\0132\030.jpacifica.Err" +
+      "orResponseH\000\210\001\001\022\024\n\007success\030\002 \001(\010H\001\210\001\001\022\021\n" +
+      "\004term\030\003 \001(\003H\002\210\001\001\022\024\n\007version\030\004 \001(\003H\003\210\001\001\022\031" +
+      "\n\014commit_point\030\005 \001(\003H\004\210\001\001\022\033\n\016last_log_in" +
+      "dex\030\006 \001(\003H\005\210\001\001B\010\n\006_errorB\n\n\010_successB\007\n\005" +
+      "_termB\n\n\010_versionB\017\n\r_commit_pointB\021\n\017_l" +
+      "ast_log_index\"\257\001\n\025ReplicaRecoverRequest\022" +
+      "-\n\nrecover_id\030\001 \001(\0132\024.jpacifica.ReplicaI" +
+      "dH\000\210\001\001\022-\n\nprimary_id\030\002 \001(\0132\024.jpacifica.R" +
+      "eplicaIdH\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001B\r\n\013_rec" +
+      "over_idB\r\n\013_primary_idB\007\n\005_term\"\260\001\n\026Repl" +
+      "icaRecoverResponse\022,\n\005error\030\001 \001(\0132\030.jpac" +
+      "ifica.ErrorResponseH\000\210\001\001\022\024\n\007success\030\002 \001(" +
+      "\010H\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001\022\024\n\007version\030\004 \001" +
+      "(\003H\003\210\001\001B\010\n\006_errorB\n\n\010_successB\007\n\005_termB\n" +
+      "\n\010_version\"\342\002\n\026InstallSnapshotRequest\022-\n" +
+      "\nprimary_id\030\001 \001(\0132\024.jpacifica.ReplicaIdH" +
+      "\000\210\001\001\022,\n\ttarget_id\030\002 \001(\0132\024.jpacifica.Repl" +
+      "icaIdH\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210\001\001\022\024\n\007version" +
+      "\030\004 \001(\003H\003\210\001\001\022\037\n\022snapshot_log_index\030\005 \001(\003H" +
+      "\004\210\001\001\022\036\n\021snapshot_log_term\030\006 \001(\003H\005\210\001\001\022\025\n\010" +
+      "readerId\030\007 \001(\003H\006\210\001\001B\r\n\013_primary_idB\014\n\n_t" +
+      "arget_idB\007\n\005_termB\n\n\010_versionB\025\n\023_snapsh" +
+      "ot_log_indexB\024\n\022_snapshot_log_termB\013\n\t_r" +
+      "eaderId\"\261\001\n\027InstallSnapshotResponse\022,\n\005e" +
+      "rror\030\001 \001(\0132\030.jpacifica.ErrorResponseH\000\210\001" +
+      "\001\022\024\n\007success\030\002 \001(\010H\001\210\001\001\022\021\n\004term\030\003 \001(\003H\002\210" +
+      "\001\001\022\024\n\007version\030\004 \001(\003H\003\210\001\001B\010\n\006_errorB\n\n\010_s" +
+      "uccessB\007\n\005_termB\n\n\010_version\"\326\001\n\016GetFileR" +
+      "equest\022,\n\ttarget_id\030\001 \001(\0132\024.jpacifica.Re" +
+      "plicaIdH\000\210\001\001\022\026\n\treader_id\030\002 \001(\003H\001\210\001\001\022\025\n\010" +
+      "filename\030\003 \001(\tH\002\210\001\001\022\023\n\006offset\030\004 \001(\005H\003\210\001\001" +
+      "\022\023\n\006length\030\005 \001(\005H\004\210\001\001B\014\n\n_target_idB\014\n\n_" +
+      "reader_idB\013\n\t_filenameB\t\n\007_offsetB\t\n\007_le" +
+      "ngth\"\251\001\n\017GetFileResponse\022,\n\005error\030\001 \001(\0132" +
+      "\030.jpacifica.ErrorResponseH\000\210\001\001\022\020\n\003eof\030\002 " +
+      "\001(\010H\001\210\001\001\022\021\n\004data\030\003 \001(\014H\002\210\001\001\022\030\n\013read_leng" +
+      "th\030\004 \001(\003H\003\210\001\001B\010\n\006_errorB\006\n\004_eofB\007\n\005_data" +
+      "B\016\n\014_read_lengthB$\n\026com.trs.pacifica.pro" +
+      "toB\nRpcRequestb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           com.trs.pacifica.proto.RpcCommon.getDescriptor(),
         });
-    internal_static_jpacifica_AppendEntriesRequest_descriptor =
+    internal_static_jpacifica_ErrorResponse_descriptor =
       getDescriptor().getMessageTypes().get(0);
+    internal_static_jpacifica_ErrorResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_jpacifica_ErrorResponse_descriptor,
+        new java.lang.String[] { "Code", "Message", });
+    internal_static_jpacifica_AppendEntriesRequest_descriptor =
+      getDescriptor().getMessageTypes().get(1);
     internal_static_jpacifica_AppendEntriesRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_AppendEntriesRequest_descriptor,
         new java.lang.String[] { "PrimaryId", "TargetId", "PrevLogIndex", "PrevLogTerm", "CommitPoint", "Term", "Version", "LogMeta", "LogData", });
     internal_static_jpacifica_AppendEntriesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(1);
+      getDescriptor().getMessageTypes().get(2);
     internal_static_jpacifica_AppendEntriesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_AppendEntriesResponse_descriptor,
-        new java.lang.String[] { "Success", "Term", "Version", "CommitPoint", "LastLogIndex", });
+        new java.lang.String[] { "Error", "Success", "Term", "Version", "CommitPoint", "LastLogIndex", });
     internal_static_jpacifica_ReplicaRecoverRequest_descriptor =
-      getDescriptor().getMessageTypes().get(2);
+      getDescriptor().getMessageTypes().get(3);
     internal_static_jpacifica_ReplicaRecoverRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_ReplicaRecoverRequest_descriptor,
         new java.lang.String[] { "RecoverId", "PrimaryId", "Term", });
     internal_static_jpacifica_ReplicaRecoverResponse_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_jpacifica_ReplicaRecoverResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_ReplicaRecoverResponse_descriptor,
-        new java.lang.String[] { "Success", "Term", "Version", });
+        new java.lang.String[] { "Error", "Success", "Term", "Version", });
     internal_static_jpacifica_InstallSnapshotRequest_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_jpacifica_InstallSnapshotRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_InstallSnapshotRequest_descriptor,
         new java.lang.String[] { "PrimaryId", "TargetId", "Term", "Version", "SnapshotLogIndex", "SnapshotLogTerm", "ReaderId", });
     internal_static_jpacifica_InstallSnapshotResponse_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_jpacifica_InstallSnapshotResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_InstallSnapshotResponse_descriptor,
-        new java.lang.String[] { "Success", "Term", "Version", });
+        new java.lang.String[] { "Error", "Success", "Term", "Version", });
     internal_static_jpacifica_GetFileRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_jpacifica_GetFileRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_GetFileRequest_descriptor,
         new java.lang.String[] { "TargetId", "ReaderId", "Filename", "Offset", "Length", });
     internal_static_jpacifica_GetFileResponse_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_jpacifica_GetFileResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_GetFileResponse_descriptor,
-        new java.lang.String[] { "Eof", "Data", "ReadLength", });
+        new java.lang.String[] { "Error", "Eof", "Data", "ReadLength", });
     com.trs.pacifica.proto.RpcCommon.getDescriptor();
   }
 

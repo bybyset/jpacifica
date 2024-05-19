@@ -26,7 +26,6 @@ import com.trs.pacifica.proto.RpcRequest.InstallSnapshotRequest;
 import com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse;
 import com.trs.pacifica.proto.RpcRequest.GetFileRequest;
 import com.trs.pacifica.proto.RpcRequest.GetFileResponse;
-import com.trs.pacifica.rpc.RpcResponseCallback;
 
 /**
  *
@@ -40,15 +39,15 @@ public interface ReplicaService {
      * @return
      * @throws
      */
-    public AppendEntriesResponse handleAppendLogEntryRequest(AppendEntriesRequest request, RpcResponseCallback<AppendEntriesResponse> callback) throws PacificaException;
+    public AppendEntriesResponse handleAppendLogEntryRequest(AppendEntriesRequest request, RpcRequestFinished<AppendEntriesResponse> callback) throws PacificaException;
 
 
-    public ReplicaRecoverResponse handleReplicaRecoverRequest(ReplicaRecoverRequest request, RpcResponseCallback<ReplicaRecoverResponse> callback) throws PacificaException;
+    public ReplicaRecoverResponse handleReplicaRecoverRequest(ReplicaRecoverRequest request, RpcRequestFinished<ReplicaRecoverResponse> callback) throws PacificaException;
 
 
-    public InstallSnapshotResponse handleInstallSnapshotRequest(InstallSnapshotRequest request, RpcResponseCallback<InstallSnapshotResponse> callback) throws PacificaException;
+    public InstallSnapshotResponse handleInstallSnapshotRequest(InstallSnapshotRequest request, RpcRequestFinished<InstallSnapshotResponse> callback) throws PacificaException;
 
-    public GetFileResponse handleGetFileRequest(GetFileRequest request, RpcResponseCallback<GetFileResponse> callback) throws PacificaException;
+    public GetFileResponse handleGetFileRequest(GetFileRequest request, RpcRequestFinished<GetFileResponse> callback) throws PacificaException;
 
 
 

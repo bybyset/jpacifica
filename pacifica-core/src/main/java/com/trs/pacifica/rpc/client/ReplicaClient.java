@@ -19,7 +19,7 @@ package com.trs.pacifica.rpc.client;
 
 import com.google.protobuf.Message;
 import com.trs.pacifica.model.ReplicaId;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.node.Endpoint;
 
 import java.util.concurrent.Executor;
@@ -59,6 +59,6 @@ public interface ReplicaClient {
      * @return
      * @param <T>
      */
-    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcResponseCallback<T> callback, final int timeoutMs, final Executor callbackExecutor);
+    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor);
 
 }

@@ -29,9 +29,9 @@ import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.ExecutorResponseCallback;
+import com.trs.pacifica.rpc.ExecutorRequestFinished;
 import com.trs.pacifica.rpc.ReplicaService;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
@@ -331,7 +331,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public RpcRequest.AppendEntriesResponse handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback) throws PacificaException {
+    public RpcRequest.AppendEntriesResponse handleAppendLogEntryRequest(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback) throws PacificaException {
         // Secondary or Candidate received AppendEntriesRequest from Primary
         this.readLock.lock();
         try {
@@ -401,7 +401,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public RpcRequest.ReplicaRecoverResponse handleReplicaRecoverRequest(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) throws PacificaException {
+    public RpcRequest.ReplicaRecoverResponse handleReplicaRecoverRequest(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback) throws PacificaException {
         //Primary received ReplicaRecoverRequest from Candidate
         this.readLock.lock();
         try {
@@ -437,7 +437,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public RpcRequest.InstallSnapshotResponse handleInstallSnapshotRequest(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback) throws PacificaException {
+    public RpcRequest.InstallSnapshotResponse handleInstallSnapshotRequest(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback) throws PacificaException {
         // Secondary or Candidate receive InstallSnapshotRequest
         this.readLock.lock();
         try {
@@ -478,7 +478,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback) throws PacificaException {
+    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback) throws PacificaException {
         this.readLock.lock();
         try {
             ensureActive();
@@ -878,7 +878,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                     .setRecoverId(RpcUtil.protoReplicaId(this.replicaId))//
                     .setTerm(term)//
                     .build();
-            this.pacificaClient.recoverReplica(recoverRequest, new ExecutorResponseCallback<RpcRequest.ReplicaRecoverResponse>() {
+            this.pacificaClient.recoverReplica(recoverRequest, new ExecutorRequestFinished<RpcRequest.ReplicaRecoverResponse>() {
 
                 @Override
                 protected void doRun(Finished finished) {
@@ -938,9 +938,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     class CandidateCaughtUpCallback extends Sender.OnCaughtUp {
 
         private final ReplicaId recoverId;
-        private final RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback;
+        private final RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback;
 
-        CandidateCaughtUpCallback(ReplicaId recoverId, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback) {
+        CandidateCaughtUpCallback(ReplicaId recoverId, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback) {
             this.recoverId = recoverId;
             this.callback = callback;
         }
@@ -1004,10 +1004,10 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     class SecondaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {
 
-        private final RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcCallback;
+        private final RpcRequestFinished<RpcRequest.AppendEntriesResponse> rpcCallback;
 
 
-        public SecondaryAppendLogEntriesCallback(RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcCallback) {
+        public SecondaryAppendLogEntriesCallback(RpcRequestFinished<RpcRequest.AppendEntriesResponse> rpcCallback) {
             this.rpcCallback = rpcCallback;
         }
 

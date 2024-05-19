@@ -17,24 +17,23 @@
 
 package com.trs.pacifica.rpc.internal;
 
-import com.google.protobuf.Message;
 import com.trs.pacifica.ReplicaManager;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ReplicaService;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.util.RpcUtil;
 
 public class AppendEntriesRequestHandler extends InternalRpcRequestHandler<RpcRequest.AppendEntriesRequest, RpcRequest.AppendEntriesResponse> {
 
     protected AppendEntriesRequestHandler(ReplicaManager replicaManager) {
-        super(replicaManager);
+        super(replicaManager, RpcRequest.AppendEntriesResponse.getDefaultInstance());
     }
 
     @Override
-    protected RpcRequest.AppendEntriesResponse asyncHandleRequest(ReplicaService replicaService, RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcResponseCallback) throws PacificaException {
-        return replicaService.handleAppendLogEntryRequest(request, rpcResponseCallback);
+    protected RpcRequest.AppendEntriesResponse asyncHandleRequest(ReplicaService replicaService, RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> rpcRequestFinished) throws PacificaException {
+        return replicaService.handleAppendLogEntryRequest(request, rpcRequestFinished);
     }
 
     @Override
@@ -46,4 +45,5 @@ public class AppendEntriesRequestHandler extends InternalRpcRequestHandler<RpcRe
     public String interest() {
         return RpcRequest.AppendEntriesRequest.class.getName();
     }
+
 }

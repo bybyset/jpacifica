@@ -18,28 +18,18 @@
 package com.trs.pacifica.rpc;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.async.DirectExecutor;
-import com.trs.pacifica.async.Finished;
 
-import java.util.concurrent.Executor;
+public abstract class RpcRequestFinishedAdapter<T extends Message> implements RpcRequestFinished<T> {
 
-public abstract class ExecutorResponseCallback <R extends Message> extends RpcResponseCallbackAdapter<R> {
-    static final Executor DEFAULT_EXECUTOR = new DirectExecutor();
-    private final Executor executor;
-
-
-    protected ExecutorResponseCallback() {
-        this(DEFAULT_EXECUTOR);
-    }
-
-    protected ExecutorResponseCallback(Executor executor) {
-        this.executor = executor;
-    }
+    private T response;
 
     @Override
-    public void run(final Finished finished) {
-        this.executor.execute(() -> {doRun(finished);});
+    public void setRpcResponse(T response) {
+        this.response = response;
     }
 
-    protected abstract void doRun(Finished finished);
+    public T getRpcResponse() {
+        return response;
+    }
+
 }

@@ -18,25 +18,25 @@
 package com.trs.pacifica.rpc.internal;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.Replica;
 import com.trs.pacifica.ReplicaManager;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.ReplicaService;
 import com.trs.pacifica.rpc.RpcRequestHandler;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 
 public abstract class InternalRpcRequestHandler<Req extends Message, Rep extends Message> extends RpcRequestHandler<Req, Rep> {
 
     private final ReplicaManager replicaManager;
 
-    protected InternalRpcRequestHandler(ReplicaManager replicaManager) {
+    protected InternalRpcRequestHandler(ReplicaManager replicaManager, Rep defaultMessage) {
+        super(defaultMessage);
         this.replicaManager = replicaManager;
     }
 
     @Override
-    protected Rep asyncHandleRequest(Req request, RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException {
+    protected Rep asyncHandleRequest(Req request, RpcRequestFinished<Rep> rpcRequestFinished) throws PacificaException {
         final ReplicaId replicaId = parseReplicaId(request);
         if (replicaId == null) {
             throw new PacificaException(PacificaErrorCode.INTERNAL, "can not parse replica id");
@@ -45,10 +45,10 @@ public abstract class InternalRpcRequestHandler<Req extends Message, Rep extends
         if (replicaService == null) {
             throw new PacificaException(PacificaErrorCode.INTERNAL, String.format("can not found replica service, replica_id=%s", replicaId));
         }
-        return asyncHandleRequest(replicaService, request, rpcResponseCallback);
+        return asyncHandleRequest(replicaService, request, rpcRequestFinished);
     }
 
-    protected abstract Rep asyncHandleRequest(ReplicaService replicaService, Req request, RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException;
+    protected abstract Rep asyncHandleRequest(ReplicaService replicaService, Req request, RpcRequestFinished<Rep> rpcRequestFinished) throws PacificaException;
 
 
     protected abstract ReplicaId parseReplicaId(Req request);

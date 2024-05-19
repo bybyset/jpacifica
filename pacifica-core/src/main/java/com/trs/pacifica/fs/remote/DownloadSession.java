@@ -22,7 +22,7 @@ import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.Task;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.ExecutorResponseCallback;
+import com.trs.pacifica.rpc.ExecutorRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.util.RpcUtil;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public abstract class DownloadSession implements Task {
                 .setOffset(offset)//
                 .setLength(readLength)//
                 .build();
-        pacificaClient.getFile(request, new ExecutorResponseCallback<RpcRequest.GetFileResponse>() {
+        pacificaClient.getFile(request, new ExecutorRequestFinished<RpcRequest.GetFileResponse>() {
             @Override
             protected void doRun(Finished finished) {
                 if (finished.isOk()) {

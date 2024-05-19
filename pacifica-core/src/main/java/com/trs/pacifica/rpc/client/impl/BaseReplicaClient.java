@@ -17,17 +17,20 @@
 
 package com.trs.pacifica.rpc.client.impl;
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.error.NotFoundEndpointException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.ReplicaId;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.InvokeCallback;
 import com.trs.pacifica.rpc.client.ReplicaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.Endpoint;
+import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +88,7 @@ public abstract class BaseReplicaClient implements ReplicaClient {
 
 
     @Override
-    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcResponseCallback<T> callback, final int timeoutMs, final Executor callbackExecutor) {
+    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor) {
         final FutureImpl<Message> future = new FutureImpl<>();
         try {
             this.rpcClient.invokeAsync(endpoint, request, new InvokeCallback() {
@@ -137,7 +140,11 @@ public abstract class BaseReplicaClient implements ReplicaClient {
     }
 
     private void checkResponse(Message response) throws PacificaException {
-
+        final Descriptors.FieldDescriptor errorFd = RpcUtil.findErrorFieldDescriptor(response);
+        if (errorFd != null && response.hasField(errorFd)) {
+            final RpcRequest.ErrorResponse errorResponse = (RpcRequest.ErrorResponse) response.getField(errorFd);
+            throw RpcUtil.toPacificaException(errorResponse);
+        }
     }
 
     /**

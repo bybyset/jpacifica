@@ -24,7 +24,7 @@ import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileReader;
 import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class DefaultFileService implements FileService {
     }
 
     @Override
-    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback) {
+    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback) {
 
         try {
             if (request.getOffset() < 0 || request.getLength() <= 0) {

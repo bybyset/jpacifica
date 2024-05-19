@@ -18,9 +18,14 @@
 package com.trs.pacifica.util;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcCommon;
+import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.snapshot.ProtoSnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotMeta;
 
@@ -31,6 +36,14 @@ public class RpcUtil {
 
     private RpcUtil() {
 
+    }
+
+    public static final String ERROR_FIELD_NAME = "error";
+
+    public static Descriptors.FieldDescriptor findErrorFieldDescriptor(final Message message) {
+        return message //
+                .getDescriptorForType() //
+                .findFieldByName(ERROR_FIELD_NAME);
     }
 
     public static ReplicaId toReplicaId(RpcCommon.ReplicaId replicaId) {
@@ -106,9 +119,9 @@ public class RpcUtil {
 
     public static RpcCommon.SnapshotMeta protoSnapshotMeta(final SnapshotMeta snapshotMeta) {
         List<RpcCommon.Attribute> attributes = new ArrayList<>();
-        final Map<String, String>  userData = snapshotMeta.getUserData();
+        final Map<String, String> userData = snapshotMeta.getUserData();
         if (userData != null && userData.isEmpty()) {
-            userData.forEach( (key, value) -> {
+            userData.forEach((key, value) -> {
                 attributes.add(RpcCommon.Attribute.newBuilder()//
                         .setKey(key)//
                         .setValue(value)//
@@ -128,4 +141,17 @@ public class RpcUtil {
     }
 
 
+    public static RpcRequest.ErrorResponse toErrorResponse(final PacificaException pacificaException) {
+        return RpcRequest.ErrorResponse//
+                .newBuilder()//
+                .setCode(pacificaException.getCode().getCode())//
+                .setMessage(pacificaException.getMessage())//
+                .build();
+    }
+
+    public static PacificaException toPacificaException(final RpcRequest.ErrorResponse errorResponse) {
+        final int code = errorResponse.getCode();
+        final String msg = errorResponse.getMessage();
+        return new PacificaException(PacificaErrorCode.fromCode(code), msg);
+    }
 }

@@ -18,7 +18,7 @@
 package com.trs.pacifica.fs;
 
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 
 public interface FileService {
 
@@ -28,7 +28,7 @@ public interface FileService {
 
     public boolean removeFileReader(final long readerId);
 
-    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback);
+    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback);
 
 
 }

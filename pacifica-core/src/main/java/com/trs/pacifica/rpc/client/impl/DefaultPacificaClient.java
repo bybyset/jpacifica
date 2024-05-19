@@ -20,7 +20,7 @@ package com.trs.pacifica.rpc.client.impl;
 import com.google.protobuf.Message;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.Endpoint;
@@ -39,22 +39,22 @@ public class DefaultPacificaClient extends BaseReplicaClient implements Pacifica
     }
 
     @Override
-    public Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> callback, int timeoutMs) {
+    public Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback, int timeoutMs) {
         return null;
     }
 
     @Override
-    public Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcResponseCallback<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs) {
+    public Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs) {
         return null;
     }
 
     @Override
-    public Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcResponseCallback<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs) {
+    public Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs) {
         return null;
     }
 
     @Override
-    public Message getFile(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback, long timeoutMs) {
+    public Message getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback, long timeoutMs) {
         return null;
     }
 

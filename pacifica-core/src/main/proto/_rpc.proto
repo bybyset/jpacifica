@@ -5,7 +5,10 @@ import "_common.proto";
 option java_package = "com.trs.pacifica.proto";
 option java_outer_classname = "RpcRequest";
 
-
+message ErrorResponse {
+  optional int32 code = 1;
+  optional string message = 2;
+}
 
 message AppendEntriesRequest {
   optional ReplicaId primary_id = 1;
@@ -20,11 +23,12 @@ message AppendEntriesRequest {
 }
 
 message AppendEntriesResponse {
-  optional bool success = 1;
-  optional int64 term = 2;
-  optional int64 version = 3;
-  optional int64 commit_point = 4;
-  optional int64 last_log_index = 5;
+  optional ErrorResponse error = 1;
+  optional bool success = 2;
+  optional int64 term = 3;
+  optional int64 version = 4;
+  optional int64 commit_point = 5;
+  optional int64 last_log_index = 6;
 }
 
 message ReplicaRecoverRequest {
@@ -34,9 +38,10 @@ message ReplicaRecoverRequest {
 }
 
 message ReplicaRecoverResponse {
-  optional bool success = 1;
-  optional int64 term = 2;
-  optional int64 version = 3;
+  optional ErrorResponse error = 1;
+  optional bool success = 2;
+  optional int64 term = 3;
+  optional int64 version = 4;
 }
 
 
@@ -51,9 +56,10 @@ message InstallSnapshotRequest {
 }
 
 message InstallSnapshotResponse {
-  optional bool success = 1;
-  optional int64 term = 2;
-  optional int64 version = 3;
+  optional ErrorResponse error = 1;
+  optional bool success = 2;
+  optional int64 term = 3;
+  optional int64 version = 4;
 }
 
 message GetFileRequest {
@@ -65,7 +71,8 @@ message GetFileRequest {
 }
 
 message GetFileResponse {
-  optional bool eof = 1;
-  optional bytes data = 2;
-  optional int64 read_length = 3;
+  optional ErrorResponse error = 1;
+  optional bool eof = 2;
+  optional bytes data = 3;
+  optional int64 read_length = 4;
 }

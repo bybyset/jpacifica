@@ -18,23 +18,9 @@
 package com.trs.pacifica.rpc;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.async.Finished;
+import com.trs.pacifica.async.Callback;
 
-public class SendOnceRpcResponseCallback<T extends Message> implements RpcResponseCallback<T>{
-
-    private final RpcContext rpcContext;
-
-    public SendOnceRpcResponseCallback(RpcContext rpcContext) {
-        this.rpcContext = rpcContext;
-    }
-
-    @Override
-    public void run(Finished finished) {
-
-    }
-
-    @Override
-    public void setRpcResponse(Message response) {
-
-    }
+public interface RpcRequestFinished<T extends Message> extends Callback {
+    void setRpcResponse(T response);
+    
 }
