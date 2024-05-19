@@ -22,6 +22,8 @@ import com.trs.pacifica.PacificaServiceFactory;
 import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.rpc.client.RpcClient;
+import com.trs.pacifica.rpc.node.NodeManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -78,8 +80,6 @@ public class ReplicaOption {
 
     private ConfigurationClient configurationClient;
 
-    private PacificaClient pacificaClient;
-
     private ExecutorGroup applyExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
     private ExecutorGroup logManagerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
@@ -89,6 +89,10 @@ public class ReplicaOption {
     private boolean enableLogEntryChecksum = DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM;
 
     private StateMachine stateMachine;
+
+    private NodeManager nodeManager;
+
+    private RpcClient rpcClient;
 
 
     /**
@@ -134,14 +138,6 @@ public class ReplicaOption {
 
     public void setConfigurationClient(ConfigurationClient configurationClient) {
         this.configurationClient = configurationClient;
-    }
-
-    public PacificaClient getPacificaClient() {
-        return pacificaClient;
-    }
-
-    public void setPacificaClient(PacificaClient pacificaClient) {
-        this.pacificaClient = pacificaClient;
     }
 
     public PacificaServiceFactory getPacificaServiceFactory() {
@@ -222,5 +218,21 @@ public class ReplicaOption {
 
     public void setSnapshotLogIndexMargin(int snapshotLogIndexMargin) {
         this.snapshotLogIndexMargin = snapshotLogIndexMargin;
+    }
+
+    public NodeManager getNodeManager() {
+        return nodeManager;
+    }
+
+    public void setNodeManager(NodeManager nodeManager) {
+        this.nodeManager = nodeManager;
+    }
+
+    public RpcClient getRpcClient() {
+        return rpcClient;
+    }
+
+    public void setRpcClient(RpcClient rpcClient) {
+        this.rpcClient = rpcClient;
     }
 }

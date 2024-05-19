@@ -23,6 +23,7 @@ import com.trs.pacifica.rpc.RpcFactory;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.Endpoint;
+import com.trs.pacifica.spi.SPI;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.grpc.protobuf.ProtoUtils;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SPI
 public class GrpcFactory implements RpcFactory {
 
     public static final String FIXED_METHOD_NAME = "_call";

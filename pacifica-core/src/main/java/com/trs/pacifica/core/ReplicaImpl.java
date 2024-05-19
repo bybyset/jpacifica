@@ -33,6 +33,9 @@ import com.trs.pacifica.rpc.ExecutorRequestFinished;
 import com.trs.pacifica.rpc.ReplicaService;
 import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.rpc.client.RpcClient;
+import com.trs.pacifica.rpc.client.impl.DefaultPacificaClient;
+import com.trs.pacifica.rpc.node.NodeManager;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
@@ -77,6 +80,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private ConfigurationClient configurationClient;
 
+    private RpcClient rpcClient;
+    private NodeManager nodeManager;
     private PacificaClient pacificaClient;
 
 
@@ -125,7 +130,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         logManagerOption.setLogManagerExecutor(logExecutorGroup.chooseExecutor());
         logManagerOption.setStateMachineCaller(this.stateMachineCaller);
         this.logManager.init(logManagerOption);
-
     }
 
     private void initSnapshotManager(ReplicaOption option) {
@@ -135,7 +139,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void initSenderGroup(ReplicaOption option) {
-
         final SenderGroupImpl.Option senderGroupOption = new SenderGroupImpl.Option();
         senderGroupOption.setLogManager(Objects.requireNonNull(this.logManager));
         senderGroupOption.setStateMachineCaller(Objects.requireNonNull(stateMachineCaller));
@@ -163,6 +166,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         fsmOption.setExecutor(Objects.requireNonNull(fsmExecutorGroup.chooseExecutor(), "fsm executor"));
         fsmOption.setCallbackPendingQueue(this.callbackPendingQueue);
         this.stateMachineCaller.init(fsmOption);
+    }
+
+    private void initPacificaClient(ReplicaOption option) {
+        this.rpcClient = Objects.requireNonNull(option.getRpcClient(), "rpcClient");
+        this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.nodeManager);
     }
 
     private void initRepeatedTimers(ReplicaOption option) {
@@ -207,13 +215,13 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.replicaGroup = new CacheReplicaGroup(() -> {
                     return this.configurationClient.getReplicaGroup(this.replicaId.getGroupName());
                 });
-                this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
+                this.nodeManager = Objects.requireNonNull(option.getNodeManager(), "nodeManager");
                 this.logManager = new LogManagerImpl(this);
                 this.snapshotManager = new SnapshotManagerImpl(this);
                 this.stateMachineCaller = new StateMachineCallerImpl(this);
                 this.senderGroup = new SenderGroupImpl(this, this.pacificaClient);
                 this.ballotBox = new BallotBoxImpl();
-
+                initPacificaClient(option);
                 initApplyExecutor(option);
                 initLogManager(option);
                 initStateMachineCall(option);
