@@ -18,7 +18,6 @@
 package com.trs.pacifica.rpc.client.impl;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.error.NotFoundEndpointException;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcResponseCallback;
@@ -27,43 +26,16 @@ import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.Endpoint;
 import com.trs.pacifica.rpc.node.NodeManager;
 
-import java.util.Objects;
-
 /**
  *
  */
-public class ReplicaClient implements PacificaClient {
-
-    private final RpcClient rpcClient;
+public class DefaultPacificaClient extends BaseReplicaClient implements PacificaClient {
 
     private final NodeManager nodeManager;
 
-    public ReplicaClient(RpcClient rpcClient, NodeManager nodeManager) {
-        this.rpcClient = rpcClient;
+    public DefaultPacificaClient(RpcClient rpcClient, NodeManager nodeManager) {
+        super(rpcClient);
         this.nodeManager = nodeManager;
-    }
-
-
-    @Override
-    public boolean connect(ReplicaId targetReplicaId) {
-        return true;
-    }
-
-    @Override
-    public boolean disconnect(ReplicaId targetReplicaId) {
-        return true;
-    }
-
-    @Override
-    public boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent) {
-        Objects.requireNonNull(targetReplicaId, "targetReplicaId");
-        final String nodeId = targetReplicaId.getNodeId();
-        Objects.requireNonNull(nodeId, "targetReplicaId.nodeId");
-        final Endpoint endpoint = nodeManager.getEndpoint(targetReplicaId.getNodeId());
-        if (endpoint == null) {
-            throw new NotFoundEndpointException(String.format("not found address of nodeId=%s", nodeId));
-        }
-        return rpcClient.checkConnection(endpoint, createIfAbsent);
     }
 
     @Override
@@ -84,5 +56,11 @@ public class ReplicaClient implements PacificaClient {
     @Override
     public Message getFile(RpcRequest.GetFileRequest request, RpcResponseCallback<RpcRequest.GetFileResponse> callback, long timeoutMs) {
         return null;
+    }
+
+    @Override
+    protected Endpoint getEndpoint(ReplicaId targetReplicaId) {
+        final String nodeId = targetReplicaId.getNodeId();
+        return  nodeManager.getEndpoint(nodeId);
     }
 }

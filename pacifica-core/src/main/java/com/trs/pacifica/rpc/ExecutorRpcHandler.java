@@ -17,28 +17,39 @@
 
 package com.trs.pacifica.rpc;
 
+import com.trs.pacifica.async.DirectExecutor;
 import com.trs.pacifica.error.PacificaException;
 
 import java.util.concurrent.Executor;
 
-public class ExecutorRpcHandler<Req, Rep> extends FilterRpcHandler<Req, Rep>{
+public class ExecutorRpcHandler<Req, Rep> extends FilterRpcHandler<Req, Rep> {
 
-
+    static final Executor DEFAULT_EXECUTOR = new DirectExecutor();
     private final Executor executor;
-    protected ExecutorRpcHandler(RpcHandler<Req, Rep> delegate, Executor executor) {
+
+    ExecutorRpcHandler(RpcHandler<Req, Rep> delegate, Executor executor) {
         super(delegate);
-        this.executor = executor;
+        this.executor = executor == null ? DEFAULT_EXECUTOR : executor;
+    }
+
+    ExecutorRpcHandler(RpcHandler<Req, Rep> delegate) {
+        this(delegate, delegate.executor());
     }
 
     @Override
     public void handleRequest(RpcContext<Rep> rpcContext, Req request) {
         executor.execute(() -> {
+            ExecutorRpcHandler.super.handleRequest(rpcContext, request);
         });
-
     }
 
     @Override
     public Executor executor() {
-        return null;
+        return executor;
+    }
+
+
+    public static <Req, Rep> ExecutorRpcHandler<Req, Rep> wrap(RpcHandler<Req, Rep> delegate) {
+        return new ExecutorRpcHandler<>(delegate);
     }
 }

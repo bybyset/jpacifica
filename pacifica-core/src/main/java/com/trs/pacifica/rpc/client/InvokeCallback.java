@@ -17,13 +17,20 @@
 
 package com.trs.pacifica.rpc.client;
 
+import com.trs.pacifica.util.thread.ThreadUtil;
+
 import java.util.concurrent.Executor;
 
 public interface InvokeCallback {
 
+    /**
+     * callback on rpc client receive response
+     * @param result
+     * @param err
+     */
     void complete(final Object result, final Throwable err);
 
     default Executor executor() {
-        return null;
+        return ThreadUtil._CALLBACK_EXECUTOR;
     }
 }

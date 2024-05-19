@@ -36,7 +36,7 @@ public abstract class InternalRpcRequestHandler<Req extends Message, Rep extends
     }
 
     @Override
-    protected Message asyncHandleRequest(Req request, RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException {
+    protected Rep asyncHandleRequest(Req request, RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException {
         final ReplicaId replicaId = parseReplicaId(request);
         if (replicaId == null) {
             throw new PacificaException(PacificaErrorCode.INTERNAL, "can not parse replica id");
@@ -48,7 +48,7 @@ public abstract class InternalRpcRequestHandler<Req extends Message, Rep extends
         return asyncHandleRequest(replicaService, request, rpcResponseCallback);
     }
 
-    protected abstract Message asyncHandleRequest(ReplicaService replicaService, Req request, RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException;
+    protected abstract Rep asyncHandleRequest(ReplicaService replicaService, Req request, RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException;
 
 
     protected abstract ReplicaId parseReplicaId(Req request);

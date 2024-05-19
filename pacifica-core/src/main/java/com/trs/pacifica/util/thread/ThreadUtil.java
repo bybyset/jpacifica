@@ -44,7 +44,7 @@ public class ThreadUtil {
      */
     public static final int MAX_CALLBACK_THREAD_NUM = SystemPropertyUtil.getInt("pacifica.callback.thread.num.max", Math.max(32, SystemConstants.CPUS * 5));
 
-    static final ThreadPoolExecutor _CALLBACK_EXECUTOR = ThreadPoolUtil.newBuilder()//
+    public static final ThreadPoolExecutor _CALLBACK_EXECUTOR = ThreadPoolUtil.newBuilder()//
             .poolName("pacifica-callback-executor")//
             .enableMetric(true)//
             .coreThreads(MIN_CALLBACK_THREAD_NUM)//

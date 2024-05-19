@@ -17,32 +17,48 @@
 
 package com.trs.pacifica.rpc.client;
 
+import com.google.protobuf.Message;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.RpcResponseCallback;
+import com.trs.pacifica.rpc.node.Endpoint;
 
-public interface ReplicaConnection {
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+
+public interface ReplicaClient {
 
     /**
      * connect to targetReplicaId
+     *
      * @param targetReplicaId
      * @return true if success
      */
-    public boolean connect(ReplicaId targetReplicaId);
+    default boolean connect(ReplicaId targetReplicaId) {
+        return checkConnection(targetReplicaId, true);
+    }
 
-    /**
-     * disconnect to targetReplicaId
-     * @param targetReplicaId
-     * @return true if success
-     */
-    public boolean disconnect(ReplicaId targetReplicaId);
 
     /**
      * Check the connection for the given targetReplicaId,
      * and if there is no connection, create a new address.
+     *
      * @param targetReplicaId
      * @param createIfAbsent
      * @return true if keep connected
      */
-    public boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent);
+    boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent);
 
+
+    /**
+     *
+     * @param endpoint
+     * @param request
+     * @param callback
+     * @param timeoutMs
+     * @param callbackExecutor
+     * @return
+     * @param <T>
+     */
+    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcResponseCallback<T> callback, final int timeoutMs, final Executor callbackExecutor);
 
 }

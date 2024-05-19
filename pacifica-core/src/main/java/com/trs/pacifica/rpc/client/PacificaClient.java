@@ -21,7 +21,7 @@ import com.google.protobuf.Message;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcResponseCallback;
 
-public interface PacificaClient extends ReplicaConnection {
+public interface PacificaClient extends ReplicaClient {
 
 
     static final int DEFAULT_TIMEOUT_MS = 60 * 1000;

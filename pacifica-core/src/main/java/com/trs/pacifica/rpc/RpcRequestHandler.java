@@ -27,38 +27,20 @@ import java.util.concurrent.Executor;
 
 public abstract class RpcRequestHandler<Req extends Message, Rep extends Message> implements RpcHandler<Req, Rep> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RpcRequestHandler.class);
-
-
     @Override
     public void handleRequest(RpcContext<Rep> rpcContext, Req request) {
-
-        final Executor executor = this.getExecutor();
-
-    }
-
-    private void handleRequestImpl(RpcContext rpcContext, Req request) {
-
         try {
             final RpcResponseCallback<Rep> callback = new SendOnceRpcResponseCallback(rpcContext);
-            final Message response = asyncHandleRequest(request, callback);
+            final Rep response = asyncHandleRequest(request, callback);
             if (response != null) {
                 rpcContext.sendResponse(response);
             }
         } catch (PacificaException e) {
+            //TODO
 
         }
-
     }
 
+    protected abstract Rep asyncHandleRequest(final Req request, final RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException;
 
-    protected abstract Message asyncHandleRequest(final Req request, final RpcResponseCallback<Rep> rpcResponseCallback) throws PacificaException;
-
-
-    protected Executor getExecutor() {
-        Executor executor = this.executor();
-        if (executor == null) {
-            return new DirectExecutor();
-        }
-        return executor;
-    }
 }

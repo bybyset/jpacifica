@@ -20,6 +20,7 @@ package com.trs.pacifica.rpc.impl.grpc;
 import com.google.protobuf.Message;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.rpc.ExecutorRpcHandler;
 import com.trs.pacifica.rpc.RpcContext;
 import com.trs.pacifica.rpc.RpcHandler;
 import com.trs.pacifica.rpc.RpcServer;
@@ -116,6 +117,7 @@ public class GrpcServer implements RpcServer {
     public void registerRpcHandler(RpcHandler rpcHandler) {
         final String requestClzName = rpcHandler.interest();
         Objects.requireNonNull(requestClzName, "rpcHandler.interest()");
+        final ExecutorRpcHandler executorRpcHandler = ExecutorRpcHandler.wrap(rpcHandler);
         //method
         final MethodDescriptor<Message, Message> method = MethodDescriptor //
                 .<Message, Message>newBuilder() //
@@ -129,7 +131,7 @@ public class GrpcServer implements RpcServer {
                 (request, responseObserver) -> {
                     final RpcContext<Message> rpcContext = getRpcContext(responseObserver);
                     try {
-                        rpcHandler.handleRequest(rpcContext, request);
+                        executorRpcHandler.handleRequest(rpcContext, request);
                     } catch (Throwable e) {
                         LOGGER.error("failed to handle request={}.", request.getClass().getSimpleName(), e);
                         Status status = Status//

@@ -33,12 +33,17 @@ public class AppendEntriesRequestHandler extends InternalRpcRequestHandler<RpcRe
     }
 
     @Override
-    protected Message asyncHandleRequest(ReplicaService replicaService, RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcResponseCallback) throws PacificaException {
+    protected RpcRequest.AppendEntriesResponse asyncHandleRequest(ReplicaService replicaService, RpcRequest.AppendEntriesRequest request, RpcResponseCallback<RpcRequest.AppendEntriesResponse> rpcResponseCallback) throws PacificaException {
         return replicaService.handleAppendLogEntryRequest(request, rpcResponseCallback);
     }
 
     @Override
     protected ReplicaId parseReplicaId(RpcRequest.AppendEntriesRequest request) {
         return RpcUtil.toReplicaId(request.getTargetId());
+    }
+
+    @Override
+    public String interest() {
+        return RpcRequest.AppendEntriesRequest.class.getName();
     }
 }
