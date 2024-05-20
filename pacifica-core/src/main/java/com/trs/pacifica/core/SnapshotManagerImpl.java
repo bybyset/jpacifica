@@ -70,7 +70,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
-    public void init(Option option) {
+    public void init(Option option) throws PacificaException{
         this.writeLock.lock();
         try {
             if (this.state == State.UNINITIALIZED) {

@@ -15,26 +15,32 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.error;
+package com.trs.pacifica.log.codec;
 
-public class PacificaLogEntryException extends RuntimeException {
+import com.trs.pacifica.rpc.RpcFactoryHolder;
+import com.trs.pacifica.spi.JPacificaServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    public PacificaLogEntryException() {
+public class LogEntryCodecFactoryHolder {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RpcFactoryHolder.class);
+
+    private static final LogEntryCodecFactory LOG_ENTRY_CODEC_FACTORY;
+
+    static {
+        LOG_ENTRY_CODEC_FACTORY = JPacificaServiceLoader//
+                .load(LogEntryCodecFactory.class)//
+                .first();
+        LOGGER.info("use LogEntryCodecFactory={}", LOG_ENTRY_CODEC_FACTORY.getClass().getName());
     }
 
-    public PacificaLogEntryException(String message) {
-        super(message);
+    private LogEntryCodecFactoryHolder() {
     }
 
-    public PacificaLogEntryException(String message, Throwable cause) {
-        super(message, cause);
+    public static LogEntryCodecFactory getInstance() {
+        return LOG_ENTRY_CODEC_FACTORY;
     }
 
-    public PacificaLogEntryException(Throwable cause) {
-        super(cause);
-    }
 
-    public PacificaLogEntryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

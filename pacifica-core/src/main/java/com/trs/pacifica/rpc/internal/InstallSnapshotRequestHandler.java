@@ -26,7 +26,7 @@ import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.util.RpcUtil;
 
 public class InstallSnapshotRequestHandler extends InternalRpcRequestHandler<RpcRequest.InstallSnapshotRequest, RpcRequest.InstallSnapshotResponse>{
-    protected InstallSnapshotRequestHandler(ReplicaManager replicaManager) {
+    public InstallSnapshotRequestHandler(ReplicaManager replicaManager) {
         super(replicaManager, RpcRequest.InstallSnapshotResponse.getDefaultInstance());
     }
 

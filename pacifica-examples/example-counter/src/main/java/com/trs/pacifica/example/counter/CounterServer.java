@@ -15,26 +15,11 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.error;
+package com.trs.pacifica.example.counter;
 
-public class PacificaLogEntryException extends RuntimeException {
+public class CounterServer {
 
-    public PacificaLogEntryException() {
-    }
 
-    public PacificaLogEntryException(String message) {
-        super(message);
-    }
 
-    public PacificaLogEntryException(String message, Throwable cause) {
-        super(message, cause);
-    }
 
-    public PacificaLogEntryException(Throwable cause) {
-        super(cause);
-    }
-
-    public PacificaLogEntryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

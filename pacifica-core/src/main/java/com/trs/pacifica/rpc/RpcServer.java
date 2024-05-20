@@ -17,41 +17,36 @@
 
 package com.trs.pacifica.rpc;
 
-import com.google.protobuf.Message;
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.rpc.client.RpcClient;
+import com.trs.pacifica.ReplicaManager;
+import com.trs.pacifica.rpc.internal.*;
+import com.trs.pacifica.rpc.node.Endpoint;
+import com.trs.pacifica.util.SystemPropertyUtil;
 
-public interface RpcServer extends LifeCycle<RpcServer.Option> {
+import java.util.Objects;
 
+public interface RpcServer {
+
+    static final int DEFAULT_RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE = 32 * 1024 * 1024;
+    static final int RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE = SystemPropertyUtil.getInt(
+            "jpacifica.grpc.max.inbound.message.size.bytes", DEFAULT_RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE);
 
     void registerRpcHandler(final RpcHandler<?, ?> rpcHandler);
 
 
-    public static final int DEFAULT_MAX_INBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
+    public static RpcServer createPacificaRpcServer(final Endpoint endpoint, final ReplicaManager replicaManager) {
+        final RpcServer rpcServer = RpcFactoryHolder.getInstance().createRpcServer(endpoint);
+        addPacificaRequestHandlers(rpcServer, replicaManager);
+        return rpcServer;
+    }
 
-    public static final int DEFAULT_MAX_OUTBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
-
-    public static class Option {
-
-        private int maxInboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
-
-        private int maxOutboundMessageSize = DEFAULT_MAX_OUTBOUND_MESSAGE_SIZE;
-
-        public int getMaxInboundMessageSize() {
-            return maxInboundMessageSize;
-        }
-
-        public void setMaxInboundMessageSize(int maxInboundMessageSize) {
-            this.maxInboundMessageSize = maxInboundMessageSize;
-        }
-
-        public int getMaxOutboundMessageSize() {
-            return maxOutboundMessageSize;
-        }
-
-        public void setMaxOutboundMessageSize(int maxOutboundMessageSize) {
-            this.maxOutboundMessageSize = maxOutboundMessageSize;
-        }
+    public static void addPacificaRequestHandlers(final RpcServer rpcServer, final ReplicaManager replicaManager) {
+        Objects.requireNonNull(rpcServer, "rpcServer");
+        Objects.requireNonNull(replicaManager, "replicaManager");
+        rpcServer.registerRpcHandler(new AppendEntriesRequestHandler(replicaManager));
+        rpcServer.registerRpcHandler(new ReplicaRecoverRequestHandler(replicaManager));
+        rpcServer.registerRpcHandler(new InstallSnapshotRequestHandler(replicaManager));
+        rpcServer.registerRpcHandler(new GetFileRequestHandler(replicaManager));
+        rpcServer.registerRpcHandler(new PingReplicaRequestHandler(replicaManager));
     }
 
 

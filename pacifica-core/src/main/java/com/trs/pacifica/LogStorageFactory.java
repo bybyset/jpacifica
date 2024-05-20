@@ -17,8 +17,21 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.log.codec.LogEntryDecoder;
+import com.trs.pacifica.log.codec.LogEntryEncoder;
+
 public interface LogStorageFactory {
 
-    LogStorage newLogStorage(final String path);
+    /**
+     * create LogStorage for path
+     *
+     * @param path
+     * @param logEntryEncoder
+     * @param logEntryDecoder
+     * @return
+     * @throws PacificaException
+     */
+    LogStorage newLogStorage(final String path, final LogEntryEncoder logEntryEncoder, final LogEntryDecoder logEntryDecoder) throws PacificaException;
 
 }

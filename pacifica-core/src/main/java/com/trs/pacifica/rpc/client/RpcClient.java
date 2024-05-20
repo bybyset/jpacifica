@@ -24,7 +24,7 @@ import com.trs.pacifica.rpc.node.Endpoint;
 
 import java.util.concurrent.TimeoutException;
 
-public interface RpcClient extends LifeCycle<RpcClient.Option> {
+public interface RpcClient {
 
 
     /**
@@ -69,38 +69,5 @@ public interface RpcClient extends LifeCycle<RpcClient.Option> {
      * @throws PacificaException
      */
     Object invokeSync(final Endpoint endpoint, final Object request, final long timeoutMs) throws PacificaException;
-
-
-    public static class Option {
-
-        public static final int DEFAULT_MAX_INBOUND_MESSAGE_SIZE = 32 * 1024 * 1024;
-
-        /**
-         *
-         */
-        private int maxInboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
-
-        /**
-         *
-         */
-        private int maxOutboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
-
-        public int getMaxInboundMessageSize() {
-            return maxInboundMessageSize;
-        }
-
-        public void setMaxInboundMessageSize(int maxInboundMessageSize) {
-            this.maxInboundMessageSize = maxInboundMessageSize;
-        }
-
-        public int getMaxOutboundMessageSize() {
-            return maxOutboundMessageSize;
-        }
-
-        public void setMaxOutboundMessageSize(int maxOutboundMessageSize) {
-            this.maxOutboundMessageSize = maxOutboundMessageSize;
-        }
-    }
-
 
 }

@@ -21,7 +21,7 @@ description = 'jpacifica grpc impl'
 
 dependencies {
     api project(':pacifica-core')
-
+    api project(':pacifica-extension:rpc-grpc-impl')
 
 
 }

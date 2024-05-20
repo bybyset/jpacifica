@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.error;
+package com.trs.pacifica.rpc.node;
 
-public class PacificaLogEntryException extends RuntimeException {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-    public PacificaLogEntryException() {
+public class DefaultEndpointFactory implements EndpointFactory {
+
+    private final Map<String, Endpoint> nodeIdToEndpointMap = new ConcurrentHashMap<>();
+
+    @Override
+    public Endpoint getEndpoint(String nodeId) {
+        return nodeIdToEndpointMap.get(nodeId);
     }
 
-    public PacificaLogEntryException(String message) {
-        super(message);
+    public void registerEndpoint(String nodeId, Endpoint endpoint) {
+        this.nodeIdToEndpointMap.put(nodeId, endpoint);
     }
 
-    public PacificaLogEntryException(String message, Throwable cause) {
-        super(message, cause);
-    }
 
-    public PacificaLogEntryException(Throwable cause) {
-        super(cause);
-    }
-
-    public PacificaLogEntryException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

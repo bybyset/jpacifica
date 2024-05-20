@@ -65,8 +65,20 @@ public abstract class BaseReplicaClient implements ReplicaClient {
             return false;
         }
         //3. send PingRequest
+        return pingReplica(endpoint, targetReplicaId);
+    }
 
-        return true;
+    protected boolean pingReplica(Endpoint endpoint, final ReplicaId targetReplicaId) {
+        final RpcRequest.PingReplicaRequest pingReplicaRequest = RpcRequest.PingReplicaRequest//
+                .newBuilder()//
+                .setTargetId(RpcUtil.protoReplicaId(targetReplicaId))//
+                .build();
+        try {
+            this.rpcClient.invokeSync(endpoint, pingReplicaRequest, 60 * 1000);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 

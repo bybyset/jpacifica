@@ -76,3 +76,12 @@ message GetFileResponse {
   optional bytes data = 3;
   optional int64 read_length = 4;
 }
+
+message PingReplicaRequest {
+  optional ReplicaId target_id = 1;
+}
+
+message PingReplicaResponse {
+  optional ErrorResponse error = 1;
+  optional bool success = 2;
+}

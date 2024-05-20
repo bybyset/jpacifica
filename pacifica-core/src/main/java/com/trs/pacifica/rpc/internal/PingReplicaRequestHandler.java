@@ -25,23 +25,24 @@ import com.trs.pacifica.rpc.ReplicaService;
 import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.util.RpcUtil;
 
-public class ReplicaRecoverRequestHandler extends InternalRpcRequestHandler<RpcRequest.ReplicaRecoverRequest, RpcRequest.ReplicaRecoverResponse>{
-    public ReplicaRecoverRequestHandler(ReplicaManager replicaManager) {
-        super(replicaManager, RpcRequest.ReplicaRecoverResponse.getDefaultInstance());
+public class PingReplicaRequestHandler extends InternalRpcRequestHandler<RpcRequest.PingReplicaRequest, RpcRequest.PingReplicaResponse> {
+
+    public PingReplicaRequestHandler(ReplicaManager replicaManager) {
+        super(replicaManager, RpcRequest.PingReplicaResponse.getDefaultInstance());
     }
 
     @Override
     public String interest() {
-        return RpcRequest.ReplicaRecoverRequest.class.getName();
+        return RpcRequest.PingReplicaRequest.class.getName();
     }
 
     @Override
-    protected RpcRequest.ReplicaRecoverResponse asyncHandleRequest(ReplicaService replicaService, RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> rpcRequestFinished) throws PacificaException {
-        return replicaService.handleReplicaRecoverRequest(request, rpcRequestFinished);
+    protected RpcRequest.PingReplicaResponse asyncHandleRequest(ReplicaService replicaService, RpcRequest.PingReplicaRequest request, RpcRequestFinished<RpcRequest.PingReplicaResponse> rpcRequestFinished) throws PacificaException {
+        return RpcRequest.PingReplicaResponse.newBuilder().setSuccess(true).build();
     }
 
     @Override
-    protected ReplicaId parseReplicaId(RpcRequest.ReplicaRecoverRequest request) {
-        return RpcUtil.toReplicaId(request.getPrimaryId());
+    protected ReplicaId parseReplicaId(RpcRequest.PingReplicaRequest request) {
+        return RpcUtil.toReplicaId(request.getTargetId());
     }
 }

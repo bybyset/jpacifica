@@ -21,9 +21,10 @@ import com.trs.pacifica.ConfigurationClient;
 import com.trs.pacifica.PacificaServiceFactory;
 import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.thread.ExecutorGroup;
-import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.log.codec.LogEntryCodecFactory;
+import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;
-import com.trs.pacifica.rpc.node.NodeManager;
+import com.trs.pacifica.rpc.node.EndpointFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -90,9 +91,11 @@ public class ReplicaOption {
 
     private StateMachine stateMachine;
 
-    private NodeManager nodeManager;
+    private EndpointFactory endpointFactory;
 
     private RpcClient rpcClient;
+
+    private LogEntryCodecFactory logEntryCodecFactory = LogEntryCodecFactoryHolder.getInstance();
 
 
     /**
@@ -220,12 +223,12 @@ public class ReplicaOption {
         this.snapshotLogIndexMargin = snapshotLogIndexMargin;
     }
 
-    public NodeManager getNodeManager() {
-        return nodeManager;
+    public EndpointFactory getEndpointFactory() {
+        return endpointFactory;
     }
 
-    public void setNodeManager(NodeManager nodeManager) {
-        this.nodeManager = nodeManager;
+    public void setEndpointFactory(EndpointFactory endpointFactory) {
+        this.endpointFactory = endpointFactory;
     }
 
     public RpcClient getRpcClient() {
@@ -234,5 +237,13 @@ public class ReplicaOption {
 
     public void setRpcClient(RpcClient rpcClient) {
         this.rpcClient = rpcClient;
+    }
+
+    public LogEntryCodecFactory getLogEntryCodecFactory() {
+        return logEntryCodecFactory;
+    }
+
+    public void setLogEntryCodecFactory(LogEntryCodecFactory logEntryCodecFactory) {
+        this.logEntryCodecFactory = logEntryCodecFactory;
     }
 }

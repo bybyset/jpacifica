@@ -27,6 +27,7 @@ import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
+import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.ExecutorRequestFinished;
@@ -35,7 +36,7 @@ import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.client.impl.DefaultPacificaClient;
-import com.trs.pacifica.rpc.node.NodeManager;
+import com.trs.pacifica.rpc.node.EndpointFactory;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
@@ -81,7 +82,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     private ConfigurationClient configurationClient;
 
     private RpcClient rpcClient;
-    private NodeManager nodeManager;
+    private EndpointFactory endpointFactory;
     private PacificaClient pacificaClient;
 
 
@@ -119,26 +120,28 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
 
-    private void initLogManager(ReplicaOption option) {
+    private void initLogManager(ReplicaOption option) throws PacificaException {
         final ExecutorGroup logExecutorGroup = Objects.requireNonNull(option.getLogManagerExecutorGroup(), "LogManagerExecutorGroup");
         final PacificaServiceFactory pacificaServiceFactory = Objects.requireNonNull(option.getPacificaServiceFactory(), "pacificaServiceFactory");
         final String logStoragePath = Objects.requireNonNull(option.getLogStoragePath(), "logStoragePath");
         final LogManagerImpl.Option logManagerOption = new LogManagerImpl.Option();
+        final LogEntryCodecFactory logEntryCodecFactory = Objects.requireNonNull(option.getLogEntryCodecFactory(), "logEntryCodecFactory");
         logManagerOption.setReplicaOption(option);
         logManagerOption.setLogStoragePath(logStoragePath);
         logManagerOption.setLogStorageFactory(pacificaServiceFactory);
         logManagerOption.setLogManagerExecutor(logExecutorGroup.chooseExecutor());
         logManagerOption.setStateMachineCaller(this.stateMachineCaller);
+        logManagerOption.setLogEntryCodecFactory(logEntryCodecFactory);
         this.logManager.init(logManagerOption);
     }
 
-    private void initSnapshotManager(ReplicaOption option) {
+    private void initSnapshotManager(ReplicaOption option) throws PacificaException {
         final SnapshotManagerImpl.Option snapshotManagerOption = new SnapshotManagerImpl.Option();
         snapshotManagerOption.setSnapshotStorageFactory(option.getPacificaServiceFactory());
         this.snapshotManager.init(snapshotManagerOption);
     }
 
-    private void initSenderGroup(ReplicaOption option) {
+    private void initSenderGroup(ReplicaOption option) throws PacificaException {
         final SenderGroupImpl.Option senderGroupOption = new SenderGroupImpl.Option();
         senderGroupOption.setLogManager(Objects.requireNonNull(this.logManager));
         senderGroupOption.setStateMachineCaller(Objects.requireNonNull(stateMachineCaller));
@@ -146,18 +149,18 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
 
-    private void initApplyExecutor(ReplicaOption option) {
+    private void initApplyExecutor(ReplicaOption option) throws PacificaException {
         this.executorGroup = Objects.requireNonNull(option.getApplyExecutorGroup(), "executorGroup");
         this.applyExecutor = Objects.requireNonNull(this.executorGroup.chooseExecutor());
     }
 
-    private void initBallotBox(ReplicaOption option) {
+    private void initBallotBox(ReplicaOption option) throws PacificaException {
         final BallotBoxImpl.Option ballotBoxOption = new BallotBoxImpl.Option();
         ballotBoxOption.setFsmCaller(Objects.requireNonNull(this.stateMachineCaller));
         ballotBox.init(ballotBoxOption);
     }
 
-    private void initStateMachineCall(ReplicaOption option) {
+    private void initStateMachineCall(ReplicaOption option) throws PacificaException {
         final StateMachine stateMachine = Objects.requireNonNull(option.getStateMachine(), "state machine");
         final StateMachineCallerImpl.Option fsmOption = new StateMachineCallerImpl.Option();
         fsmOption.setStateMachine(stateMachine);
@@ -168,9 +171,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.stateMachineCaller.init(fsmOption);
     }
 
-    private void initPacificaClient(ReplicaOption option) {
+    private void initPacificaClient(ReplicaOption option) throws PacificaException {
         this.rpcClient = Objects.requireNonNull(option.getRpcClient(), "rpcClient");
-        this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.nodeManager);
+        this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.endpointFactory);
     }
 
     private void initRepeatedTimers(ReplicaOption option) {
@@ -206,7 +209,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public void init(ReplicaOption option) {
+    public void init(ReplicaOption option) throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state == ReplicaState.Uninitialized) {
@@ -215,7 +218,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.replicaGroup = new CacheReplicaGroup(() -> {
                     return this.configurationClient.getReplicaGroup(this.replicaId.getGroupName());
                 });
-                this.nodeManager = Objects.requireNonNull(option.getNodeManager(), "nodeManager");
+                this.endpointFactory = Objects.requireNonNull(option.getEndpointFactory(), "nodeManager");
                 this.logManager = new LogManagerImpl(this);
                 this.snapshotManager = new SnapshotManagerImpl(this);
                 this.stateMachineCaller = new StateMachineCallerImpl(this);
@@ -237,7 +240,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public void startup() {
+    public void startup() throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state == ReplicaState.Shutdown) {
@@ -254,7 +257,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws PacificaException {
         this.writeLock.lock();
         try {
             this.state = ReplicaState.Shutdown;
@@ -963,10 +966,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             //add secondary
 
             //inc ballot
-
-
-
-
 
 
         }

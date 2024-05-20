@@ -18,6 +18,7 @@
 package com.trs.pacifica.rpc.impl.grpc;
 
 import com.google.protobuf.Message;
+import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.log.error.AlreadyClosedException;
@@ -41,7 +42,7 @@ import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GrpcClient implements RpcClient {
+public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpcClient.class);
     private static final int RESET_CONN_THRESHOLD = SystemPropertyUtil.getInt(
             "jpacifica.grpc.max.conn.failures.to_reset", 2);
@@ -106,7 +107,6 @@ public class GrpcClient implements RpcClient {
         final ExecutorInvokeCallback invokeCallback = ExecutorInvokeCallback.wrap(callback);
         final ManagedChannel channel = getChannel(endpoint);
         if (channel == null) {
-            // TODO fail to connect
             invokeCallback.complete(null, new ConnectionException(String.format("The attempt to connect to %s failed", endpoint)));
             return;
         }
@@ -293,4 +293,36 @@ public class GrpcClient implements RpcClient {
     protected MethodDescriptor.Marshaller<Message> getResponseMarshaller(String requestClzName) {
         return this.responseMarshallerManager.getMarshaller(requestClzName);
     }
+
+    public static class Option {
+
+        public static final int DEFAULT_MAX_INBOUND_MESSAGE_SIZE = 32 * 1024 * 1024;
+
+        /**
+         *
+         */
+        private int maxInboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
+
+        /**
+         *
+         */
+        private int maxOutboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
+
+        public int getMaxInboundMessageSize() {
+            return maxInboundMessageSize;
+        }
+
+        public void setMaxInboundMessageSize(int maxInboundMessageSize) {
+            this.maxInboundMessageSize = maxInboundMessageSize;
+        }
+
+        public int getMaxOutboundMessageSize() {
+            return maxOutboundMessageSize;
+        }
+
+        public void setMaxOutboundMessageSize(int maxOutboundMessageSize) {
+            this.maxOutboundMessageSize = maxOutboundMessageSize;
+        }
+    }
+
 }

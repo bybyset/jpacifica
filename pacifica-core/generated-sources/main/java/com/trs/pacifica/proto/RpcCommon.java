@@ -3454,6 +3454,843 @@ public final class RpcCommon {
 
   }
 
+  public interface LogEntryPOOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:jpacifica.LogEntryPO)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 1;</code>
+     * @return Whether the type field is set.
+     */
+    boolean hasType();
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 1;</code>
+     * @return The enum numeric value on the wire for type.
+     */
+    int getTypeValue();
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 1;</code>
+     * @return The type.
+     */
+    com.trs.pacifica.proto.RpcCommon.LogEntryType getType();
+
+    /**
+     * <code>optional int64 log_index = 2;</code>
+     * @return Whether the logIndex field is set.
+     */
+    boolean hasLogIndex();
+    /**
+     * <code>optional int64 log_index = 2;</code>
+     * @return The logIndex.
+     */
+    long getLogIndex();
+
+    /**
+     * <code>optional int64 log_term = 3;</code>
+     * @return Whether the logTerm field is set.
+     */
+    boolean hasLogTerm();
+    /**
+     * <code>optional int64 log_term = 3;</code>
+     * @return The logTerm.
+     */
+    long getLogTerm();
+
+    /**
+     * <code>optional bytes data = 4;</code>
+     * @return Whether the data field is set.
+     */
+    boolean hasData();
+    /**
+     * <code>optional bytes data = 4;</code>
+     * @return The data.
+     */
+    com.google.protobuf.ByteString getData();
+  }
+  /**
+   * Protobuf type {@code jpacifica.LogEntryPO}
+   */
+  public static final class LogEntryPO extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:jpacifica.LogEntryPO)
+      LogEntryPOOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use LogEntryPO.newBuilder() to construct.
+    private LogEntryPO(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private LogEntryPO() {
+      type_ = 0;
+      data_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new LogEntryPO();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryPO_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryPO_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.trs.pacifica.proto.RpcCommon.LogEntryPO.class, com.trs.pacifica.proto.RpcCommon.LogEntryPO.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private int type_ = 0;
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 1;</code>
+     * @return Whether the type field is set.
+     */
+    @java.lang.Override public boolean hasType() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 1;</code>
+     * @return The enum numeric value on the wire for type.
+     */
+    @java.lang.Override public int getTypeValue() {
+      return type_;
+    }
+    /**
+     * <code>optional .jpacifica.LogEntryType type = 1;</code>
+     * @return The type.
+     */
+    @java.lang.Override public com.trs.pacifica.proto.RpcCommon.LogEntryType getType() {
+      com.trs.pacifica.proto.RpcCommon.LogEntryType result = com.trs.pacifica.proto.RpcCommon.LogEntryType.forNumber(type_);
+      return result == null ? com.trs.pacifica.proto.RpcCommon.LogEntryType.UNRECOGNIZED : result;
+    }
+
+    public static final int LOG_INDEX_FIELD_NUMBER = 2;
+    private long logIndex_ = 0L;
+    /**
+     * <code>optional int64 log_index = 2;</code>
+     * @return Whether the logIndex field is set.
+     */
+    @java.lang.Override
+    public boolean hasLogIndex() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional int64 log_index = 2;</code>
+     * @return The logIndex.
+     */
+    @java.lang.Override
+    public long getLogIndex() {
+      return logIndex_;
+    }
+
+    public static final int LOG_TERM_FIELD_NUMBER = 3;
+    private long logTerm_ = 0L;
+    /**
+     * <code>optional int64 log_term = 3;</code>
+     * @return Whether the logTerm field is set.
+     */
+    @java.lang.Override
+    public boolean hasLogTerm() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <code>optional int64 log_term = 3;</code>
+     * @return The logTerm.
+     */
+    @java.lang.Override
+    public long getLogTerm() {
+      return logTerm_;
+    }
+
+    public static final int DATA_FIELD_NUMBER = 4;
+    private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>optional bytes data = 4;</code>
+     * @return Whether the data field is set.
+     */
+    @java.lang.Override
+    public boolean hasData() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <code>optional bytes data = 4;</code>
+     * @return The data.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getData() {
+      return data_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeEnum(1, type_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeInt64(2, logIndex_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        output.writeInt64(3, logTerm_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeBytes(4, data_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, logIndex_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, logTerm_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, data_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.trs.pacifica.proto.RpcCommon.LogEntryPO)) {
+        return super.equals(obj);
+      }
+      com.trs.pacifica.proto.RpcCommon.LogEntryPO other = (com.trs.pacifica.proto.RpcCommon.LogEntryPO) obj;
+
+      if (hasType() != other.hasType()) return false;
+      if (hasType()) {
+        if (type_ != other.type_) return false;
+      }
+      if (hasLogIndex() != other.hasLogIndex()) return false;
+      if (hasLogIndex()) {
+        if (getLogIndex()
+            != other.getLogIndex()) return false;
+      }
+      if (hasLogTerm() != other.hasLogTerm()) return false;
+      if (hasLogTerm()) {
+        if (getLogTerm()
+            != other.getLogTerm()) return false;
+      }
+      if (hasData() != other.hasData()) return false;
+      if (hasData()) {
+        if (!getData()
+            .equals(other.getData())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
+      }
+      if (hasLogIndex()) {
+        hash = (37 * hash) + LOG_INDEX_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getLogIndex());
+      }
+      if (hasLogTerm()) {
+        hash = (37 * hash) + LOG_TERM_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getLogTerm());
+      }
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcCommon.LogEntryPO prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code jpacifica.LogEntryPO}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:jpacifica.LogEntryPO)
+        com.trs.pacifica.proto.RpcCommon.LogEntryPOOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryPO_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryPO_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.trs.pacifica.proto.RpcCommon.LogEntryPO.class, com.trs.pacifica.proto.RpcCommon.LogEntryPO.Builder.class);
+      }
+
+      // Construct using com.trs.pacifica.proto.RpcCommon.LogEntryPO.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        type_ = 0;
+        logIndex_ = 0L;
+        logTerm_ = 0L;
+        data_ = com.google.protobuf.ByteString.EMPTY;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_LogEntryPO_descriptor;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.LogEntryPO getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcCommon.LogEntryPO.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.LogEntryPO build() {
+        com.trs.pacifica.proto.RpcCommon.LogEntryPO result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.LogEntryPO buildPartial() {
+        com.trs.pacifica.proto.RpcCommon.LogEntryPO result = new com.trs.pacifica.proto.RpcCommon.LogEntryPO(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.trs.pacifica.proto.RpcCommon.LogEntryPO result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.type_ = type_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.logIndex_ = logIndex_;
+          to_bitField0_ |= 0x00000002;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.logTerm_ = logTerm_;
+          to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.data_ = data_;
+          to_bitField0_ |= 0x00000008;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.trs.pacifica.proto.RpcCommon.LogEntryPO) {
+          return mergeFrom((com.trs.pacifica.proto.RpcCommon.LogEntryPO)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.LogEntryPO other) {
+        if (other == com.trs.pacifica.proto.RpcCommon.LogEntryPO.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasLogIndex()) {
+          setLogIndex(other.getLogIndex());
+        }
+        if (other.hasLogTerm()) {
+          setLogTerm(other.getLogTerm());
+        }
+        if (other.hasData()) {
+          setData(other.getData());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                type_ = input.readEnum();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 16: {
+                logIndex_ = input.readInt64();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              case 24: {
+                logTerm_ = input.readInt64();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+              case 34: {
+                data_ = input.readBytes();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private int type_ = 0;
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 1;</code>
+       * @return Whether the type field is set.
+       */
+      @java.lang.Override public boolean hasType() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 1;</code>
+       * @return The enum numeric value on the wire for type.
+       */
+      @java.lang.Override public int getTypeValue() {
+        return type_;
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 1;</code>
+       * @param value The enum numeric value on the wire for type to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTypeValue(int value) {
+        type_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 1;</code>
+       * @return The type.
+       */
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.LogEntryType getType() {
+        com.trs.pacifica.proto.RpcCommon.LogEntryType result = com.trs.pacifica.proto.RpcCommon.LogEntryType.forNumber(type_);
+        return result == null ? com.trs.pacifica.proto.RpcCommon.LogEntryType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 1;</code>
+       * @param value The type to set.
+       * @return This builder for chaining.
+       */
+      public Builder setType(com.trs.pacifica.proto.RpcCommon.LogEntryType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .jpacifica.LogEntryType type = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private long logIndex_ ;
+      /**
+       * <code>optional int64 log_index = 2;</code>
+       * @return Whether the logIndex field is set.
+       */
+      @java.lang.Override
+      public boolean hasLogIndex() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional int64 log_index = 2;</code>
+       * @return The logIndex.
+       */
+      @java.lang.Override
+      public long getLogIndex() {
+        return logIndex_;
+      }
+      /**
+       * <code>optional int64 log_index = 2;</code>
+       * @param value The logIndex to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLogIndex(long value) {
+
+        logIndex_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 log_index = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLogIndex() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        logIndex_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long logTerm_ ;
+      /**
+       * <code>optional int64 log_term = 3;</code>
+       * @return Whether the logTerm field is set.
+       */
+      @java.lang.Override
+      public boolean hasLogTerm() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+      /**
+       * <code>optional int64 log_term = 3;</code>
+       * @return The logTerm.
+       */
+      @java.lang.Override
+      public long getLogTerm() {
+        return logTerm_;
+      }
+      /**
+       * <code>optional int64 log_term = 3;</code>
+       * @param value The logTerm to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLogTerm(long value) {
+
+        logTerm_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 log_term = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLogTerm() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        logTerm_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes data = 4;</code>
+       * @return Whether the data field is set.
+       */
+      @java.lang.Override
+      public boolean hasData() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <code>optional bytes data = 4;</code>
+       * @return The data.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getData() {
+        return data_;
+      }
+      /**
+       * <code>optional bytes data = 4;</code>
+       * @param value The data to set.
+       * @return This builder for chaining.
+       */
+      public Builder setData(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        data_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes data = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearData() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        data_ = getDefaultInstance().getData();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:jpacifica.LogEntryPO)
+    }
+
+    // @@protoc_insertion_point(class_scope:jpacifica.LogEntryPO)
+    private static final com.trs.pacifica.proto.RpcCommon.LogEntryPO DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcCommon.LogEntryPO();
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.LogEntryPO getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<LogEntryPO>
+        PARSER = new com.google.protobuf.AbstractParser<LogEntryPO>() {
+      @java.lang.Override
+      public LogEntryPO parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<LogEntryPO> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<LogEntryPO> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.LogEntryPO getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_jpacifica_ReplicaId_descriptor;
   private static final 
@@ -3474,6 +4311,11 @@ public final class RpcCommon {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_jpacifica_SnapshotMeta_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_jpacifica_LogEntryPO_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_jpacifica_LogEntryPO_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3495,9 +4337,13 @@ public final class RpcCommon {
       "\"\202\001\n\014SnapshotMeta\022\026\n\tlog_index\030\001 \001(\003H\000\210\001" +
       "\001\022\025\n\010log_term\030\002 \001(\003H\001\210\001\001\022(\n\nattributes\030\003" +
       " \003(\0132\024.jpacifica.AttributeB\014\n\n_log_index" +
-      "B\013\n\t_log_term*&\n\014LogEntryType\022\013\n\007OP_DATA" +
-      "\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacifica.protoB" +
-      "\tRpcCommonb\006proto3"
+      "B\013\n\t_log_term\"\247\001\n\nLogEntryPO\022*\n\004type\030\001 \001" +
+      "(\0162\027.jpacifica.LogEntryTypeH\000\210\001\001\022\026\n\tlog_" +
+      "index\030\002 \001(\003H\001\210\001\001\022\025\n\010log_term\030\003 \001(\003H\002\210\001\001\022" +
+      "\021\n\004data\030\004 \001(\014H\003\210\001\001B\007\n\005_typeB\014\n\n_log_inde" +
+      "xB\013\n\t_log_termB\007\n\005_data*&\n\014LogEntryType\022" +
+      "\013\n\007OP_DATA\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacif" +
+      "ica.protoB\tRpcCommonb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -3527,6 +4373,12 @@ public final class RpcCommon {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_SnapshotMeta_descriptor,
         new java.lang.String[] { "LogIndex", "LogTerm", "Attributes", });
+    internal_static_jpacifica_LogEntryPO_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_jpacifica_LogEntryPO_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_jpacifica_LogEntryPO_descriptor,
+        new java.lang.String[] { "Type", "LogIndex", "LogTerm", "Data", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

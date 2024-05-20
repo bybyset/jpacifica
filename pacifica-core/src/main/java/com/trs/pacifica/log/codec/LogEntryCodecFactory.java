@@ -23,8 +23,16 @@ package com.trs.pacifica.log.codec;
 public interface LogEntryCodecFactory {
 
 
+    /**
+     * get decoder of LogEntry
+     * @return
+     */
     public LogEntryDecoder getLogEntryDecoder();
 
+    /**
+     * get Encoder of LogEntry
+     * @return
+     */
     public LogEntryEncoder getLogEntryEncoder();
 
 }

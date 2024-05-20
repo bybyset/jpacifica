@@ -18,6 +18,7 @@
 package com.trs.pacifica.rpc.impl.grpc;
 
 import com.google.protobuf.Message;
+import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.rpc.ExecutorRpcHandler;
@@ -42,12 +43,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class GrpcServer implements RpcServer {
+public class GrpcServer implements RpcServer, LifeCycle<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpcServer.class);
 
     protected final Endpoint endpoint;
 
-    protected Option option;
     private Server server;
 
     private final List<ServerInterceptor> serverInterceptors = new CopyOnWriteArrayList<>();
@@ -70,8 +70,7 @@ public class GrpcServer implements RpcServer {
 
 
     @Override
-    public synchronized void init(Option option) throws PacificaException {
-        this.option = option;
+    public synchronized void init(Void option) throws PacificaException {
         this.registerDefaultInterceptor();
         this.addInterceptor(this.serverInterceptors);
     }
@@ -104,7 +103,7 @@ public class GrpcServer implements RpcServer {
 
     protected Server buildServer(final Endpoint endpoint) {
         final int port = this.endpoint.getPort();
-        final int maxInboundMessageSize = this.option.getMaxInboundMessageSize();
+        final int maxInboundMessageSize = RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE;
         return NettyServerBuilder.forPort(port)//
                 .fallbackHandlerRegistry(this.mutableHandlerRegistry)//
                 .maxInboundMessageSize(maxInboundMessageSize)//

@@ -27,7 +27,7 @@ import com.trs.pacifica.util.RpcUtil;
 
 public class AppendEntriesRequestHandler extends InternalRpcRequestHandler<RpcRequest.AppendEntriesRequest, RpcRequest.AppendEntriesResponse> {
 
-    protected AppendEntriesRequestHandler(ReplicaManager replicaManager) {
+    public AppendEntriesRequestHandler(ReplicaManager replicaManager) {
         super(replicaManager, RpcRequest.AppendEntriesResponse.getDefaultInstance());
     }
 

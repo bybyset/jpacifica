@@ -1,9 +1,9 @@
-syntax="proto3";
+syntax = "proto3";
 
 package jpacifica;
 
-option java_package="com.trs.pacifica.proto";
-option java_outer_classname="RpcCommon";
+option java_package = "com.trs.pacifica.proto";
+option java_outer_classname = "RpcCommon";
 
 message ReplicaId {
   optional string group_name = 1;
@@ -31,4 +31,11 @@ message SnapshotMeta {
   optional int64 log_index = 1;
   optional int64 log_term = 2;
   repeated Attribute attributes = 3;
+}
+
+message LogEntryPO {
+  optional LogEntryType type = 1;
+  optional int64 log_index = 2;
+  optional int64 log_term = 3;
+  optional bytes data = 4;
 }

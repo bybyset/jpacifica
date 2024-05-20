@@ -20,15 +20,31 @@ package com.trs.pacifica.core;
 import com.trs.pacifica.LogStorage;
 import com.trs.pacifica.PacificaServiceFactory;
 import com.trs.pacifica.SnapshotStorage;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.log.FsLogStorage;
+import com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage;
+import com.trs.pacifica.spi.SPI;
 
+import java.io.IOException;
+
+@SPI
 public class DefaultPacificaServiceFactory implements PacificaServiceFactory {
     @Override
-    public LogStorage newLogStorage(final String path) {
-        return null;
+    public LogStorage newLogStorage(final String path) throws PacificaException {
+        try {
+            return new FsLogStorage(path, null, null, null);
+        } catch (IOException e) {
+            throw new PacificaException(PacificaErrorCode.IO, String.format("failed to new LogStorage, error_msg=%s", e.getMessage()), e);
+        }
     }
 
     @Override
-    public SnapshotStorage newSnapshotStorage(final String path) {
-        return null;
+    public SnapshotStorage newSnapshotStorage(final String path) throws PacificaException {
+        try {
+            return new DefaultSnapshotStorage(path);
+        } catch (IOException e) {
+            throw new PacificaException(PacificaErrorCode.IO, String.format("failed to new SnapshotStorage, error_msg=%s", e.getMessage()), e);
+        }
     }
 }

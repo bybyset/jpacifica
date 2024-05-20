@@ -17,15 +17,14 @@
 
 package com.trs.pacifica.rpc.node;
 
-public interface NodeManager {
+public interface EndpointFactory {
 
 
     /**
-     *
+     * get Endpoint of special node id
      * @param nodeId
-     * @return
+     * @return rpc address of node id
      */
-    public Endpoint getEndpoint(final String nodeId);
-
+    Endpoint getEndpoint(final String nodeId);
 
 }

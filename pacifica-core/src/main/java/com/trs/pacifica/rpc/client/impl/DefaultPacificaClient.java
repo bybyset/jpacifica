@@ -24,18 +24,18 @@ import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.Endpoint;
-import com.trs.pacifica.rpc.node.NodeManager;
+import com.trs.pacifica.rpc.node.EndpointFactory;
 
 /**
  *
  */
 public class DefaultPacificaClient extends BaseReplicaClient implements PacificaClient {
 
-    private final NodeManager nodeManager;
+    private final EndpointFactory endpointFactory;
 
-    public DefaultPacificaClient(RpcClient rpcClient, NodeManager nodeManager) {
+    public DefaultPacificaClient(RpcClient rpcClient, EndpointFactory endpointFactory) {
         super(rpcClient);
-        this.nodeManager = nodeManager;
+        this.endpointFactory = endpointFactory;
     }
 
     @Override
@@ -61,6 +61,6 @@ public class DefaultPacificaClient extends BaseReplicaClient implements Pacifica
     @Override
     protected Endpoint getEndpoint(ReplicaId targetReplicaId) {
         final String nodeId = targetReplicaId.getNodeId();
-        return  nodeManager.getEndpoint(nodeId);
+        return  endpointFactory.getEndpoint(nodeId);
     }
 }

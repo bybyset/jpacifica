@@ -24,6 +24,9 @@ import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.LogEntryCorruptedException;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.log.codec.LogEntryCodecFactory;
+import com.trs.pacifica.log.codec.LogEntryDecoder;
+import com.trs.pacifica.log.codec.LogEntryEncoder;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.util.thread.ThreadUtil;
@@ -99,7 +102,10 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             this.option = Objects.requireNonNull(option);
             this.executor = Objects.requireNonNull(option.getLogManagerExecutor());
             final LogStorageFactory logStorageFactory = Objects.requireNonNull(option.getLogStorageFactory(), "log storage factory");
-            this.logStorage = Objects.requireNonNull(logStorageFactory.newLogStorage(option.getLogStoragePath()), "log storage");
+            final LogEntryCodecFactory logEntryCodecFactory = Objects.requireNonNull(option.getLogEntryCodecFactory(), "logEntryCodecFactory");
+            final LogEntryEncoder logEntryEncoder = Objects.requireNonNull(logEntryCodecFactory.getLogEntryEncoder());
+            final LogEntryDecoder logEntryDecoder = Objects.requireNonNull(logEntryCodecFactory.getLogEntryDecoder());
+            this.logStorage = Objects.requireNonNull(logStorageFactory.newLogStorage(option.getLogStoragePath(), logEntryEncoder, logEntryDecoder), "log storage");
             this.stateMachineCaller = Objects.requireNonNull(option.getStateMachineCaller(), "stateMachineCaller");
         } finally {
             this.writeLock.unlock();
@@ -568,6 +574,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
         SingleThreadExecutor logManagerExecutor;
 
+        LogEntryCodecFactory logEntryCodecFactory;
         LogStorageFactory logStorageFactory;
 
         StateMachineCaller stateMachineCaller;
@@ -612,6 +619,13 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             this.stateMachineCaller = stateMachineCaller;
         }
 
+        public LogEntryCodecFactory getLogEntryCodecFactory() {
+            return logEntryCodecFactory;
+        }
+
+        public void setLogEntryCodecFactory(LogEntryCodecFactory logEntryCodecFactory) {
+            this.logEntryCodecFactory = logEntryCodecFactory;
+        }
     }
 
 

@@ -17,8 +17,18 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.error.PacificaException;
+
 public interface SnapshotStorageFactory {
 
 
-    SnapshotStorage newSnapshotStorage(final String path);
+    /**
+     * create SnapshotStorage for path
+     *
+     * @param path
+     * @return
+     * @throws PacificaException
+     */
+    SnapshotStorage newSnapshotStorage(final String path) throws PacificaException;
+
 }
