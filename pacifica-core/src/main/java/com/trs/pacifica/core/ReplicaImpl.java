@@ -244,7 +244,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.writeLock.lock();
         try {
             if (this.state == ReplicaState.Shutdown) {
-
                 this.logManager.startup();
                 this.stateMachineCaller.startup();
                 this.snapshotManager.startup();
@@ -545,7 +544,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         ReplicaState oldState, newState;
         this.readLock.lock();
         try {
-            oldState = newState = this.state;
+            oldState = this.state;
             newState = toReplicaState(this.replicaGroup, replicaId);
         } finally {
             this.readLock.unlock();

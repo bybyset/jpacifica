@@ -117,7 +117,6 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         this.writeLock.lock();
         try {
             this.logStorage.open();
-
             final LogId firstLogId = this.logStorage.getFirstLogId();
             if (firstLogId != null) {
                 this.firstLogIndex = firstLogId.getIndex();

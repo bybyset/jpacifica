@@ -21,11 +21,25 @@ import com.trs.pacifica.async.Callback;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Abstract write operation to the state machine
+ * It consists of two parts: serialization operation and callback
+ * 1.serialization operation :
+ *  It will be stored serialized and copied to other replicas
+ * 2.callback
+ *  This callback will be executed when it is committed by the StateMachine
+ */
 public class Operation {
 
 
+    /**
+     * serialization operation
+     */
     private ByteBuffer logData = LogEntry.EMPTY_DATA;
 
+    /**
+     * Callback when the operation is complete
+     */
     private Callback onFinish = null;
 
     public ByteBuffer getLogData() {

@@ -18,6 +18,7 @@ package com.trs.pacifica;
 
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.core.ReplicaState;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
@@ -26,64 +27,107 @@ public interface Replica {
 
 
     /**
-     * get ID of the Replica
+     * get id of the Replica
+     *
      * @return
      */
-    public ReplicaId getReplicaId();
+    ReplicaId getReplicaId();
 
     /**
      * get state of the Replica
+     *
      * @param block true if thread safe is needed
+     * @return state of Replica
+     */
+    ReplicaState getReplicaState(final boolean block);
+
+    /**
+     * get state of the Replica
+     * default not thread-safe
+     *
      * @return
      */
-    public ReplicaState getReplicaState(final boolean block);
-
-    default public ReplicaState getReplicaState() {
+    default ReplicaState getReplicaState() {
         return getReplicaState(false);
     }
 
 
     /**
+     * Whether the replica is the Primary.
      *
-     * @param block
+     * @param block true if thread safe is needed
      * @return ture if state of the replica is Primary
      */
-    public boolean isPrimary(boolean block);
+    default boolean isPrimary(boolean block) {
+        return ReplicaState.Primary == getReplicaState(block);
+    }
 
-    default  public boolean isPrimary() {
+    /**
+     * Whether the replica is the Primary.
+     * default not thread-safe
+     *
+     * @return
+     */
+    default boolean isPrimary() {
         return isPrimary(false);
     }
 
     /**
+     * called by user.
+     * apply operation to the replicated-state-machine,
      *
      * @param operation
      */
-    public void apply(Operation operation);
-
-
-    public void snapshot(Callback onFinish);
-
-
-    public void recover(Callback onFinish);
+    void apply(Operation operation);
 
 
     /**
-     * get LogId at commit point
-     * @return
+     * The snapshot is started immediately,
+     * and the callback is executed when the snapshot is completed.
+     *
+     * @param onFinish callback
      */
-    public LogId getCommitPoint();
+    void snapshot(Callback onFinish);
 
 
     /**
-     * get LogId at snapshot
-     * @return
+     * Replica recovery is started immediately ,
+     * and the callback is executed when the snapshot is completed.
+     *
+     * @param onFinish
      */
-    public LogId getSnapshotLogId();
+    void recover(Callback onFinish);
 
 
+    /**
+     * get LogId of the last committed
+     *
+     * @return LogId(0, 0) if nothing
+     */
+    LogId getCommitPoint();
+
+
+    /**
+     * get LogId of the last snapshot
+     *
+     * @return LogId(0, 0) if nothing
+     */
+    LogId getSnapshotLogId();
+
+
+    /**
+     * get LogId at first
+     *
+     * @return LogId(0, 0) if nothing
+     */
     public LogId getFirstLogId();
 
 
+    /**
+     * get LogId at last
+     *
+     * @return LogId(0, 0) if nothing
+     */
     public LogId getLastLogId();
 
 

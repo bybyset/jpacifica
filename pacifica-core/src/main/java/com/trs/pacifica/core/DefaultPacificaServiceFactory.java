@@ -23,6 +23,8 @@ import com.trs.pacifica.SnapshotStorage;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.log.FsLogStorage;
+import com.trs.pacifica.log.codec.LogEntryDecoder;
+import com.trs.pacifica.log.codec.LogEntryEncoder;
 import com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage;
 import com.trs.pacifica.spi.SPI;
 
@@ -31,9 +33,9 @@ import java.io.IOException;
 @SPI
 public class DefaultPacificaServiceFactory implements PacificaServiceFactory {
     @Override
-    public LogStorage newLogStorage(final String path) throws PacificaException {
+    public LogStorage newLogStorage(final String path, final LogEntryEncoder logEntryEncoder, final LogEntryDecoder logEntryDecoder) throws PacificaException {
         try {
-            return new FsLogStorage(path, null, null, null);
+            return new FsLogStorage(path, logEntryEncoder, logEntryDecoder);
         } catch (IOException e) {
             throw new PacificaException(PacificaErrorCode.IO, String.format("failed to new LogStorage, error_msg=%s", e.getMessage()), e);
         }

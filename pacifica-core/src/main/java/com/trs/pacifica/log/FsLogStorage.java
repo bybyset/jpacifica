@@ -73,7 +73,7 @@ public class FsLogStorage implements LogStorage {
     private final FsLogStorageOption option;
 
 
-    public FsLogStorage(String storagePath, LogEntryDecoder logEntryDecoder, LogEntryEncoder logEntryEncoder, FsLogStorageOption option) throws IOException {
+    public FsLogStorage(String storagePath, LogEntryEncoder logEntryEncoder, LogEntryDecoder logEntryDecoder, FsLogStorageOption option) throws IOException {
         this.storagePath = Objects.requireNonNull(storagePath, "storagePath");
         this.logEntryDecoder = logEntryDecoder;
         this.logEntryEncoder = logEntryEncoder;
@@ -87,8 +87,8 @@ public class FsLogStorage implements LogStorage {
         this.segmentStore = new SegmentStore(path.resolve(this.option.getSegmentDirName()), this.option.getSegmentFileSize());
     }
 
-    public FsLogStorage(String storagePath, LogEntryDecoder logEntryDecoder, LogEntryEncoder logEntryEncoder) throws IOException {
-        this(storagePath, logEntryDecoder, logEntryEncoder, new FsLogStorageOption());
+    public FsLogStorage(String storagePath, LogEntryEncoder logEntryEncoder, LogEntryDecoder logEntryDecoder) throws IOException {
+        this(storagePath, logEntryEncoder, logEntryDecoder, new FsLogStorageOption());
     }
 
 
@@ -106,7 +106,7 @@ public class FsLogStorage implements LogStorage {
                 LOGGER.debug("success to open storage_path={}.", this.storagePath);
             }
         } catch (IOException e) {
-            throw new PacificaException(PacificaErrorCode.IO, e.getMessage(), e);
+            throw new PacificaException(PacificaErrorCode.IO, String.format("failed to open FsLogStorage, error_msg=%s", e.getMessage()), e);
         } finally {
             this.writeLock.unlock();
         }
