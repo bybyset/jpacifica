@@ -18,11 +18,9 @@
 package com.trs.pacifica.log.store;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
-import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.log.dir.BaseDirectory;
 import com.trs.pacifica.log.dir.FsDirectory;
-import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.log.store.file.AbstractFile;
 import com.trs.pacifica.util.IOUtils;
 import org.slf4j.Logger;

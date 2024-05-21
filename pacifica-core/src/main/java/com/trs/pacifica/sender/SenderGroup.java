@@ -18,60 +18,59 @@
 package com.trs.pacifica.sender;
 
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.ReplicaId;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * Only called by Primary.
- *
  */
 public interface SenderGroup {
 
-    default public void addSenderTo(ReplicaId replicaId) {
+    default void addSenderTo(ReplicaId replicaId) throws PacificaException {
         addSenderTo(replicaId, SenderType.Secondary, false);
     }
 
-    default public void addSenderTo(ReplicaId replicaId, SenderType senderType) {
+    default void addSenderTo(ReplicaId replicaId, SenderType senderType) throws PacificaException {
         addSenderTo(replicaId, senderType, false);
     }
 
 
-
     /**
      * add Sender
+     *
      * @param replicaId
-     * @param senderType  to see {@link SenderType}
-     * @param checkConnection  check connect
+     * @param senderType      to see {@link SenderType}
+     * @param checkConnection check connect
      */
-    public void addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection);
+    void addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection) throws PacificaException;
 
 
     /**
      * Whether the specified Replica is alive
+     *
      * @param replicaId
      * @return true if the Replica is alive
      */
-    public boolean isAlive(ReplicaId replicaId);
+    boolean isAlive(ReplicaId replicaId);
 
 
-    default public boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, long timeout, TimeUnit unit) {
+    default boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, long timeout, TimeUnit unit) {
         return waitCaughtUp(replicaId, onCaughtUp, unit.toMillis(timeout));
     }
 
-    public boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, final long timeoutMs);
+    boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**
-     *
      * @param logIndex
      * @return
      */
-    public boolean continueAppendLogEntry(final long logIndex);
+    boolean continueAppendLogEntry(final long logIndex);
 
 
-    public Sender removeSender(ReplicaId replicaId);
-
+    Sender removeSender(ReplicaId replicaId);
 
 
 }

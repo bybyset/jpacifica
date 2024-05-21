@@ -22,6 +22,7 @@ import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.core.ReplicaImpl;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
@@ -86,7 +87,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     }
 
     @Override
-    public void init(Option option) {
+    public void init(Option option) throws PacificaException {
         this.writeLock.lock();
         try {
             if (state == _STATE_UNINITIALIZED) {
@@ -101,7 +102,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     }
 
     @Override
-    public void startup() {
+    public void startup() throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state == _STAT_SHUTDOWN) {
@@ -115,7 +116,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state == _STATE_STARTED) {
@@ -243,12 +244,12 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     private void doSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback) {
         final SnapshotReader snapshotReader = snapshotLoadCallback.getSnapshotReader();
         if (snapshotReader == null) {
-            ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException("failed to get SnapshotReader")));
+            ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException(PacificaErrorCode.INTERNAL, "failed to get SnapshotReader")));
             return;
         }
         final LogId snapshotLogId = snapshotReader.getSnapshotLogId();
         if (snapshotLogId == null) {
-            ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException("failed to get SnapshotMeta")));
+            ThreadUtil.runCallback(snapshotLoadCallback, Finished.failure(new PacificaException(PacificaErrorCode.INTERNAL, "failed to get SnapshotMeta")));
             return;
         }
         // snapshotLogId > lastSnapshotLogId
@@ -269,7 +270,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
             final long snapshotLogTerm = this.commitPoint.getTerm();
             final SnapshotWriter snapshotWriter = snapshotSaveCallback.start(new LogId(snapshotLogIndex, snapshotLogTerm));
             if (snapshotWriter == null) {
-                throw new PacificaException("failed to get snapshot writer.");
+                throw new PacificaException(PacificaErrorCode.INTERNAL, "failed to get snapshot writer.");
             }
             this.stateMachine.onSnapshotSave(snapshotWriter);
             ThreadUtil.runCallback(snapshotSaveCallback, Finished.success());

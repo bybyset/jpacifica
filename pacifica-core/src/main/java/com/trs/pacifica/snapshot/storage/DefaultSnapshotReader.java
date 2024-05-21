@@ -17,11 +17,9 @@
 
 package com.trs.pacifica.snapshot.storage;
 
-import com.trs.pacifica.fs.FileReader;
 import com.trs.pacifica.fs.FileService;
-import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.model.LogId;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 import com.trs.pacifica.snapshot.SnapshotReader;
 
 import java.io.IOException;

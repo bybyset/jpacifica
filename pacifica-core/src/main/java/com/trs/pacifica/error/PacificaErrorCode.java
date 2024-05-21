@@ -33,6 +33,10 @@ public enum PacificaErrorCode {
     USER_ERROR(100108, "user exception"),
     INTERNAL(100109, "internal error"),
     IO(100110, "io exception"),
+    REPLICATOR(100111, "sender error"),
+    CONF_CLUSTER(100112, "conf cluster"),
+
+
 
 
 

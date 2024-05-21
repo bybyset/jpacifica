@@ -20,7 +20,10 @@ package com.trs.pacifica.sender;
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.core.ReplicaImpl;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fs.FileService;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
@@ -83,14 +86,14 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
     }
 
     @Override
-    public void addSenderTo(final ReplicaId replicaId, final SenderType senderType, boolean checkConnection) {
+    public void addSenderTo(final ReplicaId replicaId, final SenderType senderType, boolean checkConnection) throws PacificaException{
         Objects.requireNonNull(replicaId, "replicaId");
         this.readLock.lock();
         try {
             ensureStarted();
             if (checkConnection) {
                 if (!this.pacificaClient.checkConnection(replicaId, true)) {
-                    throw new PacificaException(String.format("%s fails to connect to %s", this.replica.getReplicaId(), replicaId));
+                    throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("%s fails to connect to %s", this.replica.getReplicaId(), replicaId));
                 }
             }
             //TODO if has add??
@@ -209,7 +212,11 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
     void removeAndShutdown(ReplicaId replicaId) {
         final Sender sender = this.senderContainer.remove(replicaId);
         if (sender != null) {
-            sender.shutdown();
+            try {
+                sender.shutdown();
+            } catch (PacificaException e) {
+                LOGGER.error("failed to shutdown sender={}", sender, e);
+            }
         }
     }
 
@@ -220,7 +227,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
     private void ensureStarted() {
         if (!isStarted()) {
-            throw new PacificaException(String.format("%s not started", this));
+            throw new AlreadyClosedException(String.format("%s not started", this));
         }
     }
 
@@ -237,6 +244,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         public Sender getSender(ReplicaId targetId, final SenderType type) {
             SenderImpl sender = new SenderImpl(SenderGroupImpl.this.replica.getReplicaId(), targetId, type);
             SenderImpl.Option senderOption = new SenderImpl.Option();
+            senderOption.setReplica(SenderGroupImpl.this.replica);
             senderOption.setSenderExecutor(senderExecutorGroup.chooseExecutor());
             senderOption.setLogManager(logManager);
             senderOption.setStateMachineCaller(stateMachineCaller);

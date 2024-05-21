@@ -18,6 +18,7 @@
 package com.trs.pacifica.sender;
 
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.error.PacificaException;
 
 /**
  * implement:
@@ -33,34 +34,38 @@ public interface Sender {
      * @param leasePeriodTimeOutMs 
      * @return true if alive
      */
-    public boolean isAlive(final int leasePeriodTimeOutMs);
+    boolean isAlive(final int leasePeriodTimeOutMs);
 
 
     /**
      * get SenderType
      * @return
      */
-    public SenderType getType();
+    SenderType getType();
 
 
-    public boolean continueSendLogEntries(final long endLogIndex);
+    boolean continueSendLogEntries(final long endLogIndex);
 
 
-    public boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs);
+    boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**
      *
+     * @throws PacificaException
      */
-    public void startup();
+    void startup() throws PacificaException;
 
     /**
      *
+     * @throws PacificaException
      */
-    public void shutdown();
+    void shutdown() throws PacificaException;
 
 
-    public static abstract class OnCaughtUp implements Callback {
+
+
+    static abstract class OnCaughtUp implements Callback {
 
         private long caughtUpLogIndex = -1L;
 

@@ -15,14 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.error;
+package com.trs.pacifica.error;
 
-public class AlreadyClosedException  extends IllegalStateException {
+public class AlreadyClosedException extends RuntimeException {
+
+    public AlreadyClosedException() {
+    }
+
     public AlreadyClosedException(String message) {
         super(message);
     }
 
     public AlreadyClosedException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public AlreadyClosedException(Throwable cause) {
+        super(cause);
+    }
+
+    public AlreadyClosedException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

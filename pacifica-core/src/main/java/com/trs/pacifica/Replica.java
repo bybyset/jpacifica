@@ -74,7 +74,7 @@ public interface Replica {
 
     /**
      * called by user.
-     * apply operation to the replicated-state-machine,
+     * asynchronous apply operation to the replicated-state-machine,
      *
      * @param operation
      */

@@ -21,7 +21,7 @@ import com.google.protobuf.Message;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
-import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.rpc.client.ExecutorInvokeCallback;
 import com.trs.pacifica.rpc.client.InvokeCallback;
 import com.trs.pacifica.rpc.client.RpcClient;

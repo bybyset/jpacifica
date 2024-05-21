@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.log.io;
 
-import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.error.AlreadyClosedException;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.EOFException;

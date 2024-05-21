@@ -207,7 +207,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                     this.readLock.unlock();
                 }
             } else {
-                throw new PacificaException("it is busy or not started. state=" + this.state);
+                throw new PacificaException(PacificaErrorCode.BUSY, "it is busy or not started. state=" + this.state);
             }
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));

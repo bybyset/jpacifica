@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.log.dir;
 
-import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.error.AlreadyClosedException;
 
 public abstract class BaseDirectory extends Directory {
 

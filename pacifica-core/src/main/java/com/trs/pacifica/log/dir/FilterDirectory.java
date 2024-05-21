@@ -17,7 +17,7 @@
 
 package com.trs.pacifica.log.dir;
 
-import com.trs.pacifica.log.error.AlreadyClosedException;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.log.io.InOutput;
 
 import java.io.IOException;

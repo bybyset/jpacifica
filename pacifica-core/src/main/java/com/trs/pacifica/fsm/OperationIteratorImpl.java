@@ -20,6 +20,8 @@ package com.trs.pacifica.fsm;
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.NotFoundLogEntryException;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 
 import java.util.Iterator;
@@ -94,7 +96,7 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
                     if (e instanceof PacificaException ) {
                         this.error = (PacificaException) e;
                     } else {
-                        this.error = new PacificaException("failed to get LogEntry at logIndex=" + currentLogIndex, e);
+                        this.error = new PacificaException(PacificaErrorCode.INTERNAL, "failed to get LogEntry at logIndex=" + currentLogIndex, e);
                     }
                 }
             }

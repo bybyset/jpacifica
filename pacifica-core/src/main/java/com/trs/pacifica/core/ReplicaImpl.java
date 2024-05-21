@@ -23,6 +23,7 @@ import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.error.NotSupportedException;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileService;
@@ -303,10 +304,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     @Override
     public void apply(Operation operation) {
         Objects.requireNonNull(operation, "param: operation is null");
-        ensureActive();
-        final LogEntry logEntry = new LogEntry(LogEntry.Type.OP_DATA);
-        logEntry.setLogData(operation.getLogData());
-        apply(logEntry, operation.getOnFinish());
+        try {
+            ensureActive();
+            final LogEntry logEntry = new LogEntry(LogEntry.Type.OP_DATA);
+            logEntry.setLogData(operation.getLogData());
+            apply(logEntry, operation.getOnFinish());
+        } catch (PacificaException e) {
+            ThreadUtil.runCallback(operation.getOnFinish(), Finished.failure(e));
+        }
     }
 
 
@@ -501,6 +506,10 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return null;
     }
 
+    public void onError(PacificaException pacificaException) {
+
+    }
+
 
     /**
      * apply batch operation only by primary
@@ -540,7 +549,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     }
 
-    private void onReplicaStateChange() {
+    private void onReplicaStateChange() throws PacificaException {
         ReplicaState oldState, newState;
         this.readLock.lock();
         try {
@@ -572,7 +581,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     /**
      *
      */
-    private void becomePrimary() {
+    private void becomePrimary() throws PacificaException {
         this.writeLock.lock();
         try {
             this.state = ReplicaState.Primary;
@@ -590,7 +599,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         }
     }
 
-    private void becomeSecondary() {
+    private void becomeSecondary() throws PacificaException {
         this.writeLock.lock();
         try {
             this.state = ReplicaState.Secondary;
@@ -606,7 +615,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         }
     }
 
-    private void becomeCandidate() {
+    private void becomeCandidate() throws PacificaException {
         this.writeLock.lock();
         try {
             this.state = ReplicaState.Candidate;
@@ -623,10 +632,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     }
 
-    private void apply(final LogEntry logEntry, final Callback onFinish) {
+    private void apply(final LogEntry logEntry, final Callback onFinish) throws PacificaException {
         final OperationContext context = new OperationContext(logEntry, onFinish);
         if (this.operationContextQueue.offer(context)) {
             this.applyExecutor.execute(new OperationConsumer());
+        } else {
+            //TODO Rejection strategy
+            // Currently throwing an PacificaException
+            throw new PacificaException(PacificaErrorCode.BUSY, "operation queue is overload.");
         }
     }
 
@@ -634,7 +647,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
      * call by Primary for reconciliation
      * should be in write lock
      */
-    private void reconciliation() {
+    private void reconciliation() throws PacificaException {
         final LogEntry logEntry = new LogEntry(LogEntry.Type.NO_OP);
         apply(logEntry, new Callback() {
             @Override
@@ -650,7 +663,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.ballotBox.startup();
     }
 
-    private void startSenderGroup() {
+    private void startSenderGroup() throws PacificaException {
         this.senderGroup.startup();
         List<ReplicaId> secondaries = this.replicaGroup.listSecondary();
         for (ReplicaId secondary : secondaries) {
@@ -848,10 +861,10 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return this.senderGroup.isAlive(secondary);
     }
 
-    void ensureActive() {
+    void ensureActive() throws PacificaException {
         final ReplicaState replicaState = this.state;
         if (!replicaState.isActive()) {
-            throw new PacificaException(String.format("Current replica state=%s is not active", replicaState));
+            throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("Current replica state=%s is not active", replicaState));
         }
     }
 
@@ -862,7 +875,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (this.snapshotManager != null) {
                 this.snapshotManager.doSnapshot(onFinish);
             } else {
-                throw new PacificaException("Snapshot is not supported");
+                throw new NotSupportedException("Snapshot is not supported");
             }
         } catch (Throwable e) {
             ThreadUtil.runCallback(onFinish, Finished.failure(e));
@@ -879,7 +892,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             // refresh
 
             if (this.state != ReplicaState.Candidate) {
-                throw new PacificaException("Only Candidate state needs to recover. current state is " + this.state);
+                throw new PacificaException(PacificaErrorCode.NOT_SUPPORT, "Only Candidate state needs to recover. current state is " + this.state);
             }
             final ReplicaId primaryId = this.replicaGroup.getPrimary();
             final long term = this.replicaGroup.getPrimaryTerm();
@@ -989,11 +1002,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 final Callback callback = this.failureCallbacks.get(index);
                 //initiate ballot to ballotBox
                 if (!ReplicaImpl.this.ballotBox.initiateBallot(ReplicaImpl.this.replicaGroup)) {
-                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to initiate ballot", ReplicaImpl.this.replicaId))));
+                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.INTERNAL, String.format("replica=%s failed to initiate ballot", ReplicaImpl.this.replicaId))));
                     continue;
                 }
                 if (!ReplicaImpl.this.callbackPendingQueue.add(callback)) {
-                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(String.format("replica=%s failed to append callback", ReplicaImpl.this.replicaId))));
+                    ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.INTERNAL, String.format("replica=%s failed to append callback", ReplicaImpl.this.replicaId))));
                 }
             }
             //
