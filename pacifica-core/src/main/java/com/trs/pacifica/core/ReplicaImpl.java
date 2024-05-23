@@ -78,7 +78,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private volatile ReplicaState state = ReplicaState.Uninitialized;
 
-    private ReplicaGroup replicaGroup;
+    private CacheReplicaGroup replicaGroup;
 
     private ConfigurationClient configurationClient;
 
@@ -327,22 +327,42 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     @Override
     public LogId getCommitPoint() {
-        return null;
+        this.readLock.lock();
+        try {
+            return this.stateMachineCaller.getCommitPoint();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
     public LogId getSnapshotLogId() {
-        return null;
+        this.readLock.lock();
+        try {
+            return this.snapshotManager.getLastSnapshotLodId();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
     public LogId getFirstLogId() {
-        return null;
+        this.readLock.lock();
+        try {
+            return this.logManager.getFirstLogId();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
     public LogId getLastLogId() {
-        return null;
+        this.readLock.lock();
+        try {
+            return this.logManager.getLastLogId();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
@@ -506,10 +526,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         return null;
     }
 
-    public void onError(PacificaException pacificaException) {
-
-    }
-
 
     /**
      * apply batch operation only by primary
@@ -549,6 +565,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     }
 
+    /**
+     * Called when the state of the replica has changed.
+     *
+     * @throws PacificaException
+     */
     private void onReplicaStateChange() throws PacificaException {
         ReplicaState oldState, newState;
         this.readLock.lock();
@@ -751,6 +772,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
      * If the Primary is faulty, change Primary.
      */
     private void handleGracePeriodTimeout() {
+        long currentVersion = Long.MIN_VALUE;
         this.readLock.lock();
         try {
             if (this.state != ReplicaState.Secondary) {
@@ -759,13 +781,102 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (isCurrentPrimaryValid()) {
                 return;
             }
-            LOGGER.info("The faulty Primary({}) was found. we will elect Primary", this.replicaGroup.getPrimary());
+            currentVersion = this.replicaGroup.getVersion();
+            LOGGER.info("The faulty Primary({}) was found. we will elect Primary. cur_version={}", this.replicaGroup.getPrimary(), currentVersion);
         } finally {
             this.readLock.unlock();
         }
-        //TODO change primary
+        try {
+            handleChangePrimary(currentVersion);
+        } catch (PacificaException e) {
+            LOGGER.error("{} failed to change Primary on grace period timeout.", this.replicaId, e);
+        }
 
+    }
 
+    /**
+     * the current Primary is faulty, will change Primary.
+     *
+     * @param currentVersion The version number of the Primary at the time of faulty
+     */
+    private void handleChangePrimary(final long currentVersion) throws PacificaException {
+        if (maybeRefreshReplicaGroup(currentVersion + 1)) {
+            // It is possible to be preempted by other Secondary,
+            // so we try to update the state of the current Replica.
+            onReplicaStateChange();
+        } else {
+            // elect self as the Primary
+            electSelf(currentVersion);
+        }
+    }
+
+    private void electSelf(final long version) throws PacificaException {
+        if (this.configurationClient.changePrimary(version, this.replicaId)) {
+            // success to elect self as the Primary
+            refreshReplicaGroupUtil(version + 1);
+        }
+    }
+
+    void refreshReplicaGroupUtil(long requestVersion) throws PacificaException {
+        boolean failure = false;
+        do {
+            this.writeLock.lock();
+            try {
+                failure = !alignReplicaGroupVersion(requestVersion);
+            } finally {
+                this.writeLock.unlock();
+            }
+            if (failure) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("{} refresh ReplicaGroup Util version={}. we will retry.", this.replicaId,
+                            requestVersion);
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+            }
+        } while (failure);
+    }
+
+    /**
+     * the Replica Group align to higher version number.
+     *
+     * @param higherVersion
+     * @return true if success align
+     */
+    private boolean alignReplicaGroupVersion(final long higherVersion) throws PacificaException {
+        long currentVersion = this.replicaGroup.getVersion();
+        if (currentVersion >= higherVersion) {
+            return true;
+        }
+        LOGGER.info("{} try align to higher_version={}, cur_version={}, we try refresh replica_group.", this.replicaId, higherVersion, currentVersion);
+        currentVersion = forceRefreshReplicaGroup();
+        if (currentVersion >= higherVersion) {
+            onReplicaStateChange();
+            return true;
+        } else {
+            LOGGER.info("{} try align to higher_version={}, cur_version={}, but failed to obtain the latest version number", this.replicaId, higherVersion, currentVersion);
+            return false;
+        }
+    }
+
+    private boolean maybeRefreshReplicaGroup(long version) {
+        long currentVersion;
+        this.readLock.lock();
+        try {
+            currentVersion = this.replicaGroup.getVersion();
+            if (version > currentVersion) {
+                forceRefreshReplicaGroup();
+            }
+        } finally {
+            this.readLock.unlock();
+        }
+        if (this.replicaGroup.getVersion() <= currentVersion) {
+            return false;
+        }
+        LOGGER.info("the replica({}) has changed. new replica group={}", this, this.replicaGroup);
+        return true;
     }
 
     /**
@@ -928,6 +1039,85 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         }
 
         //TODO success
+
+    }
+
+    private long forceRefreshReplicaGroup() {
+        this.replicaGroup.clearCache();
+        return this.replicaGroup.getVersion();
+    }
+
+    /**
+     * on receive primary term
+     *
+     * @param higherTerm
+     */
+    public boolean onReceiveHigherTerm(final long higherTerm) {
+        long curVersion = Long.MIN_VALUE;
+        this.readLock.lock();
+        try {
+            curVersion = this.replicaGroup.getVersion();
+            final long curTerm = this.replicaGroup.getPrimaryTerm();
+            if (higherTerm <= curTerm) {
+                return false;
+            }
+            LOGGER.warn("{} receive higher term. request_term={}, cur_term={}", this.replicaId, higherTerm, curTerm);
+        } finally {
+            this.readLock.unlock();
+        }
+        try {
+            return this.alignReplicaGroupVersion(curVersion + 1);
+        } catch (PacificaException e) {
+            LOGGER.error("{} failed to align replica group. ", this.replicaId);
+        }
+        return false;
+    }
+
+    /**
+     * on PacificaException occurs
+     *
+     * @param pacificaException
+     */
+    public void onError(PacificaException pacificaException) {
+        this.writeLock.lock();
+        try {
+            if (this.state == ReplicaState.Error) {
+                LOGGER.error("{} encountered an error. but it is repeat.", this.replicaId, pacificaException);
+                return;
+            }
+            LOGGER.error("{} encountered an error.", this.replicaId, pacificaException);
+            //1. state machine on error
+            if (this.stateMachineCaller != null) {
+                this.stateMachineCaller.onError(pacificaException);
+            }
+            //2. enter error state
+            //Primary Follower
+            //Candidate
+            //
+            unsafeBecomeErrorState();
+
+        } finally {
+            this.writeLock.unlock();
+        }
+
+    }
+
+    private void unsafeBecomeErrorState() {
+        if (this.state.compareTo(ReplicaState.Error) < 0) {
+            //
+
+
+            this.state = ReplicaState.Error;
+        }
+    }
+
+    /**
+     * Primary 、Secondary step down， and become Candidate to recover
+     */
+    private void stepDown() {
+        // case 1: Primary -> Candidate
+        // case 2: Secondary -> Candidate
+
 
     }
 

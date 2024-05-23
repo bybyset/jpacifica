@@ -554,14 +554,14 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     private boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, RpcRequest.AppendEntriesResponse response) {
         if (!finished.isOk()) {
             // TODO
+
             return false;
         }
         if (!response.getSuccess()) {
             // failure
             // 1: receive a larger term
             if (response.getTerm() > request.getTerm()) {
-                //TODO  shutdown  replica.check step down
-                this.shutdown();
+                this.shutdownAndCheckTerm(response.getTerm());
 
                 return false;
             }
@@ -673,6 +673,21 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         infoBuilder.append("version").append("=").append(this.version.get());
         infoBuilder.append("]");
         return infoBuilder.toString();
+    }
+
+
+    /**
+     * receive higher term
+     * shutdown and refresh replica to align term.
+     * @param higherTerm
+     */
+    private void shutdownAndCheckTerm(final long higherTerm) {
+        try {
+            this.shutdown();
+        } catch (Throwable e) {
+            LOGGER.error("{} failed to shutdown", this);
+        }
+        this.option.getReplica().onReceiveHigherTerm(higherTerm);
     }
 
     class OnCaughtUpTimeoutAble extends OnCaughtUp {
