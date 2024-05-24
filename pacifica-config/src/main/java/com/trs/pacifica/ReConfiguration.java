@@ -19,36 +19,60 @@ package com.trs.pacifica;
 
 import com.trs.pacifica.model.ReplicaId;
 
+/**
+ * conf cluster interface for manager replica group
+ * A replica group consists of multiple replica and version number.
+ * Replica group contains the one and only group name.
+ * Replicas are distributed in different nodes, and
+ * the group name and the node name form the ReplicaId.
+ * <p>
+ * About version of replica group:
+ * It is a monotonically increasing integer value,
+ * an is incremented every time the state of the replica group change.
+ * When the version number in the request is less than the version number in the replica group,
+ * we reject the request and return false.
+ */
 public interface ReConfiguration {
 
 
     /**
      * After the Candidate replica completes the recovery process,
      * the Primary replica sends an add_secondary request to the configuration cluster.
-     * @param version current version of replica group
+     * When the conf cluster accepts and successfully processes the request,
+     * the replica is upgraded to Secondary by the Candidate
+     *
+     * @param version   current version of replica group
      * @param replicaId replicaId of add
      * @return ture if success
      */
-    public boolean addSecondary(final long version, final ReplicaId replicaId);
+    boolean addSecondary(final long version, final ReplicaId replicaId);
 
     /**
      * After the Primary replica detects the failure of the Secondary replica,
      * the Primary replica sends the remove_secondary request to the configuration cluster.
      * remove Secondary
-     * @param version current version of replica group
+     * <p>
+     * When the conf cluster accepts and successfully processes the request,
+     * the replica is demoted from Secondary to Candidate.
+     *
+     * @param version   current version of replica group
      * @param replicaId replicaId of removed
      * @return ture if success
      */
-    public boolean removeSecondary(final long version, final ReplicaId replicaId);
+    boolean removeSecondary(final long version, final ReplicaId replicaId);
 
     /**
      * After the Secondary replica detects the failure of the Primary replica,
      * the Secondary replica sends the change_primary request to the configuration cluster.
+     * <p>
+     * When the conf cluster accepts and successfully processes the request,
+     * the replica is demoted from Primary to Candidate.
+     *
      * @param version
      * @param replicaId
      * @return
      */
-    public boolean changePrimary(final long version, final ReplicaId replicaId);
+    boolean changePrimary(final long version, final ReplicaId replicaId);
 
 
 }

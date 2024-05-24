@@ -636,12 +636,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.writeLock.lock();
         try {
             this.state = ReplicaState.Candidate;
-            this.ballotBox.shutdown();
-            this.senderGroup.shutdown();
-            stopLeasePeriodTimer();
-            stopGracePeriodTimer();
-            stopSnapshotTimer();
-            startRecoverTimer();
+            unsafeStepDown();
             LOGGER.info("The replica({}) has become Candidate.", this.replicaId);
         } finally {
             this.writeLock.unlock();
@@ -1126,9 +1121,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.stateMachineCaller.onError(pacificaException);
             }
             //2. enter error state
-            //Primary Follower
-            //Candidate
-            //
+            //Primary Secondary
             unsafeBecomeErrorState();
 
         } finally {
@@ -1138,21 +1131,27 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void unsafeBecomeErrorState() {
-        if (this.state.compareTo(ReplicaState.Error) < 0) {
+        if (this.state.compareTo(ReplicaState.Candidate) < 0) {
+            // Primary  Secondary step down
+            unsafeStepDown();
             //
-
-
-            this.state = ReplicaState.Error;
         }
+
+        this.state = ReplicaState.Error;
     }
 
     /**
-     * Primary 、Secondary step down， and become Candidate to recover
+     * Primary 、Secondary step down to Candidate
+     * close something
      */
-    private void stepDown() {
+    private void unsafeStepDown() {
         // case 1: Primary -> Candidate
         // case 2: Secondary -> Candidate
-
+        this.ballotBox.shutdown();
+        this.senderGroup.shutdown();
+        stopLeasePeriodTimer();
+        stopGracePeriodTimer();
+        stopSnapshotTimer();
 
     }
 

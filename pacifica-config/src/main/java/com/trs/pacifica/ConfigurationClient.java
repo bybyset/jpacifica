@@ -19,8 +19,14 @@ package com.trs.pacifica;
 
 import com.trs.pacifica.model.ReplicaGroup;
 
-public interface ConfigurationClient extends  ReConfiguration{
+public interface ConfigurationClient extends ReConfiguration {
 
-    public ReplicaGroup getReplicaGroup(final String groupName);
+    /**
+     * get replica group by group name
+     *
+     * @param groupName
+     * @return
+     */
+    ReplicaGroup getReplicaGroup(final String groupName);
 
 }
