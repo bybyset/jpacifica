@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -72,6 +73,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private ReplicaOption option;
 
+    private final AtomicBoolean recovering = new AtomicBoolean(false);
     private final Queue<OperationContext> operationContextQueue = QueueUtil.newMpscQueue();
 
     private final PendingQueue<Callback> callbackPendingQueue = new PendingQueueImpl<>();
@@ -376,16 +378,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
             }
             if (this.replicaGroup.getVersion() < request.getVersion()) {
-                // TODO refresh replica group
-
-
+                // async align version
+                asyncAlignReplicaGroupVersion(request.getVersion());
             }
             final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
             final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
             if (!primaryReplicaId.equals(fromReplicaId)) {
                 throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
             }
-
             final long primaryTerm = this.replicaGroup.getPrimaryTerm();
             if (primaryTerm > request.getTerm()) {
                 return RpcRequest.AppendEntriesResponse.newBuilder()//
@@ -448,21 +448,21 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (!this.replicaId.equals(primaryId)) {
                 throw new PacificaException(PacificaErrorCode.UNAVAILABLE, "");
             }
+            final long version = this.replicaGroup.getVersion();
             final long localTerm = this.replicaGroup.getPrimaryTerm();
             if (request.getTerm() != localTerm) {
                 return RpcRequest.ReplicaRecoverResponse.newBuilder()//
                         .setSuccess(false)//
                         .setTerm(localTerm)//
+                        .setVersion(version)//
                         .build();//
             }
             final ReplicaId recoverId = RpcUtil.toReplicaId(request.getRecoverId());
             // add log sender for recoverId
             this.senderGroup.addSenderTo(recoverId, SenderType.Candidate, true);
             // wait caught up
-
             final CandidateCaughtUpCallback onCaughtUp = new CandidateCaughtUpCallback(recoverId, callback);
             this.senderGroup.waitCaughtUp(recoverId, onCaughtUp, 1000);
-
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {
@@ -477,7 +477,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.readLock.lock();
         try {
             ensureActive();
-            //TODO Refactoring duplicate code
             if (this.snapshotManager == null) {
                 throw new PacificaException(PacificaErrorCode.NOT_SUPPORT, "not support install snapshot.");
             }
@@ -486,16 +485,13 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched target id.expect=%s, actual=%s.", this.replicaId, targetId));
             }
             if (this.replicaGroup.getVersion() < request.getVersion()) {
-                // TODO refresh replica group
-
-
+                asyncAlignReplicaGroupVersion(request.getVersion());
             }
             final ReplicaId fromReplicaId = RpcUtil.toReplicaId(request.getPrimaryId());
             final ReplicaId primaryReplicaId = this.replicaGroup.getPrimary();
             if (!primaryReplicaId.equals(fromReplicaId)) {
                 throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("mismatched primary id. expect=%s, actual=%s.", primaryReplicaId, fromReplicaId));
             }
-
             final long primaryTerm = this.replicaGroup.getPrimaryTerm();
             if (primaryTerm > request.getTerm()) {
                 return RpcRequest.InstallSnapshotResponse.newBuilder()//
@@ -846,12 +842,18 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
      * @return true if success align
      */
     private boolean alignReplicaGroupVersion(final long higherVersion) throws PacificaException {
-        long currentVersion = this.replicaGroup.getVersion();
-        if (currentVersion >= higherVersion) {
-            return true;
+        long currentVersion = Long.MIN_VALUE;
+        this.readLock.lock();
+        try {
+            currentVersion = this.replicaGroup.getVersion();
+            if (currentVersion >= higherVersion) {
+                return true;
+            }
+            LOGGER.info("{} try align to higher_version={}, cur_version={}, we try refresh replica_group.", this.replicaId, higherVersion, currentVersion);
+            currentVersion = forceRefreshReplicaGroup();
+        } finally {
+            this.readLock.unlock();
         }
-        LOGGER.info("{} try align to higher_version={}, cur_version={}, we try refresh replica_group.", this.replicaId, higherVersion, currentVersion);
-        currentVersion = forceRefreshReplicaGroup();
         if (currentVersion >= higherVersion) {
             onReplicaStateChange();
             return true;
@@ -859,6 +861,17 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             LOGGER.info("{} try align to higher_version={}, cur_version={}, but failed to obtain the latest version number", this.replicaId, higherVersion, currentVersion);
             return false;
         }
+    }
+
+    private void asyncAlignReplicaGroupVersion(final long higherVersion) {
+        this.applyExecutor.execute(
+                () -> {
+                    try {
+                        alignReplicaGroupVersion(higherVersion);
+                    } catch (Throwable e) {
+                    }
+                }
+        );
     }
 
     private boolean maybeRefreshReplicaGroup(long version) {
@@ -884,6 +897,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
      * If the Secondary is faulty, remove Secondary.
      */
     private void handleLeasePeriodTimeout() {
+        long currentVersion;
+        List<ReplicaId> removed = null;
         this.readLock.lock();
         try {
             if (this.state != ReplicaState.Primary) {
@@ -893,9 +908,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (secondaries == null || secondaries.isEmpty()) {
                 return;
             }
-            final List<ReplicaId> removed = new ArrayList<>(secondaries.size());
-            long currentVersion = replicaGroup.getVersion();
-            boolean hasRemoveFailure = false;
+            removed = new ArrayList<>(secondaries.size());
+            currentVersion = replicaGroup.getVersion();
             for (ReplicaId secondary : secondaries) {
                 if (isAlive(secondary)) {
                     return;
@@ -909,24 +923,25 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                         LOGGER.debug("Response was received for successfully removing the Secondary({}) from the config cluster", secondary);
                     }
                 } else {
-                    //failure
-                    hasRemoveFailure = true;
                     LOGGER.warn("Response was received for failure removing the Secondary({}) from the config cluster, current_version={}", secondary, currentVersion);
                     break;
                 }
-            }
-            if (hasRemoveFailure) {
-                // TODO step down
-                return;
-            }
-            if (!removed.isEmpty()) {
-                //TODO 1、remove sender 2、abandon ballot
 
             }
-
         } finally {
             this.readLock.unlock();
         }
+        if (removed != null && !removed.isEmpty()) {
+            for (ReplicaId removedSecondary : removed) {
+                // 1.remove sender
+                this.senderGroup.removeSender(removedSecondary);
+                // 2.abandon ballot
+                this.ballotBox.cancelBallot(removedSecondary);
+                LOGGER.info("{} is faulty, success to remove.", removedSecondary);
+            }
+        }
+        asyncAlignReplicaGroupVersion(currentVersion);
+
     }
 
     /**
@@ -937,13 +952,13 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         try {
             if (!this.state.isActive()) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.warn("The replica not active on handle snapshot timeout, state={}", this.state);
+                    LOGGER.warn("The replica={} not active on handle snapshot timeout, state={}", this.replicaId, this.state);
                 }
                 return;
             }
-            // TODO do snapshot
-
-
+            ThreadUtil.runInThread(() -> {
+                doSnapshot(null);
+            });
         } finally {
             this.readLock.unlock();
         }
@@ -953,18 +968,24 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     private void handleRecoverTimeout() {
         this.readLock.lock();
         try {
-            if (!this.state.isActive()) {
+            if (this.state != ReplicaState.Candidate) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.warn("The replica not active on handle recover timeout, state={}", this.state);
+                    LOGGER.warn("The replica={} not Candidate on handle recover timeout, state={}", this.replicaId, this.state);
                 }
                 return;
             }
-            //TODO doRecover
-
+            if (this.recovering.get()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("The replica={} is recovering.", this.replicaId);
+                }
+                return;
+            }
+            ThreadUtil.runInThread(() -> {
+                doRecover(null);
+            });
         } finally {
             this.readLock.unlock();
         }
-
     }
 
     boolean isAlive(final ReplicaId secondary) {
@@ -996,49 +1017,63 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void doRecover(final Callback onFinish) {
-        this.readLock.lock();
         try {
             ensureActive();
-            //TODO  check recovering
-            // refresh
-
+            if (!this.recovering.compareAndSet(false, true)) {
+                throw new PacificaException(PacificaErrorCode.BUSY, "The Candidate busy with recovery.");
+            }
             if (this.state != ReplicaState.Candidate) {
                 throw new PacificaException(PacificaErrorCode.NOT_SUPPORT, "Only Candidate state needs to recover. current state is " + this.state);
             }
-            final ReplicaId primaryId = this.replicaGroup.getPrimary();
-            final long term = this.replicaGroup.getPrimaryTerm();
-            RpcRequest.ReplicaRecoverRequest recoverRequest = RpcRequest.ReplicaRecoverRequest.newBuilder()//
-                    .setPrimaryId(RpcUtil.protoReplicaId(primaryId))//
-                    .setRecoverId(RpcUtil.protoReplicaId(this.replicaId))//
-                    .setTerm(term)//
-                    .build();
-            this.pacificaClient.recoverReplica(recoverRequest, new ExecutorRequestFinished<RpcRequest.ReplicaRecoverResponse>() {
-
-                @Override
-                protected void doRun(Finished finished) {
-                    handleRecoverReplicaResponse(finished, getRpcResponse(), onFinish);
-                }
-            });
-
+            this.readLock.lock();
+            try {
+                final ReplicaId primaryId = this.replicaGroup.getPrimary();
+                final long term = this.replicaGroup.getPrimaryTerm();
+                RpcRequest.ReplicaRecoverRequest recoverRequest = RpcRequest.ReplicaRecoverRequest.newBuilder()//
+                        .setPrimaryId(RpcUtil.protoReplicaId(primaryId))//
+                        .setRecoverId(RpcUtil.protoReplicaId(this.replicaId))//
+                        .setTerm(term)//
+                        .build();
+                this.pacificaClient.recoverReplica(recoverRequest, new ExecutorRequestFinished<RpcRequest.ReplicaRecoverResponse>() {
+                    @Override
+                    protected void doRun(Finished finished) {
+                        handleReplicaRecoverResponse(finished, getRpcResponse(), onFinish);
+                    }
+                });
+            } catch (Throwable e) {
+                this.recovering.set(false);
+                ThreadUtil.runCallback(onFinish, Finished.failure(e));
+            } finally {
+                this.readLock.unlock();
+            }
         } catch (Throwable e) {
             ThreadUtil.runCallback(onFinish, Finished.failure(e));
-        } finally {
-            this.readLock.unlock();
         }
     }
 
-    private void handleRecoverReplicaResponse(final Finished finished, final RpcRequest.ReplicaRecoverResponse response, final @Nullable Callback onFinish) {
-        if (!finished.isOk()) {
-            ThreadUtil.runCallback(onFinish, finished);
-            return;
+    private void handleReplicaRecoverResponse(final Finished finished, final RpcRequest.ReplicaRecoverResponse response, final @Nullable Callback onFinish) {
+        try {
+            if (!finished.isOk()) {
+                ThreadUtil.runCallback(onFinish, finished);
+                return;
+            }
+            assert response != null;
+            if (!response.getSuccess()) {
+                // the local term is lower
+                alignReplicaGroupVersion(response.getVersion());
+                ThreadUtil.runCallback(onFinish, Finished.failure(new PacificaException(PacificaErrorCode.NO_MATCH_TERM, "Received a response that the Primary failed to recover")));
+                return;
+            }
+            refreshReplicaGroupUtil(response.getVersion());
+            ThreadUtil.runCallback(onFinish, Finished.success());
+            LOGGER.info("{} success to recover.", this.replicaId);
+        } catch (PacificaException e) {
+            ThreadUtil.runCallback(onFinish, Finished.failure(e));
+            LOGGER.error("{} failed to recover.", this.replicaId);
+        } finally {
+            this.recovering.set(false);
         }
-        assert response != null;
-        if (!response.getSuccess()) {
 
-            return;
-        }
-
-        //TODO success
 
     }
 

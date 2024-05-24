@@ -31,26 +31,15 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option> {
-
-
     static final Logger LOGGER = LoggerFactory.getLogger(BallotBoxImpl.class);
-
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
     private final Lock readLock = lock.readLock();
-
     private final Lock writeLock = lock.writeLock();
-
     private long pendingLogIndex = 0; //pendingLogIndex = last_log_index + 1
     private volatile long lastCommittedLogIndex = 0; //lastCommittedLogIndex
-
     private StateMachineCaller fsmCaller;
-
     private LogManager logManager;
-
     private final LinkedList<Ballot> ballotQueue = new LinkedList<>();
-
     private final PendingQueue<Ballot> ballotPendingQueue = new PendingQueueImpl<>();
 
     @Override

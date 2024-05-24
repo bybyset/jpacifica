@@ -25,6 +25,7 @@ import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.SystemPropertyUtil;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -75,6 +76,16 @@ public class ThreadUtil {
         executor.execute(() -> {
             callback.run(result);
         });
+    }
+
+
+    /**
+     * run in executor
+     * @param runnable
+     * @return
+     */
+    public static Future<?> runInThread(final Runnable runnable) {
+        return _CALLBACK_EXECUTOR.submit(runnable);
     }
 
 }

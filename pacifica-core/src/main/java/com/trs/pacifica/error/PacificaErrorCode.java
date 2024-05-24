@@ -35,6 +35,7 @@ public enum PacificaErrorCode {
     IO(100110, "io exception"),
     REPLICATOR(100111, "sender error"),
     CONF_CLUSTER(100112, "conf cluster"),
+    NO_MATCH_TERM(100113, "higher term"),
 
 
 
