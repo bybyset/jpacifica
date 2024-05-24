@@ -21,6 +21,7 @@ import com.trs.pacifica.ConfigurationClient;
 import com.trs.pacifica.PacificaServiceFactory;
 import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.thread.ExecutorGroup;
+import com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;

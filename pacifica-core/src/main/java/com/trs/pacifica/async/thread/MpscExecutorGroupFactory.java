@@ -17,6 +17,9 @@
 
 package com.trs.pacifica.async.thread;
 
+import com.trs.pacifica.spi.SPI;
+
+@SPI
 public class MpscExecutorGroupFactory implements ExecutorGroupFactory{
 
 

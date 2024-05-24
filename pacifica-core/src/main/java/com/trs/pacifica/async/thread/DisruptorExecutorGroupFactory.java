@@ -15,29 +15,11 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.core;
+package com.trs.pacifica.async.thread;
 
-import com.trs.pacifica.async.thread.DefaultExecutorGroupFactory;
-import com.trs.pacifica.async.thread.ExecutorGroup;
-
-public class ReplicaExecutorGroupHolder {
-
-    private static ExecutorGroup INSTANCE;
-
-
-    private ReplicaExecutorGroupHolder() {
+public class DisruptorExecutorGroupFactory implements ExecutorGroupFactory{
+    @Override
+    public ExecutorGroup newExecutorGroup() {
+        return null;
     }
-
-
-    public static ExecutorGroup getDefaultInstance() {
-        if (INSTANCE == null) {
-            synchronized (ReplicaExecutorGroupHolder.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new DefaultExecutorGroupFactory().newExecutorGroup();
-                }
-            }
-        }
-        return INSTANCE;
-    }
-
 }

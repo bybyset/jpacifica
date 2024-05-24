@@ -19,6 +19,10 @@ package com.trs.pacifica.async.thread;
 
 public interface ExecutorGroupFactory {
 
+    /**
+     * new ExecutorGroup
+     * @return
+     */
     ExecutorGroup newExecutorGroup();
 
 }

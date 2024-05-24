@@ -637,11 +637,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         try {
             this.state = ReplicaState.Candidate;
             unsafeStepDown();
+            startRecoverTimer();
             LOGGER.info("The replica({}) has become Candidate.", this.replicaId);
         } finally {
             this.writeLock.unlock();
         }
-
     }
 
     private void apply(final LogEntry logEntry, final Callback onFinish) throws PacificaException {
@@ -1068,8 +1068,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         } finally {
             this.recovering.set(false);
         }
-
-
     }
 
     private long forceRefreshReplicaGroup() {
@@ -1152,7 +1150,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         stopLeasePeriodTimer();
         stopGracePeriodTimer();
         stopSnapshotTimer();
-
     }
 
     /**
