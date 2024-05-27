@@ -27,12 +27,21 @@ public interface LogManager {
 
 
     /**
+     * The logEntries is appended in bulk,
+     * and callback are executed after persistent storage.
+     *
      * @param logEntries
+     * @param callback   finished callback
+     */
+    void appendLogEntries(List<LogEntry> logEntries, AppendLogEntriesCallback callback);
+
+    /**
+     * append LogEntry
+     *
+     * @param logEntry
      * @param callback
      */
-    public void appendLogEntries(List<LogEntry> logEntries, AppendLogEntriesCallback callback);
-
-    default public void appendLogEntry(final LogEntry logEntry, final AppendLogEntriesCallback callback) {
+    default void appendLogEntry(final LogEntry logEntry, final AppendLogEntriesCallback callback) {
         appendLogEntries(List.of(logEntry), callback);
     }
 
@@ -43,65 +52,41 @@ public interface LogManager {
      * @return
      * @throws LogEntryCorruptedException if the LogEntry corrupted
      */
-    public LogEntry getLogEntryAt(final long logIndex) throws PacificaException;
+    LogEntry getLogEntryAt(final long logIndex) throws LogEntryCorruptedException;
 
     /**
+     * get term of LogId at log index
      * @param logIndex
      * @return term of LogId at logIndex.
      * @return 0 if logIndex <= 0 or not found LogEntry.
      */
-    public long getLogTermAt(final long logIndex);
-
-    /**
-     * get LogId at commit point
-     *
-     * @return
-     */
-    public LogId getCommittedPoint();
+    long getLogTermAt(final long logIndex);
 
     /**
      * get first log id
      *
      * @return LogId(0, 0) if nothing
      */
-    public LogId getFirstLogId();
+    LogId getFirstLogId();
 
     /**
      * get last log id
      *
      * @return LogId(0, 0) if nothing
      */
-    public LogId getLastLogId();
-
-
-    /**
-     * if expectedLastLogIndex <= lastLogIndexOnDisk will run newLogCallback and return -1L
-     *
-     * @param expectedLastLogIndex
-     * @param newLogWaiter
-     * @return waiterId for remove the waiter.
-     * @throws NullPointerException if newLogCallback is null
-     */
-    public long waitNewLog(final long expectedLastLogIndex, final NewLogWaiter newLogWaiter);
+    LogId getLastLogId();
 
 
     /**
      * called when snapshot be saved or load
+     *
      * @param snapshotLogIndex log index at snapshot
      * @param snapshotLogTerm  log term at snapshot
      */
-    public void onSnapshot(final long snapshotLogIndex, final long snapshotLogTerm);
+    void onSnapshot(final long snapshotLogIndex, final long snapshotLogTerm);
 
 
-    public void onCommitted(final long committedLogIndex, final long committedLogTerm);
-
-    /**
-     * @param waiterId
-     * @return true if success
-     */
-    public boolean removeWaiter(final long waiterId);
-
-    public static abstract class NewLogWaiter implements Callback {
+    abstract class NewLogWaiter implements Callback {
 
         private long newLogIndex = 0L;
 
@@ -115,7 +100,7 @@ public interface LogManager {
     }
 
 
-    public static abstract class AppendLogEntriesCallback implements Callback {
+    abstract class AppendLogEntriesCallback implements Callback {
 
         private long firstLogIndex;
 

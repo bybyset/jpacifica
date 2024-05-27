@@ -388,5 +388,10 @@ public class FsLogStorage implements LogStorage {
         return new LogId(0, 0);
     }
 
+    @Override
+    public boolean reset(long nextLogIndex) {
+        return false;
+    }
+
 
 }
