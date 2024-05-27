@@ -27,30 +27,51 @@ public interface SnapshotManager {
 
     /**
      * install snapshot
-     * @param snapshotMeta
-     * @param callback
+     * When Candidate receives a InstallSnapshotRequest from the Primary,
+     * the Candidate downloads the snapshot file from the Primary
+     * and loads it into its own state machine.
+     *
+     * @param installSnapshotRequest install snapshot request from Primary
+     * @param callback               for async
+     * @return InstallSnapshotResponse
      */
-    public void installSnapshot(final RpcRequest.InstallSnapshotRequest installSnapshotRequest, final Callback callback);
+    RpcRequest.InstallSnapshotResponse installSnapshot(final RpcRequest.InstallSnapshotRequest installSnapshotRequest, final InstallSnapshotCallback callback);
 
 
-    SnapshotStorage getSnapshotStorage();
-
-
-    default public void doSnapshot() {
+    /**
+     * execute snapshot
+     */
+    default void doSnapshot() {
         doSnapshot(null);
     }
 
     /**
      * execute snapshot
-     * @param callback  called after finished.
+     *
+     * @param callback called after finished.
      */
     void doSnapshot(final Callback callback);
 
 
     /**
      * get the LogId at last execute snapshot
+     *
      * @return
      */
     LogId getLastSnapshotLodId();
+
+
+    abstract class InstallSnapshotCallback implements Callback {
+
+        private RpcRequest.InstallSnapshotResponse response = null;
+
+        public RpcRequest.InstallSnapshotResponse getResponse() {
+            return response;
+        }
+
+        public void setResponse(RpcRequest.InstallSnapshotResponse response) {
+            this.response = response;
+        }
+    }
 
 }

@@ -29,63 +29,84 @@ public interface StateMachineCaller {
 
 
     /**
-     * commit
+     * Move the commit point forward,
+     * and the log of user actions committed is applied to the state machine in order.
+     *
      * @param logIndex
      * @return
      */
-    public boolean commitAt(final long logIndex);
+    boolean commitAt(final long logIndex);
 
 
     /**
      * get commit point (last log entry index to apply state machine)
+     *
      * @return LogId(0, 0) if nothing commit,
      */
-    public LogId getCommitPoint();
+    LogId getCommitPoint();
 
 
     /**
      * get committing log index
+     *
      * @return
      */
-    public long getCommittingLogIndex();
+    long getCommittingLogIndex();
 
     /**
      * get committed log index
+     *
      * @return
      */
-    public long getCommittedLogIndex();
+    long getCommittedLogIndex();
 
-    public boolean onSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback);
+    /**
+     * Snapshot loading event.
+     * Triggered when first started or after the Candidate
+     * has downloaded a snapshot from the Primary.
+     *
+     * @param snapshotLoadCallback
+     * @return
+     */
+    boolean onSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback);
 
-    public boolean onSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback);
+    /**
+     * snapshot saving event.
+     * This event is fired by a user call to {@link Replica#snapshot(Callback)}
+     * or by a timed schedule.
+     *
+     * @param snapshotSaveCallback
+     * @return
+     */
+    boolean onSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback);
 
 
     /**
      * Called when error happens.
+     *
      * @param error PacificaException
      */
-    public void onError(final PacificaException error);
+    void onError(final PacificaException error);
 
 
-
-    public static interface SnapshotLoadCallback extends Callback {
+    static interface SnapshotLoadCallback extends Callback {
 
         public SnapshotReader getSnapshotReader();
 
         /**
          * wait snapshot load
+         *
          * @throws InterruptedException if loading snapshot was interrupted.
-         * @throws ExecutionException if loading snapshot failed.
+         * @throws ExecutionException   if loading snapshot failed.
          */
         public void awaitComplete() throws InterruptedException, ExecutionException;
 
 
     }
 
-    public static interface SnapshotSaveCallback extends Callback {
+    static interface SnapshotSaveCallback extends Callback {
 
         /**
-         *
          * @param saveLogId
          * @return
          */
@@ -93,6 +114,7 @@ public interface StateMachineCaller {
 
         /**
          * get save LogId on snapshot save
+         *
          * @return null if not start
          */
         LogId getSaveLogId();

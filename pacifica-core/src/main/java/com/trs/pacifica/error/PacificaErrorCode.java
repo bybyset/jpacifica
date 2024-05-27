@@ -36,6 +36,7 @@ public enum PacificaErrorCode {
     REPLICATOR(100111, "sender error"),
     CONF_CLUSTER(100112, "conf cluster"),
     NO_MATCH_TERM(100113, "higher term"),
+    INTERRUPTED(100114, "interrupted"),
 
 
 

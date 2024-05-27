@@ -17,22 +17,46 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fsm.OperationIterator;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 
 public interface StateMachine {
 
-    public void onApply(OperationIterator iterator);
+    /**
+     * @param iterator
+     */
+    void onApply(OperationIterator iterator);
 
-    public void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException;
+    /**
+     * User defined snapshot load function get and load snapshot.
+     * @param snapshotReader
+     * @throws PacificaException
+     */
+    void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException;
 
-    public void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException;
+    /**
+     *
+     * @param snapshotWriter
+     * @throws PacificaException
+     */
+    void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException;
 
-    public void onShutdown();
+    /**
+     * Invoked once when the replica was shutdown.
+     */
+    void onShutdown();
 
 
-
+    /**
+     * This method is called when a critical error was encountered,
+     * after this point, no any further modification is allowed to
+     * apply to this replica until the error is fixed and this replica restarts.
+     *
+     * @param fault
+     */
+    void onError(PacificaException fault);
 
 
 }

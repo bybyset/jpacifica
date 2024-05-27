@@ -15,20 +15,35 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.snapshot;
+package com.trs.pacifica.async.thread;
 
-import com.trs.pacifica.fs.FileService;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
-import java.io.Closeable;
+//TODO impl
+public class DisruptorExecutorGroup implements ExecutorGroup {
+    @Override
+    public boolean shutdownGracefully() {
+        return false;
+    }
 
-public interface SnapshotReader extends Snapshot, Closeable {
+    @Override
+    public boolean shutdownGracefully(long timeout, TimeUnit unit) {
+        return false;
+    }
 
+    @Override
+    public SingleThreadExecutor chooseExecutor() {
+        return null;
+    }
 
-    /**
-     * generate file reader id for download snapshot
-     * @return
-     */
-    long generateReadIdForDownload(FileService fileService);
+    @Override
+    public Iterator<SingleThreadExecutor> iterator() {
+        return null;
+    }
 
+    @Override
+    public void execute(Runnable command) {
 
+    }
 }

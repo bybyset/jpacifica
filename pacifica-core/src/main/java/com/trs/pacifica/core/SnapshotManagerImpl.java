@@ -20,6 +20,7 @@ package com.trs.pacifica.core;
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.model.LogId;
@@ -29,12 +30,14 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.util.IOUtils;
 import com.trs.pacifica.util.RpcLogUtil;
 import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -59,10 +62,10 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     private LogManager logManager;
     private StateMachineCaller stateMachineCaller;
     private LogId lastSnapshotLogId = new LogId(0, 0);
-
     private PacificaClient pacificaClient;
-
     private SnapshotDownloader snapshotDownloader = null;
+
+    private SnapshotStorageFactory snapshotStorageFactory = null;
 
 
     public SnapshotManagerImpl(final ReplicaImpl replica) {
@@ -70,14 +73,12 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
-    public void init(Option option) throws PacificaException{
+    public void init(Option option) throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state == State.UNINITIALIZED) {
                 this.option = Objects.requireNonNull(option, "option");
-                final String storagePath = Objects.requireNonNull(option.getStoragePath(), "storage path");
-                final SnapshotStorageFactory snapshotStorageFactory = Objects.requireNonNull(option.getSnapshotStorageFactory(), "snapshot storage factory");
-                this.snapshotStorage = snapshotStorageFactory.newSnapshotStorage(storagePath);
+                this.snapshotStorageFactory = Objects.requireNonNull(option.getSnapshotStorageFactory(), "snapshot storage factory");
                 this.logManager = Objects.requireNonNull(option.getLogManager(), "logManager");
                 this.stateMachineCaller = Objects.requireNonNull(option.getStateMachineCaller(), "stateMachineCaller");
                 this.pacificaClient = Objects.requireNonNull(option.getPacificaClient(), "pacificaClient");
@@ -90,15 +91,13 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
-    public void startup() {
+    public void startup() throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state == State.SHUTDOWN) {
-                try {
-                    doFirstSnapshotLoad();
-                } catch (Throwable throwable) {
-
-                }
+                final String storagePath = Objects.requireNonNull(option.getStoragePath(), "storage path");
+                this.snapshotStorage = this.snapshotStorageFactory.newSnapshotStorage(storagePath);
+                doFirstSnapshotLoad();
             }
         } finally {
             this.writeLock.unlock();
@@ -107,7 +106,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws PacificaException {
         this.writeLock.lock();
         try {
             if (this.state != State.SHUTDOWN) {
@@ -116,7 +115,6 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 if (snapshotDownloader != null) {
                     snapshotDownloader.cancel();
                 }
-
                 this.state = State.SHUTDOWN;
             }
         } finally {
@@ -125,8 +123,9 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     @Override
-    public void installSnapshot(RpcRequest.InstallSnapshotRequest installSnapshotRequest, Callback callback) {
+    public RpcRequest.InstallSnapshotResponse installSnapshot(RpcRequest.InstallSnapshotRequest installSnapshotRequest, final InstallSnapshotCallback callback) {
         try {
+            ensureStarted();
             LogId installLogId = null;
             this.readLock.lock();
             try {
@@ -134,75 +133,90 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 final long snapshotLogTerm = installSnapshotRequest.getSnapshotLogTerm();
                 installLogId = new LogId(snapshotLogIndex, snapshotLogTerm);
                 if (installLogId.compareTo(this.lastSnapshotLogId) < 0) {
-                    //TODO installed
+                    //installed
                     LOGGER.warn("{} receive InstallSnapshotRequest({}), but has been installed. local_snapshot_log_id={}",
                             replica.getReplicaId(), RpcLogUtil.toLogString(installSnapshotRequest), this.lastSnapshotLogId);
-                    throw new PacificaException(PacificaErrorCode.INTERNAL, "");
+                    throw new PacificaException(PacificaErrorCode.INTERNAL, "has been installed.");
                 }
             } finally {
                 this.readLock.unlock();
             }
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_DOWNLOADING)) {
-                final ReplicaId primaryId = RpcUtil.toReplicaId(installSnapshotRequest.getPrimaryId());
-                //1、download snapshot from Primary
-                final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(installLogId, installSnapshotRequest.getReaderId(), this.pacificaClient, primaryId);
-                try(final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot(context)) {
-                    this.snapshotDownloader = snapshotDownloader;
-                    snapshotDownloader.start();
-                    snapshotDownloader.awaitComplete();
-                } catch (ExecutionException e) {
-                    throw new PacificaException(PacificaErrorCode.USER_ERROR, "", e.getCause());
-                } catch (InterruptedException e) {
-                    //TODO
-                } finally {
-                    snapshotDownloader = null;
+                try {
+                    final ReplicaId primaryId = RpcUtil.toReplicaId(installSnapshotRequest.getPrimaryId());
+                    //1、download snapshot from Primary
+                    LOGGER.info("{} download snapshot from Primary={}", this.replica.getReplicaId(), primaryId);
+                    final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(installLogId, installSnapshotRequest.getReaderId(), this.pacificaClient, primaryId);
+                    try (final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot(context)) {
+                        this.snapshotDownloader = snapshotDownloader;
+                        snapshotDownloader.start();
+                        snapshotDownloader.awaitComplete();
+                    } catch (ExecutionException e) {
+                        throw new PacificaException(PacificaErrorCode.USER_ERROR, String.format("failed to download snapshot from Primary(%s)", primaryId), e.getCause());
+                    } catch (InterruptedException e) {
+                        throw new PacificaException(PacificaErrorCode.INTERRUPTED, String.format("%s interrupted download snapshot.", this.replica.getReplicaId()), e);
+                    } finally {
+                        snapshotDownloader = null;
+                    }
+                    //2、load snapshot
+                    final SnapshotReader snapshotReader = this.snapshotStorage.openSnapshotReader();
+                    if (snapshotReader == null) {
+                        throw new PacificaException(PacificaErrorCode.INTERNAL, "failed to open snapshot reader after download snapshot.");
+                    }
+                    final InstalledSnapshotLoadCallback installedSnapshotLoadCallback = new InstalledSnapshotLoadCallback(callback, snapshotReader);
+                    doSnapshotLoad(installedSnapshotLoadCallback, State.SNAPSHOT_DOWNLOADING);
+                } catch (Throwable e) {
+                    STATE_UPDATER.set(this, State.IDLE);
+                    ThreadUtil.runCallback(callback, Finished.failure(e));
                 }
-                //2、load snapshot
-                doSnapshotLoad(null, State.SNAPSHOT_DOWNLOADING);
-
             } else {
-                //TODO
-                return;
+                throw new PacificaException(PacificaErrorCode.BUSY, String.format("the snapshot manager is busy doing %s.", this.state));
             }
-
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         }
-    }
-
-    @Override
-    public SnapshotStorage getSnapshotStorage() {
-        return snapshotStorage;
+        return null;
     }
 
     private boolean isStarted() {
         return this.state.compareTo(State.UNINITIALIZED) > 0;
     }
 
+    private void ensureStarted() {
+        if (!isStarted()) {
+            throw new AlreadyClosedException(String.format("%s is not started.", this.getClass().getSimpleName()));
+        }
+    }
+
     @Override
     public void doSnapshot(final Callback callback) {
         try {
+            ensureStarted();
             final int snapshotLogIndexMargin = Math.max(0, this.option.getReplicaOption().getSnapshotLogIndexMargin());
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_SAVING)) {
                 this.readLock.lock();
                 try {
                     final LogId commitPoint = this.stateMachineCaller.getCommitPoint();
                     if (commitPoint.getIndex() < this.lastSnapshotLogId.getIndex()) {
-                        //TODO ERROR
-                        return;
+                        // Our program should not go into this code block.
+                        // TODO This error should probably be reported to the replica?
+                        throw new PacificaException(PacificaErrorCode.INTERNAL, String.format("committed_log_index=%d less than snapshot_log_index=%d", commitPoint.getIndex(), this.lastSnapshotLogId.getIndex()));
                     }
                     if (commitPoint.getIndex() == this.lastSnapshotLogId.getIndex()) {
-                        //TODO
+                        // ok, no need to execute.
+                        ThreadUtil.runCallback(callback, Finished.success());
                         return;
                     }
                     final long distance = commitPoint.getIndex() - this.lastSnapshotLogId.getIndex();
                     if (distance < snapshotLogIndexMargin) {
-                        //TODO
-                        return;
+                        // Set by the user, how many logs of operations will be kept without taking snapshot.
+                        // snapshotLogIndexMargin
+                        throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("You set snapshotLogIndexMargin=%d, " +
+                                "so skip it. committed_log_index=%s, last_snapshot_log_index=%d", snapshotLogIndexMargin, commitPoint.getIndex(), this.lastSnapshotLogId.getIndex()));
                     }
                     final SnapshotSaveCallback snapshotSaveCallback = new SnapshotSaveCallback(callback);
                     this.stateMachineCaller.onSnapshotSave(snapshotSaveCallback);
-                    LOGGER.info("");
+                    LOGGER.debug("{} do snapshot save", this.replica.getReplicaId());
                 } finally {
                     this.readLock.unlock();
                 }
@@ -212,7 +226,6 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         }
-
     }
 
 
@@ -233,18 +246,19 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                     try {
                         snapshotLoadCallback.awaitComplete();
                     } catch (InterruptedException e) {
-
+                        throw new PacificaException(PacificaErrorCode.INTERRUPTED, String.format("%s interrupted load snapshot.", this.replica.getReplicaId()));
                     } catch (ExecutionException e) {
-                        throw new PacificaException(PacificaErrorCode.USER_ERROR, "", e.getCause());
+                        Throwable cause = e.getCause();
+                        throw new PacificaException(PacificaErrorCode.USER_ERROR, String.format("%s failed to load snapshot, msg=%s", this.replica.getReplicaId(), cause.getCause()), cause);
                     }
                 } else {
-                    throw new PacificaException(PacificaErrorCode.BUSY, "");
+                    throw new PacificaException(PacificaErrorCode.BUSY, String.format("%s is busy do other task", this.replica.getReplicaId()));
                 }
             } finally {
                 STATE_UPDATER.set(this, State.IDLE);
             }
         } else {
-            throw new PacificaException(PacificaErrorCode.BUSY, "");
+            throw new PacificaException(PacificaErrorCode.BUSY, String.format("%s is busy load snapshot, do not repeat", this.replica.getReplicaId()));
         }
     }
 
@@ -370,6 +384,10 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 }
             } finally {
                 this.latch.countDown();
+                try {
+                    IOUtils.close(this.snapshotReader);
+                } catch (IOException e) {
+                }
             }
         }
 
@@ -377,6 +395,45 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
             this.latch.await();
             if (this.error != null) {
                 throw new ExecutionException(this.error);
+            }
+        }
+    }
+
+    class InstalledSnapshotLoadCallback implements StateMachineCaller.SnapshotLoadCallback {
+
+        private final InstallSnapshotCallback installSnapshotCallback;
+        private final SnapshotReader snapshotReader;
+
+        InstalledSnapshotLoadCallback(InstallSnapshotCallback installSnapshotCallback, SnapshotReader snapshotReader) {
+            this.installSnapshotCallback = installSnapshotCallback;
+            this.snapshotReader = snapshotReader;
+        }
+
+        @Override
+        public SnapshotReader getSnapshotReader() {
+            return snapshotReader;
+        }
+
+        @Override
+        public void awaitComplete() throws InterruptedException, ExecutionException {
+            //do nothing
+        }
+
+        @Override
+        public void run(Finished finished) {
+            try {
+                if (finished.isOk()) {
+                    final RpcRequest.InstallSnapshotResponse response = RpcRequest.InstallSnapshotResponse.newBuilder()//
+                            .setSuccess(true)//
+                            .build();
+                    installSnapshotCallback.setResponse(response);
+                }
+                ThreadUtil.runCallback(installSnapshotCallback, finished);
+            } finally {
+                try {
+                    IOUtils.close(this.snapshotReader);
+                } catch (IOException e) {
+                }
             }
         }
     }

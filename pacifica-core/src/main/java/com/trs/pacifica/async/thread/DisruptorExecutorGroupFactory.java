@@ -17,9 +17,10 @@
 
 package com.trs.pacifica.async.thread;
 
-public class DisruptorExecutorGroupFactory implements ExecutorGroupFactory{
+public class DisruptorExecutorGroupFactory implements ExecutorGroupFactory {
     @Override
     public ExecutorGroup newExecutorGroup() {
-        return null;
+        return new DisruptorExecutorGroup();
     }
+
 }

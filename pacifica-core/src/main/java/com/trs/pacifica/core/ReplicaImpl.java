@@ -140,7 +140,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private void initSnapshotManager(ReplicaOption option) throws PacificaException {
         final SnapshotManagerImpl.Option snapshotManagerOption = new SnapshotManagerImpl.Option();
+        snapshotManagerOption.setReplicaOption(option);
+        snapshotManagerOption.setStoragePath(option.getSnapshotStoragePath());
         snapshotManagerOption.setSnapshotStorageFactory(option.getPacificaServiceFactory());
+        snapshotManagerOption.setStateMachineCaller(this.stateMachineCaller);
+        snapshotManagerOption.setLogManager(this.logManager);
+        snapshotManagerOption.setPacificaClient(this.pacificaClient);
         this.snapshotManager.init(snapshotManagerOption);
     }
 
@@ -499,7 +504,18 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                         .setTerm(primaryTerm)//
                         .build();
             }
-            this.snapshotManager.installSnapshot(request, callback);
+            final SnapshotManager.InstallSnapshotCallback installSnapshotCallback = new SnapshotManager.InstallSnapshotCallback() {
+
+                @Override
+                public void run(Finished finished) {
+                    if (finished.isOk()) {
+                        final RpcRequest.InstallSnapshotResponse response = getResponse();
+                        callback.setRpcResponse(response);
+                    }
+                    ThreadUtil.runCallback(callback, finished);
+                }
+            };
+            return this.snapshotManager.installSnapshot(request, installSnapshotCallback);
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {

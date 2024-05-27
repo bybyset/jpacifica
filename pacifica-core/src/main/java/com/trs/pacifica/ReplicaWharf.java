@@ -17,9 +17,13 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.async.thread.ExecutorGroup;
+import com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder;
 import com.trs.pacifica.core.ReplicaImpl;
 import com.trs.pacifica.core.ReplicaOption;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.log.codec.LogEntryCodecFactory;
+import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.client.RpcClient;
@@ -27,14 +31,23 @@ import com.trs.pacifica.rpc.node.EndpointFactory;
 
 public class ReplicaWharf {
 
-    private ReplicaId replicaId;
-    private RpcClient rpcClient = null;
-    private RpcServer rpcServer = null;
-    private EndpointFactory endpointFactory = null;
-    private ConfigurationClient configurationClient = null;
-    private StateMachine stateMachine = null;
+    private final RpcClient rpcClient;
+    private final RpcServer rpcServer;
+    private final EndpointFactory endpointFactory;
+    private final ConfigurationClient configurationClient;
+    private final StateMachine stateMachine;
+    private final ReplicaImpl replicaImpl;
+    private final ReplicaOption replicaOption;
 
-    private ReplicaImpl replicaImpl = null;
+    public ReplicaWharf(RpcClient rpcClient, RpcServer rpcServer, EndpointFactory endpointFactory, ConfigurationClient configurationClient, StateMachine stateMachine, ReplicaImpl replicaImpl, ReplicaOption replicaOption) {
+        this.rpcClient = rpcClient;
+        this.rpcServer = rpcServer;
+        this.endpointFactory = endpointFactory;
+        this.configurationClient = configurationClient;
+        this.stateMachine = stateMachine;
+        this.replicaImpl = replicaImpl;
+        this.replicaOption = replicaOption;
+    }
 
 
     public void start() throws PacificaException {
@@ -51,10 +64,8 @@ public class ReplicaWharf {
     }
 
     public static class Builder {
-
         private final ReplicaId replicaId;
         private ReplicaOption replicaOption = new ReplicaOption();
-
         private RpcClient rpcClient = null;
         private RpcServer rpcServer = null;
         private EndpointFactory endpointFactory = null;
@@ -62,12 +73,120 @@ public class ReplicaWharf {
         private StateMachine stateMachine = null;
 
 
+        /****************************ReplicaOption************************************/
+        private int gracePeriodTimeoutMs = ReplicaOption.DEFAULT_GRACE_PERIOD_TIMEOUT_MS;
+
+        private int snapshotTimeoutMs = ReplicaOption.DEFAULT_SNAPSHOT_TIMEOUT_MS;
+
+        private int recoverTimeoutMs = ReplicaOption.DEFAULT_RECOVER_TIMEOUT_MS;
+
+        private int snapshotLogIndexReserved = ReplicaOption.DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED;
+
+        private int snapshotLogIndexMargin = ReplicaOption.DEFAULT_SNAPSHOT_LOG_INDEX_MARGIN;
+
+        private int maxOperationNumPerBatch = ReplicaOption.DEFAULT_MAX_OPERATION_NUM_PER_BATCH;
+
+        private boolean enableLogEntryChecksum = ReplicaOption.DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM;
+
+        private String logStoragePath = null;
+
+        private String snapshotStoragePath = null;
+
+        private ExecutorGroup applyExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+        private ExecutorGroup logManagerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+        private ExecutorGroup fsmCallerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+        private LogEntryCodecFactory logEntryCodecFactory = LogEntryCodecFactoryHolder.getInstance();
+
+
         private Builder(ReplicaId replicaId) {
             this.replicaId = replicaId;
         }
 
-        public ReplicaWharf.Builder replicaOption(final ReplicaOption replicaOption) {
-            this.replicaOption = replicaOption;
+        public Builder rpcClient(RpcClient rpcClient) {
+            this.rpcClient = rpcClient;
+            return this;
+        }
+
+        public Builder rpcServer(RpcServer rpcServer) {
+            this.rpcServer = rpcServer;
+            return this;
+        }
+
+        public Builder endpointFactory(EndpointFactory endpointFactory) {
+            this.endpointFactory = endpointFactory;
+            return this;
+        }
+
+        public Builder configurationClient(ConfigurationClient configurationClient) {
+            this.configurationClient = configurationClient;
+            return this;
+        }
+
+        public Builder stateMachine(StateMachine stateMachine) {
+            this.stateMachine = stateMachine;
+            return this;
+        }
+
+        public Builder gracePeriodTimeoutMs(int gracePeriodTimeoutMs) {
+            this.gracePeriodTimeoutMs = gracePeriodTimeoutMs;
+            return this;
+        }
+
+        public Builder snapshotTimeoutMs(int snapshotTimeoutMs) {
+            this.snapshotTimeoutMs = snapshotTimeoutMs;
+            return this;
+        }
+
+        public Builder recoverTimeoutMs(int recoverTimeoutMs) {
+            this.recoverTimeoutMs = recoverTimeoutMs;
+            return this;
+        }
+
+        public Builder snapshotLogIndexReserved(int snapshotLogIndexReserved) {
+            this.snapshotLogIndexReserved = snapshotLogIndexReserved;
+            return this;
+        }
+
+        public Builder snapshotLogIndexMargin(int snapshotLogIndexMargin) {
+            this.snapshotLogIndexMargin = snapshotLogIndexMargin;
+            return this;
+        }
+
+        public Builder maxOperationNumPerBatch(int maxOperationNumPerBatch) {
+            this.maxOperationNumPerBatch = maxOperationNumPerBatch;
+            return this;
+        }
+
+        public Builder logStoragePath(String logStoragePath) {
+            this.logStoragePath = logStoragePath;
+            return this;
+        }
+
+        public Builder snapshotStoragePath(String snapshotStoragePath) {
+            this.snapshotStoragePath = snapshotStoragePath;
+            return this;
+        }
+
+        public Builder applyExecutorGroup(ExecutorGroup applyExecutorGroup) {
+            this.applyExecutorGroup = applyExecutorGroup;
+            return this;
+        }
+
+        public Builder logManagerExecutorGroup(ExecutorGroup logManagerExecutorGroup) {
+            this.logManagerExecutorGroup = logManagerExecutorGroup;
+            return this;
+        }
+
+        public Builder fsmCallerExecutorGroup(ExecutorGroup fsmCallerExecutorGroup) {
+            this.fsmCallerExecutorGroup = fsmCallerExecutorGroup;
+            return this;
+        }
+
+        public Builder logEntryCodecFactory(LogEntryCodecFactory logEntryCodecFactory) {
+            this.logEntryCodecFactory = logEntryCodecFactory;
             return this;
         }
 
@@ -78,6 +197,7 @@ public class ReplicaWharf {
                 this.replicaOption = new ReplicaOption();
             }
 
+
             this.replicaOption.setConfigurationClient(this.configurationClient);
 
             this.replicaOption.setRpcClient(this.rpcClient);
@@ -86,7 +206,7 @@ public class ReplicaWharf {
             this.replicaOption.setStateMachine(this.stateMachine);
 
             replicaImpl.init(replicaOption);
-            return new ReplicaWharf();
+            return null;
         }
     }
 

@@ -31,16 +31,20 @@ import java.util.concurrent.TimeUnit;
 
 public class ReplicaOption {
 
-    static final int DEFAULT_MAX_OPERATION_NUM_PER_BATCH = 16;
-    static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
-    static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
-    static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
+    public static final int DEFAULT_MAX_OPERATION_NUM_PER_BATCH = 16;
+    public static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
+    public static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
+    public static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
 
-    static final int DEFAULT_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(3);
+    public static final int DEFAULT_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(3);
 
-    static final int DEFAULT_RECOVER_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(10);
+    public static final int DEFAULT_RECOVER_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(10);
 
-    static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
+    public static final int DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED = 10;
+
+    public static final int DEFAULT_SNAPSHOT_LOG_INDEX_MARGIN = 0;
+
+    public static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
 
 
     /**
@@ -62,7 +66,7 @@ public class ReplicaOption {
 
     private int recoverTimeoutMs = DEFAULT_RECOVER_TIMEOUT_MS;
 
-    private int snapshotLogIndexReserved = 10;
+    private int snapshotLogIndexReserved = DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED;
 
     // A snapshot saving would be triggered every |snapshot_interval_s| seconds,
     // and at this moment when state machine's commitPoint.index value
@@ -71,12 +75,17 @@ public class ReplicaOption {
     // If |snapshotLogIndexMargin| < 0, the distance based snapshot would be disable.
     //
     // Default: 0
-    private int snapshotLogIndexMargin = 0;
+    private int snapshotLogIndexMargin = DEFAULT_SNAPSHOT_LOG_INDEX_MARGIN;
 
     /**
      * path of the log storage
      */
     private String logStoragePath;
+
+    /**
+     * path of the snapshot storage
+     */
+    private String snapshotStoragePath;
 
     private PacificaServiceFactory pacificaServiceFactory = new DefaultPacificaServiceFactory();
 
@@ -88,6 +97,8 @@ public class ReplicaOption {
 
     private ExecutorGroup fsmCallerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
+    private LogEntryCodecFactory logEntryCodecFactory = LogEntryCodecFactoryHolder.getInstance();
+
     private boolean enableLogEntryChecksum = DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM;
 
     private StateMachine stateMachine;
@@ -96,7 +107,7 @@ public class ReplicaOption {
 
     private RpcClient rpcClient;
 
-    private LogEntryCodecFactory logEntryCodecFactory = LogEntryCodecFactoryHolder.getInstance();
+
 
 
     /**
@@ -158,6 +169,15 @@ public class ReplicaOption {
 
     public void setLogStoragePath(String logStoragePath) {
         this.logStoragePath = logStoragePath;
+    }
+
+
+    public String getSnapshotStoragePath() {
+        return snapshotStoragePath;
+    }
+
+    public void setSnapshotStoragePath(String snapshotStoragePath) {
+        this.snapshotStoragePath = snapshotStoragePath;
     }
 
     public ExecutorGroup getApplyExecutorGroup() {
