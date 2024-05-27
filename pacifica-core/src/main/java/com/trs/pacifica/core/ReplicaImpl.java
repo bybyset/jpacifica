@@ -1231,8 +1231,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
         @Override
         public void run(final Finished finished) {
-            long logIndex = this.getFirstLogIndex();
-            final long lastLogIndex = logIndex + this.getAppendCount() - 1;
             int appendCount = this.getAppendCount();
             int index = 0;
             for (; index < this.getAppendCount(); index++) {

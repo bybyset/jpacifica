@@ -342,19 +342,18 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     /**
      * @param logEntries
      */
-    private void doStoreLogEntries(final List<LogEntry> logEntries) {
+    private void doStoreLogEntries(final List<LogEntry> logEntries, AppendLogEntriesCallback callback) throws PacificaException{
         assert !logEntries.isEmpty();
         assert logEntries.get(0).getLogId().getIndex() == this.lastLogIdOnDisk.getIndex() + 1;
 
         this.writeLock.lock();
         try {
             final int count = this.logStorage.appendLogEntries(logEntries);
+            callback.setAppendCount(count);
             this.lastLogIdOnDisk = logEntries.get(count - 1).getLogId().copy();
             if (count != logEntries.size()) {
-                LOGGER.error("{} failed to append log entries, but real_append_count={}, expect_append_count={}",
-                        this.replica.getReplicaId(), count, logEntries.size());
-                reportError(new PacificaException(PacificaErrorCode.INTERNAL, String.format(
-                        "Failed to append log entries, but real_append_count=%d, expect_append_count=%d", count, logEntries.size())));
+                throw new PacificaException(PacificaErrorCode.INTERNAL, String.format(
+                        "Failed to append log entries, but real_append_count=%d, expect_append_count=%d", count, logEntries.size()));
             }
         } finally {
             this.writeLock.unlock();
@@ -440,9 +439,10 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         @Override
         public void run() {
             try {
-                doStoreLogEntries(logEntries);
-                ThreadUtil.runCallback(callback, Finished._OK);
+                doStoreLogEntries(logEntries, callback);
+                ThreadUtil.runCallback(callback, Finished.success());
             } catch (Throwable e) {
+                LOGGER.error("{} failed to append log entries.", e);
                 ThreadUtil.runCallback(callback, Finished.failure(e));
             }
         }

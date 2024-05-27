@@ -86,20 +86,6 @@ public interface LogManager {
     void onSnapshot(final long snapshotLogIndex, final long snapshotLogTerm);
 
 
-    abstract class NewLogWaiter implements Callback {
-
-        private long newLogIndex = 0L;
-
-        public long getNewLogIndex() {
-            return newLogIndex;
-        }
-
-        public void setNewLogIndex(long newLogIndex) {
-            this.newLogIndex = newLogIndex;
-        }
-    }
-
-
     abstract class AppendLogEntriesCallback implements Callback {
 
         private long firstLogIndex;
