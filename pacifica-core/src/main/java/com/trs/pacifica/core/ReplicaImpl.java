@@ -27,6 +27,7 @@ import com.trs.pacifica.error.NotSupportedException;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.fs.FileService;
+import com.trs.pacifica.fs.FileServiceFactory;
 import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.model.*;
@@ -239,6 +240,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                     return this.configurationClient.getReplicaGroup(this.replicaId.getGroupName());
                 });
                 this.endpointFactory = Objects.requireNonNull(option.getEndpointFactory(), "nodeManager");
+                final FileServiceFactory fileServiceFactory = Objects.requireNonNull(option.getFileServiceFactory());
+                this.fileService = Objects.requireNonNull(fileServiceFactory.newFileService());
                 this.logManager = new LogManagerImpl(this);
                 this.snapshotManager = new SnapshotManagerImpl(this);
                 this.stateMachineCaller = new StateMachineCallerImpl(this);

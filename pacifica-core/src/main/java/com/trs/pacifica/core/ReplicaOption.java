@@ -22,6 +22,8 @@ import com.trs.pacifica.PacificaServiceFactory;
 import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder;
+import com.trs.pacifica.fs.FileServiceFactory;
+import com.trs.pacifica.fs.FileServiceFactoryHolder;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;
@@ -113,6 +115,8 @@ public class ReplicaOption {
     private EndpointFactory endpointFactory;
 
     private RpcClient rpcClient;
+
+    private FileServiceFactory fileServiceFactory = FileServiceFactoryHolder.getInstance();
 
 
     /**
@@ -301,5 +305,13 @@ public class ReplicaOption {
 
     public void setHeartBeatFactor(int heartBeatFactor) {
         this.heartBeatFactor = heartBeatFactor;
+    }
+
+    public FileServiceFactory getFileServiceFactory() {
+        return fileServiceFactory;
+    }
+
+    public void setFileServiceFactory(FileServiceFactory fileServiceFactory) {
+        this.fileServiceFactory = fileServiceFactory;
     }
 }
