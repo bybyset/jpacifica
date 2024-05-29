@@ -46,6 +46,7 @@ import com.trs.pacifica.util.timer.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -100,50 +101,6 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         this.type = type;
     }
 
-    private void updateLastResponseTime() {
-        this.lastResponseTime = TimeUtils.monotonicMs();
-    }
-
-
-    @Override
-    public boolean isAlive(int leasePeriodTimeOutMs) {
-        return isAlive(this.lastResponseTime, leasePeriodTimeOutMs);
-    }
-
-    private static boolean isAlive(long lastRpcResponseTimestamp, long leasePeriodTimeOutMs) {
-        return TimeUtils.monotonicMs() - lastRpcResponseTimestamp < leasePeriodTimeOutMs;
-    }
-
-    @Override
-    public SenderType getType() {
-        return this.type;
-    }
-
-    @Override
-    public boolean continueSendLogEntries(long endLogIndex) {
-        // TODO if wait more log
-        if (endLogIndex >= this.nextLogIndex) {
-            sendLogEntries();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs) {
-        if (this.caughtUpRef.get() != null) {
-            return false;
-        }
-        final OnCaughtUpTimeoutAble onCaughtUpTimeoutAble = new OnCaughtUpTimeoutAble(onCaughtUp, timeoutMs, TimeUnit.MILLISECONDS);
-        if (!this.caughtUpRef.compareAndSet(null, onCaughtUpTimeoutAble)) {
-
-
-            return false;
-        }
-        return true;
-
-    }
-
     @Override
     public synchronized void init(Option option) {
         if (this.state == State.UNINITIALIZED) {
@@ -165,13 +122,17 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             this.version.incrementAndGet();
             this.nextLogIndex = this.option.getLogManager().getLastLogId().getIndex() + 1;
             this.updateLastResponseTime();
+            this.state = State.STARTED;
             this.heartbeatTimer.start();
             this.sendProbeRequest();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("{} is start up", this);
+            }
         }
     }
 
     @Override
-    public synchronized void shutdown() throws PacificaException{
+    public synchronized void shutdown() throws PacificaException {
         if (isStarted()) {
             this.state = State.SHUTTING;
             releaseSnapshotReader();
@@ -181,7 +142,50 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             }
             notifyOnCaughtUp(new PacificaException(PacificaErrorCode.STEP_DOWN, "The sender is shutting"));
             this.state = State.SHUTDOWN;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("{} is shutdown.", this);
+            }
         }
+    }
+
+    private void updateLastResponseTime() {
+        this.lastResponseTime = TimeUtils.monotonicMs();
+    }
+
+
+    @Override
+    public boolean isAlive(int leasePeriodTimeOutMs) {
+        return isAlive(this.lastResponseTime, leasePeriodTimeOutMs);
+    }
+
+    private static boolean isAlive(long lastRpcResponseTimestamp, long leasePeriodTimeOutMs) {
+        return TimeUtils.monotonicMs() - lastRpcResponseTimestamp < leasePeriodTimeOutMs;
+    }
+
+    @Override
+    public SenderType getType() {
+        return this.type;
+    }
+
+    @Override
+    public boolean continueSendLogEntries(long endLogIndex) {
+        if (endLogIndex >= this.nextLogIndex) {
+            sendLogEntries();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs) {
+        if (this.caughtUpRef.get() != null) {
+            return false;
+        }
+        final OnCaughtUpTimeoutAble onCaughtUpTimeoutAble = new OnCaughtUpTimeoutAble(onCaughtUp, timeoutMs, TimeUnit.MILLISECONDS);
+        if (!this.caughtUpRef.compareAndSet(null, onCaughtUpTimeoutAble)) {
+            return false;
+        }
+        return true;
     }
 
 
@@ -243,7 +247,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
     public boolean isStarted() {
-        return this.state.compareTo(State.STARTED) > 0;
+        return this.state.compareTo(State.STARTED) <= 0;
     }
 
     private void ensureStarted() {
@@ -252,18 +256,29 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
     }
 
+    private void changeState(State newState) {
+        if (isStarted()) {
+            synchronized (this) {
+                if (isStarted()) {
+                    this.state = newState;
+                    return;
+                }
+            }
+        }
+        throw new AlreadyClosedException(String.format("The Sender is not started. state=%s", this.state));
+    }
+
     private void installSnapshot() {
+        changeState(State.INSTALL_SNAPSHOT);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{} -> {} install snapshot", fromId, toId);
         }
-
         if (!checkConnected()) {
             LOGGER.warn("send install snapshot request, but the replica({}) is not connected.");
             //block and wait timeout
             blockUntilTimeout();
             return;
         }
-
         try {
             final SnapshotStorage snapshotStorage = this.option.getSnapshotStorage();
             if (snapshotStorage == null) {
@@ -313,6 +328,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
 
     private void doSendProbeRequest() {
+        changeState(State.PROBE);
         sendEmptyLogEntries(false);
     }
 
@@ -374,7 +390,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private void sendProbeRequest() {
         this.executor.execute(() -> {
-            doSendProbeRequest();
+            try {
+                doSendProbeRequest();
+            } catch (Throwable e) {
+                LOGGER.error("{} failed to execute doSendProbeRequest.", this, e);
+            }
         });
     }
 
@@ -382,7 +402,12 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     private void sendLogEntries() {
         //
         this.executor.execute(() -> {
-            doSendLogEntries(nextLogIndex);
+            try {
+                doSendLogEntries(nextLogIndex);
+            } catch (Throwable e) {
+                LOGGER.error("{} failed to execute doSendLogEntries.", this, e);
+            }
+
         });
     }
 
@@ -391,6 +416,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
      * @return true if continue to send or else false
      */
     private boolean doSendLogEntries(final long nextSendingLogIndex) {
+        changeState(State.APPEND_LOGENTRIES);
         final RpcRequest.AppendEntriesRequest.Builder requestBuilder = RpcRequest.AppendEntriesRequest.newBuilder();
         if (!fillCommonRequest(requestBuilder, nextSendingLogIndex - 1, false)) {
             //not found LogEntry, we will install snapshot
@@ -503,7 +529,12 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             updateLastResponseTime();
         }
         this.executor.execute(() -> {
-            handleAppendLogEntryResponse((RpcRequest.AppendEntriesRequest) rpcContext.request, finished, heartbeatResponse);
+            try {
+                handleAppendLogEntryResponse((RpcRequest.AppendEntriesRequest) rpcContext.request, finished, heartbeatResponse);
+            } catch (Throwable e) {
+                LOGGER.error("{} failed to execute handleAppendLogEntryResponse.", SenderImpl.this, e);
+            }
+
         });
     }
 
@@ -551,21 +582,21 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
     }
 
-    private boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, RpcRequest.AppendEntriesResponse response) {
+    private boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, @Nullable RpcRequest.AppendEntriesResponse response) {
         if (!finished.isOk()) {
-            // TODO
-
+            LOGGER.warn("The Sender={} receive failure for request={}. Wait and try to send again", this, RpcUtil.toLogInfo(request), finished.error());
+            this.blockUntilTimeout();
             return false;
         }
+        assert response != null;
         if (!response.getSuccess()) {
             // failure
             // 1: receive a larger term
             if (response.getTerm() > request.getTerm()) {
+                LOGGER.error("The Sender={} receive failure response={} for request={}.  ", this, RpcUtil.toLogInfo(response), RpcUtil.toLogInfo(request));
                 this.shutdownAndCheckTerm(response.getTerm());
-
                 return false;
             }
-
             // 2: prev_log_index not match
             if (response.getLastLogIndex() < this.nextLogIndex - 1) {
                 //The target replica contains fewer logs than the primary replica
@@ -576,6 +607,9 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 if (this.nextLogIndex > 1) {
                     this.nextLogIndex--;
                 }
+            }
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The Sender={} receive failure response={} for request={}. The probe will continue forward ", this, RpcUtil.toLogInfo(response), RpcUtil.toLogInfo(request));
             }
             this.sendProbeRequest();
             return false;
@@ -591,6 +625,9 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         if (response.hasLastLogIndex()) {
             final long lastLogIndex = response.getLastLogIndex();
             notifyOnCaughtUp(lastLogIndex);
+        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The Sender={} receive success response={} for request={}.", this, RpcUtil.toLogInfo(response), RpcUtil.toLogInfo(request));
         }
         return true;
     }
@@ -629,12 +666,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     private void releaseSnapshotReader() {
         if (this.snapshotReader != null) {
-            try {
-                this.snapshotReader.close();
-            } catch (IOException e) {
-                LOGGER.error("{} to {} failed to release snapshot reader.", fromId, toId, e);
+            synchronized (this) {
+                if (this.snapshotReader != null) {
+                    try {
+                        this.snapshotReader.close();
+                    } catch (IOException e) {
+                        LOGGER.error("{} to {} failed to release snapshot reader.", fromId, toId, e);
+                    }
+                    this.snapshotReader = null;
+                }
             }
-            this.snapshotReader = null;
         }
     }
 
@@ -642,6 +683,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
      * block until timeout will continue.
      */
     private void blockUntilTimeout() {
+        ensureStarted();
         if (this.blockTimer != null) {
             LOGGER.warn("{} repeat block.", this.fromId.getGroupName());
             return;
@@ -679,6 +721,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     /**
      * receive higher term
      * shutdown and refresh replica to align term.
+     *
      * @param higherTerm
      */
     private void shutdownAndCheckTerm(final long higherTerm) {

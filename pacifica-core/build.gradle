@@ -39,6 +39,9 @@ dependencies {
     implementation "io.dropwizard.metrics:metrics-core:$metrics_version"
     implementation "commons-io:commons-io:$commons_io_version"
     implementation "com.lmax:disruptor:$disruptor_version"
+
+    testImplementation "org.mockito:mockito-core:$mockito_version"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
 }
 
 sourceSets {

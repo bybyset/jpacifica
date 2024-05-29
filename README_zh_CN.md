@@ -16,24 +16,20 @@
  -->
 # JPacificA
 
-JPacificA 是一个基于PacificA一致性算法的生产级高性能 Java 实现。
+JPacificA 是一个基于PacificA一致性算法的生产级高性能日志复制框架的 Java 实现。
 
 ## 功能特性
-- Leader 选举和基于优先级的半确定性 Leader 选举
-- 日志复制和恢复
-- 只读成员（学习者角色）
+- 多数据副本一致性保证
+- 容错性：允许N-1个数据副本故障，不影响系统整体可用性
+- 故障副本手动恢复后自动同步数据并恢复一致性
+- 日志复制和副本恢复
 - 快照和日志压缩
-- 集群线上配置变更，增加节点、删除节点、替换节点等
-- 主动变更 Leader，用于重启维护，Leader 负载平衡等
+- 主动变更 Primary
 - 对称网络分区容忍性
 - 非对称网络分区容忍性
-- 容错性，少数派故障，不影响系统整体可用性
-- 多数派故障时手动恢复集群可用
-- 高效的线性一致读，ReadIndex/LeaseRead
-- 流水线复制
 - 内置了基于 [Metrics](https://metrics.dropwizard.io/4.0.0/getting-started.html) 类库的性能指标统计，有丰富的性能统计指标
 - 通过了 [Jepsen](https://github.com/jepsen-io/jepsen) 一致性验证测试
-- SOFAJRaft 中包含了一个嵌入式的分布式 KV 存储实现
+
 
 ## 需要
 编译需要 JDK 11 及以上。

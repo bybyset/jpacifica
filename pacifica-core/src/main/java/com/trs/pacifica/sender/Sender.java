@@ -24,14 +24,15 @@ import com.trs.pacifica.error.PacificaException;
  * implement:
  * <li>Maintain the heartbeat of the Primary to other replica</li>
  * <li>Primary copies op log to other replica </li>
- *
+ * <li>Primary send install snapshot request to other replica </li>
  */
 public interface Sender {
 
 
     /**
      * Check if the peer-to-peer heartbeat is alive
-     * @param leasePeriodTimeOutMs 
+     *
+     * @param leasePeriodTimeOutMs
      * @return true if alive
      */
     boolean isAlive(final int leasePeriodTimeOutMs);
@@ -39,30 +40,44 @@ public interface Sender {
 
     /**
      * get SenderType
+     * to see {@link SenderType}
+     *
      * @return
      */
     SenderType getType();
 
 
+    /**
+     * When the primary replica has new OP log stored persistently,
+     * this function will be called to continue sending new OP log.
+     *
+     * @param endLogIndex
+     * @return
+     */
     boolean continueSendLogEntries(final long endLogIndex);
 
 
+    /**
+     * Primary receive recovery request from Candidate,
+     * Callback after waiting for the OP log of the Candidate to catch up with the Primary,
+     * until time out.
+     *
+     * @param onCaughtUp Callback when the OP log of the Candidate catches up with the Primary.
+     * @param timeoutMs
+     * @return
+     */
     boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**
-     *
      * @throws PacificaException
      */
     void startup() throws PacificaException;
 
     /**
-     *
      * @throws PacificaException
      */
     void shutdown() throws PacificaException;
-
-
 
 
     static abstract class OnCaughtUp implements Callback {

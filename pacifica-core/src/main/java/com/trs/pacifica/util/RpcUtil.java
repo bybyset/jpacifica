@@ -154,4 +154,27 @@ public class RpcUtil {
         final String msg = errorResponse.getMessage();
         return new PacificaException(PacificaErrorCode.fromCode(code), msg);
     }
+
+    public static String toLogInfo(RpcRequest.AppendEntriesRequest request) {
+        StringBuilder infoBuilder = new StringBuilder("AppendEntriesRequest[");
+        infoBuilder.append("primary_id=").append(toReplicaId(request.getPrimaryId())).append(",");
+        infoBuilder.append("target_id=").append(toReplicaId(request.getTargetId())).append(",");
+        infoBuilder.append("prev_log_index=").append(request.getPrevLogIndex()).append(",");
+        infoBuilder.append("prev_log_term=").append(request.getPrevLogTerm()).append(",");
+        infoBuilder.append("commit_point=").append(request.getCommitPoint()).append(",");
+        infoBuilder.append("term=").append(request.getTerm()).append(",");
+        infoBuilder.append("version=").append(request.getVersion()).append(",");
+        infoBuilder.append("log_entry_count=").append(request.getLogMetaCount());
+        return infoBuilder.append("]").toString();
+    }
+
+    public static String toLogInfo(RpcRequest.AppendEntriesResponse response) {
+        StringBuilder infoBuilder = new StringBuilder("AppendEntriesResponse[");
+        infoBuilder.append("success=").append(response.getSuccess()).append(",");
+        infoBuilder.append("term=").append(response.getTerm()).append(",");
+        infoBuilder.append("version=").append(response.getVersion()).append(",");
+        infoBuilder.append("commit_point=").append(response.getCommitPoint()).append(",");
+        infoBuilder.append("last_log_index=").append(response.getLastLogIndex());
+        return infoBuilder.append("]").toString();
+    }
 }
