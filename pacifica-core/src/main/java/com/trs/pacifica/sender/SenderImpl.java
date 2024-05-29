@@ -39,6 +39,7 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.util.RpcLogUtil;
 import com.trs.pacifica.util.RpcUtil;
+import com.trs.pacifica.util.SystemPropertyUtil;
 import com.trs.pacifica.util.TimeUtils;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import com.trs.pacifica.util.timer.RepeatedTimer;
@@ -833,9 +834,8 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     public static class Option {
 
-        static final int DEFAULT_MAX_SEND_LOG_ENTRY_NUM = 16;
-
-        static final int DEFAULT_MAX_SEND_LOG_ENTRY_BYTE_SIZE = 2 * 1024 * 1024;
+        public static final int DEFAULT_MAX_SEND_LOG_ENTRY_NUM = SystemPropertyUtil.getInt("pacifica.max.send.log.entry.num", 16);
+        public static final int DEFAULT_MAX_SEND_LOG_ENTRY_BYTE_SIZE = SystemPropertyUtil.getInt("pacifica.max.send.log.entry.bytes", 8 * 1024 * 1024);
 
         private ReplicaImpl replica;
 

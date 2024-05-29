@@ -26,6 +26,8 @@ import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.EndpointFactory;
+import com.trs.pacifica.util.timer.TimerFactory;
+import com.trs.pacifica.util.timer.TimerFactoryHolder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -35,15 +37,10 @@ public class ReplicaOption {
     public static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
     public static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
     public static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
-
     public static final int DEFAULT_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(3);
-
     public static final int DEFAULT_RECOVER_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(10);
-
     public static final int DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED = 10;
-
     public static final int DEFAULT_SNAPSHOT_LOG_INDEX_MARGIN = 0;
-
     public static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
 
 
@@ -57,6 +54,12 @@ public class ReplicaOption {
      * lease period timeout ms= gracePeriodTimeoutMs * leasePeriodTimeoutRatio/100
      */
     private int leasePeriodTimeoutRatio = 80;
+
+    /**
+     * factor of heartbeat intervals between replicas
+     * heartbeat intervals = lease period timeout * factor / 100
+     */
+    private int heartBeatFactor = 30;
 
     /**
      * snapshot timeout ms
@@ -97,7 +100,11 @@ public class ReplicaOption {
 
     private ExecutorGroup fsmCallerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
+    private ExecutorGroup senderExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
+
     private LogEntryCodecFactory logEntryCodecFactory = LogEntryCodecFactoryHolder.getInstance();
+
+    private TimerFactory timerFactory = TimerFactoryHolder.getInstance();
 
     private boolean enableLogEntryChecksum = DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM;
 
@@ -106,8 +113,6 @@ public class ReplicaOption {
     private EndpointFactory endpointFactory;
 
     private RpcClient rpcClient;
-
-
 
 
     /**
@@ -127,9 +132,15 @@ public class ReplicaOption {
         return leasePeriodTimeoutRatio;
     }
 
+    public int getLeasePeriodTimeoutMs() {
+        return this.gracePeriodTimeoutMs * this.leasePeriodTimeoutRatio / 100;
+    }
+
     public void setLeasePeriodTimeoutRatio(int leasePeriodTimeoutRatio) {
         this.leasePeriodTimeoutRatio = leasePeriodTimeoutRatio;
     }
+
+
 
     public int getSnapshotTimeoutMs() {
         return snapshotTimeoutMs;
@@ -228,6 +239,22 @@ public class ReplicaOption {
         this.fsmCallerExecutorGroup = fsmCallerExecutorGroup;
     }
 
+    public ExecutorGroup getSenderExecutorGroup() {
+        return senderExecutorGroup;
+    }
+
+    public void setSenderExecutorGroup(ExecutorGroup senderExecutorGroup) {
+        this.senderExecutorGroup = senderExecutorGroup;
+    }
+
+    public TimerFactory getTimerFactory() {
+        return timerFactory;
+    }
+
+    public void setTimerFactory(TimerFactory timerFactory) {
+        this.timerFactory = timerFactory;
+    }
+
     public int getSnapshotLogIndexReserved() {
         return snapshotLogIndexReserved;
     }
@@ -266,5 +293,13 @@ public class ReplicaOption {
 
     public void setLogEntryCodecFactory(LogEntryCodecFactory logEntryCodecFactory) {
         this.logEntryCodecFactory = logEntryCodecFactory;
+    }
+
+    public int getHeartBeatFactor() {
+        return heartBeatFactor;
+    }
+
+    public void setHeartBeatFactor(int heartBeatFactor) {
+        this.heartBeatFactor = heartBeatFactor;
     }
 }

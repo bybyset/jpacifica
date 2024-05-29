@@ -153,6 +153,14 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         final SenderGroupImpl.Option senderGroupOption = new SenderGroupImpl.Option();
         senderGroupOption.setLogManager(Objects.requireNonNull(this.logManager));
         senderGroupOption.setStateMachineCaller(Objects.requireNonNull(stateMachineCaller));
+        senderGroupOption.setSenderExecutorGroup(Objects.requireNonNull(option.getSenderExecutorGroup()));
+        senderGroupOption.setBallotBox(this.ballotBox);
+        senderGroupOption.setReplicaGroup(this.replicaGroup);
+        senderGroupOption.setFileService(this.fileService);
+        senderGroupOption.setConfigurationClient(this.configurationClient);
+        senderGroupOption.setLeasePeriodTimeOutMs(option.getLeasePeriodTimeoutMs());
+        senderGroupOption.setHeartBeatFactor(option.getHeartBeatFactor());
+        senderGroupOption.setTimerFactory(Objects.requireNonNull(option.getTimerFactory()));
         this.senderGroup.init(senderGroupOption);
     }
 
@@ -185,28 +193,32 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     }
 
     private void initRepeatedTimers(ReplicaOption option) {
-        this.gracePeriodTimer = new RepeatedTimer("Grace_Period_Timer_" + this.replicaId.getGroupName(), option.getGracePeriodTimeoutMs()) {
+        this.gracePeriodTimer = new RepeatedTimer("Grace_Period_Timer_" + this.replicaId.getGroupName(), option.getGracePeriodTimeoutMs(),
+                Objects.requireNonNull(option.getTimerFactory().newTimer())) {
             @Override
             protected void onTrigger() {
                 handleGracePeriodTimeout();
             }
         };
 
-        this.leasePeriodTimer = new RepeatedTimer("Lease_Period_Timer_" + this.replicaId.getGroupName(), option.getLeasePeriodTimeoutRatio()) {
+        this.leasePeriodTimer = new RepeatedTimer("Lease_Period_Timer_" + this.replicaId.getGroupName(), option.getLeasePeriodTimeoutRatio(),
+                Objects.requireNonNull(option.getTimerFactory().newTimer())) {
             @Override
             protected void onTrigger() {
                 handleLeasePeriodTimeout();
             }
         };
 
-        this.snapshotTimer = new RepeatedTimer("Snapshot_Timer_" + this.replicaId.getGroupName(), option.getSnapshotTimeoutMs()) {
+        this.snapshotTimer = new RepeatedTimer("Snapshot_Timer_" + this.replicaId.getGroupName(), option.getSnapshotTimeoutMs(),
+                Objects.requireNonNull(option.getTimerFactory().newTimer())) {
             @Override
             protected void onTrigger() {
                 handleSnapshotTimeout();
             }
         };
 
-        this.recoverTimer = new RepeatedTimer("Replica_Recover_Timer_" + this.replicaId.getGroupName(), option.getRecoverTimeoutMs()) {
+        this.recoverTimer = new RepeatedTimer("Replica_Recover_Timer_" + this.replicaId.getGroupName(), option.getRecoverTimeoutMs(),
+                Objects.requireNonNull(option.getTimerFactory().newTimer())) {
             @Override
             protected void onTrigger() {
                 handleRecoverTimeout();

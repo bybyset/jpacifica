@@ -27,6 +27,7 @@ import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.util.timer.TimerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -255,7 +256,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
             senderOption.setFileService(fileService);
 
             senderOption.setHeartbeatTimeoutMs(Math.max(100, option.getLeasePeriodTimeOutMs() / option.getHeartBeatFactor()));
-            senderOption.setHeartBeatTimer(null);
+            senderOption.setHeartBeatTimer(option.getTimerFactory().newTimer());
             sender.init(senderOption);
             return sender;
         }
@@ -275,6 +276,8 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         private int leasePeriodTimeOutMs;
 
         private int heartBeatFactor = 30;
+
+        private TimerFactory timerFactory;
 
         public ConfigurationClient getConfigurationClient() {
             return configurationClient;
@@ -346,6 +349,14 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
         public void setStateMachineCaller(StateMachineCaller stateMachineCaller) {
             this.stateMachineCaller = stateMachineCaller;
+        }
+
+        public TimerFactory getTimerFactory() {
+            return timerFactory;
+        }
+
+        public void setTimerFactory(TimerFactory timerFactory) {
+            this.timerFactory = timerFactory;
         }
     }
 
