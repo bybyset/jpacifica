@@ -18,12 +18,14 @@
 package com.trs.pacifica.log.io;
 
 import com.trs.pacifica.error.AlreadyClosedException;
+import com.trs.pacifica.util.OnlyForTest;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Objects;
 
 @NotThreadSafe
 public class ByteBufferDataInOutput implements InOutput {
@@ -32,19 +34,11 @@ public class ByteBufferDataInOutput implements InOutput {
 
     private final String resourceDescription;
     protected final ByteBufferGuard guard;
-
     protected final ByteBuffer[] byteBuffers;
-
     private final long length;
-
     private final int chunkSizePower;
-
     protected final long chunkSizeMask;
-
-    private final Context outputContext = new Context();
-
     private final Context inputContext = new Context();
-
     protected boolean isClone = false;
 
     public ByteBufferDataInOutput(String resourceDescription, final ByteBuffer[] byteBuffers, final int chunkSizePower, final long length, ByteBufferGuard guard) {
@@ -59,12 +53,18 @@ public class ByteBufferDataInOutput implements InOutput {
     @Override
     public void seek(long pos) throws IOException {
         final int bi = (int) (pos >> chunkSizePower);
-        if (bi == this.inputContext.curByteBufferIndex) {
-            this.inputContext.curByteBuffer.position((int) (pos & chunkSizeMask));
-        } else {
-            final ByteBuffer b = byteBuffers[bi];
-            b.position((int) (pos & chunkSizeMask));
-            this.inputContext.curByteBufferIndex = bi;
+        try {
+            if (bi == this.inputContext.curByteBufferIndex) {
+                this.inputContext.curByteBuffer.position((int) (pos & chunkSizeMask));
+            } else {
+                final ByteBuffer b = byteBuffers[bi];
+                b.position((int) (pos & chunkSizeMask));
+                setCurByteBuffer(this.inputContext, bi);
+            }
+        } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+            throw handlePositionalIOOBE(e, "seek", pos);
+        } catch (NullPointerException e) {
+            throw alreadyClosed(e);
         }
     }
 
@@ -83,28 +83,25 @@ public class ByteBufferDataInOutput implements InOutput {
         return this.inputContext.curByteBuffer.get();
     }
 
-
     @Override
-    public void writeByte(byte b) throws IOException {
-        if (!this.outputContext.curByteBuffer.hasRemaining()) {
-            do {
-                int currentIndex = this.outputContext.curByteBufferIndex + 1;
-                if (currentIndex >= byteBuffers.length) {
-                    throw new EOFException("write past EOF: " + this);
-                }
-                setCurByteBuffer(this.outputContext, currentIndex);
-            } while (!this.inputContext.curByteBuffer.hasRemaining());
-        }
-        this.outputContext.curByteBuffer.put(b);
-    }
-
-    @Override
-    public void flush() throws IOException {
-
-    }
-
-    public long getWritePosition() {
-        return calculatePosition(this.outputContext);
+    public void writeBytes(int index, byte[] bytes, int offset, int length) throws IOException {
+        //check
+        Objects.checkFromIndexSize(index, length, (int)this.length);
+        Objects.checkFromIndexSize(offset, length, bytes.length);
+        //seek
+        int bi = (int) (index >> chunkSizePower);
+        int position = (int) (index & chunkSizeMask);
+        do {
+            final ByteBuffer b = byteBuffers[bi];
+            b.position(position);
+            int len = Math.min(b.remaining(), length);
+            b.put(bytes, offset, len);
+            offset += len;
+            length -= len;
+            //next buffer
+            bi++;
+            position = 0;
+        } while (length > 0);
     }
 
     public long getReadPosition() {
@@ -113,7 +110,7 @@ public class ByteBufferDataInOutput implements InOutput {
 
     private void setCurByteBuffer(final Context context, int byteBufferIndex) {
         assert byteBufferIndex < this.byteBuffers.length;
-        ByteBuffer byteBuffer = this.byteBuffers[byteBufferIndex].duplicate();
+        ByteBuffer byteBuffer = this.byteBuffers[byteBufferIndex];
         setContext(context, byteBuffer, byteBufferIndex);
     }
 
@@ -155,11 +152,7 @@ public class ByteBufferDataInOutput implements InOutput {
 
     @Override
     public void close() throws IOException {
-        try {
-            flush();
-        } catch (IOException e) {
-            //ignore
-        }
+        if (isClone) return;
         this.guard.invalidateAndUnmap(byteBuffers);
     }
 
@@ -208,6 +201,16 @@ public class ByteBufferDataInOutput implements InOutput {
         }
     }
 
+    // the unused parameter is just to silence javac about unused variables
+    RuntimeException handlePositionalIOOBE(RuntimeException unused, String action, long pos)
+            throws IOException {
+        if (pos < 0L) {
+            return new IllegalArgumentException(action + " negative position (pos=" + pos + "): " + this);
+        } else {
+            throw new EOFException(action + " past EOF (pos=" + pos + "): " + this);
+        }
+    }
+
     AlreadyClosedException alreadyClosed(RuntimeException unused) {
         return new AlreadyClosedException("Already closed: " + this);
     }
@@ -220,6 +223,13 @@ public class ByteBufferDataInOutput implements InOutput {
             int chunkSizePower,
             ByteBufferGuard guard) {
         return new ByteBufferDataInOutput(resourceDescription, buffers, chunkSizePower, length, guard);
+    }
+
+
+
+    @OnlyForTest
+    Context getInputContext() {
+        return this.inputContext;
     }
 
     static class Context {

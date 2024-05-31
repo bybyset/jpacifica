@@ -56,6 +56,10 @@ sourceSets {
     }
 }
 
+test {
+    useJUnitPlatform()
+}
+
 protobuf {
     // Download from repositories
     protoc {

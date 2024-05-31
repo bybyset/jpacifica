@@ -15,33 +15,9 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.dir;
+package com.trs.pacifica.log;
 
-import com.trs.pacifica.log.io.InOutput;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
-
-public class NIOFSDirectory extends FsDirectory {
-
-    public NIOFSDirectory(Path path) throws IOException {
-        super(path);
-    }
-
-    @Override
-    public void sync(Collection<String> names) throws IOException {
-
-    }
-
-    @Override
-    public InOutput openInOutput(String name) throws IOException {
-        return null;
-    }
+public class FsLogStorageTest {
 
 
-    @Override
-    public void close() throws IOException {
-
-    }
 }

@@ -17,18 +17,12 @@
 
 package com.trs.pacifica.log.io;
 
-import java.io.Closeable;
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
-public interface Output extends Closeable {
+public class JunitTest {
 
-    /**
-     *
-     * @param index
-     * @param bytes
-     * @throws IOException
-     */
-    void writeBytes(final int index, final byte[] bytes, final int offset, final int length) throws IOException;
-
-
+    @Test
+    public void test() {
+        System.out.printf("ok");
+    }
 }

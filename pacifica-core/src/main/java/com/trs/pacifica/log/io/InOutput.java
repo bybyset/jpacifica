@@ -27,7 +27,7 @@ public interface InOutput extends Input, Output, Cloneable{
      * Creates a slice of this index input, with the given description, offset, and length. The slice
      * is sought to the beginning.
      */
-    public abstract InOutput slice(String sliceDescription, long offset, long length)
+    InOutput slice(String sliceDescription, long offset, long length)
             throws IOException;
 
 
@@ -43,10 +43,14 @@ public interface InOutput extends Input, Output, Cloneable{
      * <p>This method is NOT thread safe, so if the current {@code IndexInput} is being used by one
      * thread while {@code clone} is called by another, disaster could strike.
      */
-    public InOutput clone();
+    InOutput clone();
 
+    /**
+     *
+     * @throws IOException
+     */
     @Override
-    public void close() throws IOException;
+    void close() throws IOException;
 
 
 }

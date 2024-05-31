@@ -104,8 +104,7 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
 
         final long chunkSize = 1L << chunkSizePower;
 
-        // we always allocate one more buffer, the last one may be a 0 byte one
-        final int nrBuffers = (int) (length >>> chunkSizePower) + 1;
+        final int nrBuffers = (int) (length >>> chunkSizePower);
 
         final ByteBuffer[] buffers = new ByteBuffer[nrBuffers];
 

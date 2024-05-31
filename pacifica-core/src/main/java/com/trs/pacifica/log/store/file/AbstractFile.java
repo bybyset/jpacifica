@@ -107,7 +107,7 @@ public abstract class AbstractFile implements Closeable {
                     logEntryCount += result.entryNum;
                     continue;
                 }
-                // cut or throw？
+                // cut or throw?
                 throw new IOException("");
             }
         }
@@ -129,7 +129,7 @@ public abstract class AbstractFile implements Closeable {
         if (logIndex < this.header.getFirstLogIndex() || logIndex > this.lastLogIndex) {
             return 0;
         }
-        if (pos > 0) {
+        if (pos < 0) {
             pos = lookupPositionFromHead(logIndex);
         }
         if (pos > 0) {
@@ -141,7 +141,14 @@ public abstract class AbstractFile implements Closeable {
         return 0;
     }
 
+    /**
+     * Start at the file header and look for the logIndex to be specified at the position of the file
+     *
+     * @param logIndex
+     * @return
+     */
     protected abstract int lookupPositionFromHead(final long logIndex);
+
     boolean loadHeader() throws IOException {
         try (final Input input = this.parentDir.openInOutput(this.filename);) {
             byte[] bytes = new byte[FileHeader.getBytesSize()];

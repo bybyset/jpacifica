@@ -43,6 +43,12 @@ public class IndexFile extends AbstractFile {
         return CheckEntryResult.success(1, _INDEX_ENTRY_BYTE_SIZE);
     }
 
+    @Override
+    protected int lookupPositionFromHead(long logIndex) {
+        final long firstLogIndex = this.header.getFirstLogIndex();
+        return FileHeader.getBytesSize() + getWriteByteSize() * (int)(logIndex - firstLogIndex);
+    }
+
 
     public int appendIndexData(final LogId logId, final int logPosition) throws IOException {
         final long logIndex = logId.getIndex();

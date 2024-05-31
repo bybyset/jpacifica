@@ -34,9 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class FsDirectory extends BaseDirectory {
 
-    protected final Path directory;
-
-
+    private final Path directory;
     private final AtomicInteger opsSinceLastDelete = new AtomicInteger();
 
     /**
@@ -57,11 +55,7 @@ public abstract class FsDirectory extends BaseDirectory {
      *
      */
     public static FsDirectory open(Path path) throws IOException {
-        if (SystemConstants.JRE_IS_64BIT && MMapDirectory.UNMAP_SUPPORTED) {
-            return new MMapDirectory(path);
-        } else {
-            return new NIOFSDirectory(path);
-        }
+        return new MMapDirectory(path);
     }
 
     @Override
@@ -163,6 +157,10 @@ public abstract class FsDirectory extends BaseDirectory {
                 privateDeleteFile(name, true);
             }
         }
+    }
+
+    public Path getDirectory() {
+        return this.directory;
     }
 
     private void maybeDeletePendingFiles() throws IOException {

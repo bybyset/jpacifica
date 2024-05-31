@@ -98,6 +98,7 @@ public interface LogStorage {
     /**
      * Drop all the existing logs and reset next log index to |next_log_index|.
      * This function is called after installing snapshot from Primary.
+     *
      * @param nextLogIndex
      * @return
      */
@@ -106,12 +107,14 @@ public interface LogStorage {
 
     /**
      * open the log storage
+     *
      * @throws PacificaException
      */
     void open() throws PacificaException;
 
     /**
      * close the log storage
+     *
      * @throws PacificaException
      */
     void close() throws PacificaException;

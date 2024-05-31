@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.io;
+package com.trs.pacifica.util;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.lang.annotation.*;
 
-public interface Output extends Closeable {
 
-    /**
-     *
-     * @param index
-     * @param bytes
-     * @throws IOException
-     */
-    void writeBytes(final int index, final byte[] bytes, final int offset, final int length) throws IOException;
-
+/**
+ * The type/method/field/etc. to which the comment applies is only for unit testing purposes.
+ * This means that users should not use them in business code except for test code.
+ */
+@Documented
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR})
+@Retention(RetentionPolicy.CLASS)
+public @interface OnlyForTest {
 
 }

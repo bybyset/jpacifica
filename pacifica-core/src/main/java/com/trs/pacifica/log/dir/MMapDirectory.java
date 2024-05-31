@@ -21,19 +21,22 @@ import com.trs.pacifica.log.io.InOutput;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.MappedByteBufferInputProvider;
 import com.trs.pacifica.util.SystemConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 
 /**
  * code from lucene
  */
 public class MMapDirectory extends FsDirectory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MMapDirectory.class);
 
     /**
      * Argument for {@link #setPreload(Predicate)} that configures all files to be preloaded upon
@@ -64,23 +67,22 @@ public class MMapDirectory extends FsDirectory {
 
     /**
      * Default max chunk size:
-     *
-     * <ul>
-     *   <li>16 GiBytes for 64 bit <b>Java 19</b> JVMs running with {@code --enable-preview} as
-     *       command line parameter
-     *   <li>1 GiBytes for other 64 bit JVMs
-     *   <li>256 MiBytes for 32 bit JVMs
-     * </ul>
      */
     public static final long DEFAULT_MAX_CHUNK_SIZE;
 
 
+    static {
+        PROVIDER = lookupProvider();
+        DEFAULT_MAX_CHUNK_SIZE = PROVIDER.getDefaultMaxChunkSize();
+        UNMAP_SUPPORTED = PROVIDER.isUnmapSupported();
+        UNMAP_NOT_SUPPORTED_REASON = PROVIDER.getUnmapNotSupportedReason();
+    }
+
     private final int chunkSizePower;
-
     private Predicate<String> preload = NO_FILES;
-
-
     private boolean useUnmapHack = UNMAP_SUPPORTED;
+
+    private Map<String, InOutput> fileInOutputCache = new ConcurrentHashMap<>();
 
 
     public MMapDirectory(Path path) throws IOException {
@@ -102,8 +104,27 @@ public class MMapDirectory extends FsDirectory {
     public InOutput openInOutput(String name) throws IOException {
         ensureOpen();
         ensureCanRead(name);
-        Path path = directory.resolve(name);
-        return PROVIDER.openInput(path, chunkSizePower, preload.test(name), useUnmapHack);
+        final InOutput cache = fileInOutputCache.computeIfAbsent(name, (key) -> {
+            try {
+                Path path = getDirectory().resolve(name);
+                return PROVIDER.openInput(path, chunkSizePower, preload.test(name), useUnmapHack);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return cache.clone();
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
+        super.close();
+        this.fileInOutputCache.forEach((name, inOutput) -> {
+            try {
+                inOutput.close();
+            } catch (IOException e) {
+                LOGGER.error("{} failed to close InOutput of file={}.", getDirectory(), name);
+            }
+        });
     }
 
     /**
@@ -165,51 +186,21 @@ public class MMapDirectory extends FsDirectory {
     }
 
     private static MMapInOutputProvider lookupProvider() {
-        final var lookup = MethodHandles.lookup();
-        try {
-            final var cls = lookup.findClass("org.apache.lucene.store.MemorySegmentIndexInputProvider");
-            // we use method handles, so we do not need to deal with setAccessible as we have private
-            // access through the lookup:
-            final var constr = lookup.findConstructor(cls, MethodType.methodType(void.class));
-            try {
-                return (MMapInOutputProvider) constr.invoke();
-            } catch (RuntimeException | Error e) {
-                throw e;
-            } catch (Throwable th) {
-                throw new AssertionError(th);
-            }
-        } catch (
-                @SuppressWarnings("unused")
-                ClassNotFoundException e) {
-            // we're before Java 19
-            return new MappedByteBufferInputProvider();
-        } catch (
-                @SuppressWarnings("unused")
-                UnsupportedClassVersionError e) {
-            var log = Logger.getLogger(lookup.lookupClass().getName());
-            if (Runtime.version().feature() == 19) {
-                log.warning(
-                        "You are running with Java 19. To make full use of MMapDirectory, please pass '--enable-preview' to the Java command line.");
-            } else {
-                log.warning(
-                        "You are running with Java 20 or later. To make full use of MMapDirectory.");
-            }
-            return new MappedByteBufferInputProvider();
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            throw new LinkageError(
-                    "MemorySegmentIndexInputProvider is missing correctly typed constructor", e);
-        }
+        return new MappedByteBufferInputProvider();
     }
 
-    static {
-        PROVIDER = lookupProvider();
-        DEFAULT_MAX_CHUNK_SIZE = PROVIDER.getDefaultMaxChunkSize();
-        UNMAP_SUPPORTED = PROVIDER.isUnmapSupported();
-        UNMAP_NOT_SUPPORTED_REASON = PROVIDER.getUnmapNotSupportedReason();
-    }
 
     public static interface MMapInOutputProvider {
 
+        /**
+         *
+         * @param path
+         * @param chunkSizePower
+         * @param preload
+         * @param useUnmapHack
+         * @return
+         * @throws IOException
+         */
         InOutput openInput(Path path, int chunkSizePower, boolean preload, boolean useUnmapHack) throws IOException;
 
         boolean isUnmapSupported();

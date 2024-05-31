@@ -50,7 +50,9 @@ public class SegmentFile extends AbstractFile {
 
     @Override
     protected int lookupPositionFromHead(long logIndex) {
-        return 0;
+
+        return
+                0;
     }
 
 
