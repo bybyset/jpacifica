@@ -128,14 +128,11 @@ public class ByteBufferDataInOutput implements InOutput {
         if (byteBuffers == null) {
             throw alreadyClosed(null);
         }
-
         final ByteBuffer[] newBuffers = buildSlice(byteBuffers, offset, length);
         final int ofs = (int) (offset & chunkSizeMask);
-
         final ByteBufferDataInOutput clone =
                 newCloneInstance(getFullSliceDescription(sliceDescription), newBuffers, ofs, length);
         clone.isClone = true;
-
         return clone;
     }
 
@@ -144,6 +141,7 @@ public class ByteBufferDataInOutput implements InOutput {
         final ByteBufferDataInOutput clone;
         try {
             clone = (ByteBufferDataInOutput) slice(this.resourceDescription, 0L, this.length);
+            clone.isClone = true;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -162,20 +160,12 @@ public class ByteBufferDataInOutput implements InOutput {
      */
     private ByteBuffer[] buildSlice(ByteBuffer[] buffers, long offset, long length) {
         final long sliceEnd = offset + length;
-
         final int startIndex = (int) (offset >>> chunkSizePower);
         final int endIndex = (int) (sliceEnd >>> chunkSizePower);
-
-        // we always allocate one more slice, the last one may be a 0 byte one
-        final ByteBuffer[] slices = new ByteBuffer[endIndex - startIndex + 1];
-
+        final ByteBuffer[] slices = new ByteBuffer[endIndex - startIndex];
         for (int i = 0; i < slices.length; i++) {
             slices[i] = buffers[startIndex + i].duplicate().order(ByteOrder.LITTLE_ENDIAN);
         }
-
-        // set the last buffer's limit for the sliced view.
-        slices[slices.length - 1].limit((int) (sliceEnd & chunkSizeMask));
-
         return slices;
     }
 
@@ -225,7 +215,10 @@ public class ByteBufferDataInOutput implements InOutput {
         return new ByteBufferDataInOutput(resourceDescription, buffers, chunkSizePower, length, guard);
     }
 
-
+    @OnlyForTest
+    long getLength(){
+        return this.length;
+    }
 
     @OnlyForTest
     Context getInputContext() {

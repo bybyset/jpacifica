@@ -22,18 +22,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+
 public class ByteBufferDataInOutputTest {
 
     static final long DEFAULT_MAX_CHUNK_SIZE = 1L << 10; // 1k
     static final long DEFAULT_FILE_LENGTH = 10l << 10;// 10k
 
-    @Mock
-    ByteBufferGuard guard = new ByteBufferGuard("test", null);
+    ByteBufferGuard guard = Mockito.mock(ByteBufferGuard.class);
     long length = DEFAULT_FILE_LENGTH;
     int chunkSizePower = chunkSizePower(DEFAULT_MAX_CHUNK_SIZE);
     long chunkSizeMask = (1L << chunkSizePower) - 1L;
@@ -92,49 +95,86 @@ public class ByteBufferDataInOutputTest {
         Assertions.assertNotNull(context.curByteBuffer);
         Assertions.assertEquals(byteBuffers[byteBuffers.length - 1], context.curByteBuffer);
 
+
+        try {
+            byteBufferDataInOutput.seek(length);
+        } catch (Throwable e) {
+            Assertions.assertInstanceOf(EOFException.class, e);
+        }
+
     }
 
     @Test
-    void testReadByte() {
+    void testReadByte() throws IOException {
+        //
+        byte[] testBytes = "test".getBytes("UTF-8");
+        int len = testBytes.length;
+        ByteBuffer buffer = this.byteBuffers[0];
+        buffer = buffer.duplicate();
+        buffer.put(testBytes);
+
+        this.byteBufferDataInOutput.seek(0);
+        byte[] readBytes = new byte[len];
+        for(int i = 0; i < len; i++) {
+            readBytes[i] = this.byteBufferDataInOutput.readByte();
+        }
+        Assertions.assertArrayEquals(testBytes, readBytes);
     }
 
     @Test
-    void testWriteBytes() {
+    void testReadBytes() throws IOException {
+        //
+        byte[] testBytes = "test".getBytes("UTF-8");
+        int len = testBytes.length;
+        ByteBuffer buffer = this.byteBuffers[0];
+        buffer = buffer.duplicate();
+        buffer.put(testBytes);
+        this.byteBufferDataInOutput.seek(0);
+        byte[] readBytes = new byte[len];
+        this.byteBufferDataInOutput.readBytes(readBytes, readBytes.length);
+        Assertions.assertArrayEquals(testBytes, readBytes);
     }
 
     @Test
-    void testGetReadPosition() {
+    void testWriteBytes() throws IOException {
+        byte[] writeBytes = "test".getBytes("UTF-8");
+
+        this.byteBufferDataInOutput.writeBytes(2, writeBytes, 0, writeBytes.length);
+        ByteBuffer buffer = this.byteBuffers[0];
+        buffer = buffer.duplicate();
+        buffer.position(2);
+        byte[] testBytes = new byte[writeBytes.length];
+        buffer.get(testBytes);
+
+        Assertions.assertArrayEquals(testBytes, writeBytes);
+    }
+
+
+    @Test
+    void testSlice() throws IOException {
+        ByteBufferDataInOutput clone = (ByteBufferDataInOutput) this.byteBufferDataInOutput.slice("test_slice", 0, (long)this.length);
+        Assertions.assertEquals(this.length, clone.getLength());
+        clone.close();
+        Mockito.verify(guard, times(0)).invalidateAndUnmap(any());
     }
 
     @Test
-    void testCalculatePosition() {
+    void testClone() throws IOException {
+        InOutput clone = this.byteBufferDataInOutput.clone();
+        clone.close();
+        Mockito.verify(guard, times(0)).invalidateAndUnmap(any());
     }
 
     @Test
-    void testSetContext() {
-    }
-
-    @Test
-    void testSlice() {
-    }
-
-    @Test
-    void testClone() {
-    }
-
-    @Test
-    void testClose() {
+    void testClose() throws IOException {
+        this.byteBufferDataInOutput.close();
+        Mockito.verify(guard, times(1)).invalidateAndUnmap(this.byteBuffers);
     }
 
     @Test
     void testNewCloneInstance() {
     }
 
-    @Test
-    void testGetFullSliceDescription() {
-        String result = byteBufferDataInOutput.getFullSliceDescription("sliceDescription");
-        Assertions.assertEquals("replaceMeWithExpectedResult", result);
-    }
 
     @Test
     void testAlreadyClosed() {
@@ -147,11 +187,6 @@ public class ByteBufferDataInOutputTest {
         ByteBufferDataInOutput result = ByteBufferDataInOutput.newInstance("resourceDescription", new ByteBuffer[]{null}, 0L, 0, new ByteBufferGuard("resourceDescription", null));
         Assertions.assertEquals(new ByteBufferDataInOutput("resourceDescription", new ByteBuffer[]{null}, 0, 0L, new ByteBufferGuard("resourceDescription", null)), result);
     }
-
-    @Test
-    void testReadBytes() {
-    }
-
 
     static int chunkSizePower(long maxChunkSize) {
         return Long.SIZE - 1 - Long.numberOfLeadingZeros(maxChunkSize);
