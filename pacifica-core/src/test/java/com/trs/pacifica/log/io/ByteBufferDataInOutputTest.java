@@ -171,10 +171,6 @@ public class ByteBufferDataInOutputTest {
         Mockito.verify(guard, times(1)).invalidateAndUnmap(this.byteBuffers);
     }
 
-    @Test
-    void testNewCloneInstance() {
-    }
-
 
     @Test
     void testAlreadyClosed() {

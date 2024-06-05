@@ -15,26 +15,33 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log;
+package com.trs.pacifica.log.store;
 
-import com.trs.pacifica.LogStorage;
-import com.trs.pacifica.log.codec.LogEntryDecoder;
-import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.log.store.BaseStorageTest;
+import com.trs.pacifica.test.TestUtils;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 
-public class FsLogStorageTest extends BaseStorageTest {
+import java.io.File;
+import java.io.IOException;
 
+public class BaseStorageTest {
 
-    private FsLogStorage logStorage;
+    protected String path;
 
-    @Override
     public void setup() throws Exception {
-        super.setup();
-        final String path = this.path;
-        final LogEntryEncoder logEntryEncoder = null;
-        final LogEntryDecoder logEntryDecoder = null;
-        final FsLogStorageOption option = new FsLogStorageOption();
-        logStorage = new FsLogStorage(path, logEntryEncoder, logEntryDecoder, FsLogStorageOption);
+        this.path = TestUtils.mkTempDir();
+        FileUtils.forceMkdir(new File(this.path));
+    }
 
+    @AfterEach
+    public void teardown() throws Exception {
+        FileUtils.deleteDirectory(new File(this.path));
+    }
+
+    protected String writeData() throws IOException {
+        File file = new File(this.path + File.separator + "data");
+        String data = "jraft is great!";
+        FileUtils.writeStringToFile(file, data);
+        return data;
     }
 }

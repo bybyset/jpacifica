@@ -108,7 +108,7 @@ public abstract class AbstractFile implements Closeable {
                     continue;
                 }
                 // cut or throw?
-                throw new IOException("");
+                throw new IOException(String.format("file=%s failed to recover body.", this.filename));
             }
         }
         this.lastLogIndex = this.getFirstLogIndex() + logEntryCount - 1;

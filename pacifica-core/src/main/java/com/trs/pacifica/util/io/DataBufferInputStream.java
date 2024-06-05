@@ -15,26 +15,29 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log;
+package com.trs.pacifica.util.io;
 
-import com.trs.pacifica.LogStorage;
-import com.trs.pacifica.log.codec.LogEntryDecoder;
-import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.log.store.BaseStorageTest;
+import java.io.IOException;
+import java.io.InputStream;
 
-public class FsLogStorageTest extends BaseStorageTest {
+public class DataBufferInputStream extends InputStream {
 
+    private final DataBuffer dataBuffer;
 
-    private FsLogStorage logStorage;
+    public DataBufferInputStream(DataBuffer dataBuffer) {
+        this.dataBuffer = dataBuffer;
+    }
+
 
     @Override
-    public void setup() throws Exception {
-        super.setup();
-        final String path = this.path;
-        final LogEntryEncoder logEntryEncoder = null;
-        final LogEntryDecoder logEntryDecoder = null;
-        final FsLogStorageOption option = new FsLogStorageOption();
-        logStorage = new FsLogStorage(path, logEntryEncoder, logEntryDecoder, FsLogStorageOption);
+    public int read() throws IOException {
+        return dataBuffer.get();
+    }
 
+    @Override
+    public int read(byte[] b) throws IOException {
+        final int beforePos = dataBuffer.position();
+        dataBuffer.get(b);
+        return  dataBuffer.position() - beforePos;
     }
 }

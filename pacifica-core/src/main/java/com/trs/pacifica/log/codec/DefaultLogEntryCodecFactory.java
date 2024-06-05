@@ -22,12 +22,30 @@ import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.spi.SPI;
 import com.trs.pacifica.util.RpcUtil;
+import com.trs.pacifica.util.io.ByteDataBuffer;
 import com.trs.pacifica.util.io.DataBuffer;
+import com.trs.pacifica.util.io.DataBufferInputStream;
+import com.trs.pacifica.util.io.LinkedDataBuffer;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 @SPI
-public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory{
+public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory {
+
+    // magic
+    public static final byte[] MAGIC_BYTES = new byte[]{(byte) 0xBB, (byte) 0xD2};
+    // Codec version
+    public static final byte CURRENT_VERSION = 0x01;
+    // reserved bytes
+    public static final byte[] RESERVED = new byte[3];
+
+    private static final byte[] CURRENT_LOG_ENTRY_HEADER_BYTES = new LogEntryHeader(MAGIC_BYTES, CURRENT_VERSION).encode();
+
+
+    static final int HEADER_BYTES = MAGIC_BYTES.length + RESERVED.length + 1;
 
     static final LogEntryDecoder PROTOBUF_DECODER = new ProtobufLogEntryDecoder();
 
@@ -48,6 +66,34 @@ public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory{
 
         @Override
         public LogEntry decode(DataBuffer data) {
+            final byte[] headerBytes = new byte[HEADER_BYTES];
+            data.get(headerBytes);
+            final byte[] magic = new byte[MAGIC_BYTES.length];
+            int i = 0;
+            for (; i < magic.length; i++) {
+                magic[i] = headerBytes[i];
+            }
+            if (!Arrays.equals(magic, MAGIC_BYTES)) {
+                return null;
+            }
+            final byte version = headerBytes[i++];
+            //
+            try (InputStream inputStream = new DataBufferInputStream(data)) {
+                RpcCommon.LogEntryPO logEntryPO = RpcCommon.LogEntryPO.parseFrom(inputStream);
+
+                final long logIndex = logEntryPO.getLogIndex();
+                final long logTerm = logEntryPO.getLogTerm();
+                LogEntry.Type type = RpcUtil.toLogEntryType(logEntryPO.getType());
+                final ByteBuffer logData;
+                if (logEntryPO.hasData()) {
+                    logData = logEntryPO.getData().asReadOnlyByteBuffer();
+                } else {
+                    logData = ByteBuffer.allocate(0);
+                }
+                LogEntry logEntry = new LogEntry(logIndex, logTerm, type, logData);
+            } catch (IOException e) {
+                return null;
+            }
             return null;
         }
     }
@@ -56,18 +102,56 @@ public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory{
 
         @Override
         public DataBuffer encode(LogEntry logEntry) {
-            //header
-
-            //
+            // header
+            final byte[] headerBytes = encodeHeader();
+            // body
             RpcCommon.LogEntryPO.Builder logEntryPO = RpcCommon.LogEntryPO.newBuilder();
             logEntryPO.setType(RpcUtil.protoLogEntryType(logEntry.getType()));
             logEntryPO.setLogIndex(logEntry.getLogId().getIndex());
             logEntryPO.setLogTerm(logEntry.getLogId().getTerm());
             final ByteBuffer data = logEntry.getLogData();
             logEntryPO.setData(ByteString.copyFrom(data));
-            logEntryPO.build();
-            return null;
+            //
+            final DataBuffer header = new ByteDataBuffer(headerBytes);
+            final DataBuffer body = new ByteDataBuffer(logEntryPO.build().toByteArray());
+            DataBuffer encode = new LinkedDataBuffer(header, body);
+            return encode;
         }
     }
+
+
+    private static class LogEntryHeader {
+        private byte[] magic = MAGIC_BYTES;
+        private byte version = CURRENT_VERSION;
+
+        LogEntryHeader(byte[] magic, byte version) {
+            this.magic = magic;
+            this.version = version;
+        }
+
+        LogEntryHeader() {
+        }
+
+
+        byte[] encode() {
+            byte[] header = new byte[HEADER_BYTES];
+            int i = 0;
+            for (; i < MAGIC_BYTES.length; i++) {
+                header[i] = MAGIC_BYTES[i];
+            }
+            header[i++] = CURRENT_VERSION;
+            for (; i < HEADER_BYTES; i++) {
+                header[i] = RESERVED[i - MAGIC_BYTES.length - 1];
+            }
+            return header;
+        }
+
+
+    }
+
+    static final byte[] encodeHeader() {
+        return CURRENT_LOG_ENTRY_HEADER_BYTES;
+    }
+
 
 }
