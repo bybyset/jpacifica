@@ -249,4 +249,15 @@ public interface DataBuffer {
      */
     public abstract DataBuffer slice(int index, int length);
 
+
+    default byte[] readRemain() {
+        int remaining = remaining();
+        if (remaining > 0) {
+            byte[] bytes = new byte[remaining];
+            get(bytes);
+            return bytes;
+        }
+        return new byte[0];
+    }
+
 }

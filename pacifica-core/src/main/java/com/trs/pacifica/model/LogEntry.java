@@ -44,6 +44,11 @@ public class LogEntry implements Checksum {
         this(logId.getIndex(), logId.getTerm(), type, EMPTY_DATA);
     }
 
+
+    public LogEntry(final long logIndex, final long logTerm, final Type type) {
+        this(logIndex, logTerm, type, EMPTY_DATA);
+    }
+
     public LogEntry(final long logIndex, final long logTerm, final Type type, final ByteBuffer logData) {
         this.logId.setIndex(logIndex);
         this.logId.setTerm(logTerm);
@@ -99,6 +104,46 @@ public class LogEntry implements Checksum {
             c = checksum(c, CrcUtil.crc64(this.logData));
         }
         return c;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.logData == null) ? 0 : this.logData.hashCode());
+        result = prime * result + ((this.logId == null) ? 0 : this.logId.hashCode());
+        result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
+        return result;
+
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        LogEntry other = (LogEntry) obj;
+        if (this.logData == null) {
+            if (other.logData != null) {
+                return false;
+            }
+        } else if (!this.logData.equals(other.logData)) {
+            return false;
+        }
+        if (this.logId == null) {
+            if (other.logId != null) {
+                return false;
+            }
+        } else if (!this.logId.equals(other.logId)) {
+            return false;
+        }
+        return this.type == other.type;
     }
 
     @Override

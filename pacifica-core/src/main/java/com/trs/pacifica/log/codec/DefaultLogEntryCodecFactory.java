@@ -26,6 +26,8 @@ import com.trs.pacifica.util.io.ByteDataBuffer;
 import com.trs.pacifica.util.io.DataBuffer;
 import com.trs.pacifica.util.io.DataBufferInputStream;
 import com.trs.pacifica.util.io.LinkedDataBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +37,8 @@ import java.util.Arrays;
 @SPI
 public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(DefaultLogEntryCodecFactory.class);
+
     // magic
     public static final byte[] MAGIC_BYTES = new byte[]{(byte) 0xBB, (byte) 0xD2};
     // Codec version
@@ -42,14 +46,13 @@ public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory {
     // reserved bytes
     public static final byte[] RESERVED = new byte[3];
 
-    private static final byte[] CURRENT_LOG_ENTRY_HEADER_BYTES = new LogEntryHeader(MAGIC_BYTES, CURRENT_VERSION).encode();
-
-
     static final int HEADER_BYTES = MAGIC_BYTES.length + RESERVED.length + 1;
 
     static final LogEntryDecoder PROTOBUF_DECODER = new ProtobufLogEntryDecoder();
 
     static final LogEntryEncoder PROTOBUF_ENCODER = new ProtobufLogEntryEncoder();
+
+    private static final byte[] CURRENT_LOG_ENTRY_HEADER_BYTES = new LogEntryHeader(MAGIC_BYTES, CURRENT_VERSION).encode();
 
     @Override
     public LogEntryDecoder getLogEntryDecoder() {
@@ -80,21 +83,22 @@ public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory {
             //
             try (InputStream inputStream = new DataBufferInputStream(data)) {
                 RpcCommon.LogEntryPO logEntryPO = RpcCommon.LogEntryPO.parseFrom(inputStream);
-
                 final long logIndex = logEntryPO.getLogIndex();
                 final long logTerm = logEntryPO.getLogTerm();
                 LogEntry.Type type = RpcUtil.toLogEntryType(logEntryPO.getType());
-                final ByteBuffer logData;
+                final LogEntry logEntry = new LogEntry(logIndex, logTerm, type);
                 if (logEntryPO.hasData()) {
-                    logData = logEntryPO.getData().asReadOnlyByteBuffer();
-                } else {
-                    logData = ByteBuffer.allocate(0);
+                    ByteBuffer logData = logEntryPO.getData().asReadOnlyByteBuffer();
+                    logEntry.setLogData(logData);
                 }
-                LogEntry logEntry = new LogEntry(logIndex, logTerm, type, logData);
+                if (logEntryPO.hasChecksum()) {
+                    logEntry.setChecksum(logEntryPO.getChecksum());
+                }
+                return logEntry;
             } catch (IOException e) {
+                LOGGER.error("failed to decode LogEntry", e);
                 return null;
             }
-            return null;
         }
     }
 
@@ -111,6 +115,9 @@ public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory {
             logEntryPO.setLogTerm(logEntry.getLogId().getTerm());
             final ByteBuffer data = logEntry.getLogData();
             logEntryPO.setData(ByteString.copyFrom(data));
+            if (logEntry.hasChecksum()) {
+                logEntryPO.setChecksum(logEntry.getChecksum());
+            }
             //
             final DataBuffer header = new ByteDataBuffer(headerBytes);
             final DataBuffer body = new ByteDataBuffer(logEntryPO.build().toByteArray());

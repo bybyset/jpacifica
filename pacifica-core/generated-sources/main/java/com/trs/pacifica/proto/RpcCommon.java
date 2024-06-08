@@ -3497,12 +3497,23 @@ public final class RpcCommon {
     long getLogTerm();
 
     /**
-     * <code>optional bytes data = 4;</code>
+     * <code>optional int64 checksum = 4;</code>
+     * @return Whether the checksum field is set.
+     */
+    boolean hasChecksum();
+    /**
+     * <code>optional int64 checksum = 4;</code>
+     * @return The checksum.
+     */
+    long getChecksum();
+
+    /**
+     * <code>optional bytes data = 5;</code>
      * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional bytes data = 4;</code>
+     * <code>optional bytes data = 5;</code>
      * @return The data.
      */
     com.google.protobuf.ByteString getData();
@@ -3608,18 +3619,37 @@ public final class RpcCommon {
       return logTerm_;
     }
 
-    public static final int DATA_FIELD_NUMBER = 4;
+    public static final int CHECKSUM_FIELD_NUMBER = 4;
+    private long checksum_ = 0L;
+    /**
+     * <code>optional int64 checksum = 4;</code>
+     * @return Whether the checksum field is set.
+     */
+    @java.lang.Override
+    public boolean hasChecksum() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <code>optional int64 checksum = 4;</code>
+     * @return The checksum.
+     */
+    @java.lang.Override
+    public long getChecksum() {
+      return checksum_;
+    }
+
+    public static final int DATA_FIELD_NUMBER = 5;
     private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
     /**
-     * <code>optional bytes data = 4;</code>
+     * <code>optional bytes data = 5;</code>
      * @return Whether the data field is set.
      */
     @java.lang.Override
     public boolean hasData() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
-     * <code>optional bytes data = 4;</code>
+     * <code>optional bytes data = 5;</code>
      * @return The data.
      */
     @java.lang.Override
@@ -3651,7 +3681,10 @@ public final class RpcCommon {
         output.writeInt64(3, logTerm_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        output.writeBytes(4, data_);
+        output.writeInt64(4, checksum_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        output.writeBytes(5, data_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3676,7 +3709,11 @@ public final class RpcCommon {
       }
       if (((bitField0_ & 0x00000008) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, data_);
+          .computeInt64Size(4, checksum_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, data_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -3707,6 +3744,11 @@ public final class RpcCommon {
         if (getLogTerm()
             != other.getLogTerm()) return false;
       }
+      if (hasChecksum() != other.hasChecksum()) return false;
+      if (hasChecksum()) {
+        if (getChecksum()
+            != other.getChecksum()) return false;
+      }
       if (hasData() != other.hasData()) return false;
       if (hasData()) {
         if (!getData()
@@ -3736,6 +3778,11 @@ public final class RpcCommon {
         hash = (37 * hash) + LOG_TERM_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
             getLogTerm());
+      }
+      if (hasChecksum()) {
+        hash = (37 * hash) + CHECKSUM_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getChecksum());
       }
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
@@ -3875,6 +3922,7 @@ public final class RpcCommon {
         type_ = 0;
         logIndex_ = 0L;
         logTerm_ = 0L;
+        checksum_ = 0L;
         data_ = com.google.protobuf.ByteString.EMPTY;
         return this;
       }
@@ -3923,8 +3971,12 @@ public final class RpcCommon {
           to_bitField0_ |= 0x00000004;
         }
         if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.data_ = data_;
+          result.checksum_ = checksum_;
           to_bitField0_ |= 0x00000008;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.data_ = data_;
+          to_bitField0_ |= 0x00000010;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -3982,6 +4034,9 @@ public final class RpcCommon {
         if (other.hasLogTerm()) {
           setLogTerm(other.getLogTerm());
         }
+        if (other.hasChecksum()) {
+          setChecksum(other.getChecksum());
+        }
         if (other.hasData()) {
           setData(other.getData());
         }
@@ -4026,11 +4081,16 @@ public final class RpcCommon {
                 bitField0_ |= 0x00000004;
                 break;
               } // case 24
-              case 34: {
-                data_ = input.readBytes();
+              case 32: {
+                checksum_ = input.readInt64();
                 bitField0_ |= 0x00000008;
                 break;
-              } // case 34
+              } // case 32
+              case 42: {
+                data_ = input.readBytes();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -4188,17 +4248,57 @@ public final class RpcCommon {
         return this;
       }
 
+      private long checksum_ ;
+      /**
+       * <code>optional int64 checksum = 4;</code>
+       * @return Whether the checksum field is set.
+       */
+      @java.lang.Override
+      public boolean hasChecksum() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <code>optional int64 checksum = 4;</code>
+       * @return The checksum.
+       */
+      @java.lang.Override
+      public long getChecksum() {
+        return checksum_;
+      }
+      /**
+       * <code>optional int64 checksum = 4;</code>
+       * @param value The checksum to set.
+       * @return This builder for chaining.
+       */
+      public Builder setChecksum(long value) {
+
+        checksum_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 checksum = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearChecksum() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        checksum_ = 0L;
+        onChanged();
+        return this;
+      }
+
       private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes data = 4;</code>
+       * <code>optional bytes data = 5;</code>
        * @return Whether the data field is set.
        */
       @java.lang.Override
       public boolean hasData() {
-        return ((bitField0_ & 0x00000008) != 0);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
-       * <code>optional bytes data = 4;</code>
+       * <code>optional bytes data = 5;</code>
        * @return The data.
        */
       @java.lang.Override
@@ -4206,23 +4306,23 @@ public final class RpcCommon {
         return data_;
       }
       /**
-       * <code>optional bytes data = 4;</code>
+       * <code>optional bytes data = 5;</code>
        * @param value The data to set.
        * @return This builder for chaining.
        */
       public Builder setData(com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
         data_ = value;
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bytes data = 4;</code>
+       * <code>optional bytes data = 5;</code>
        * @return This builder for chaining.
        */
       public Builder clearData() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         data_ = getDefaultInstance().getData();
         onChanged();
         return this;
@@ -4337,13 +4437,14 @@ public final class RpcCommon {
       "\"\202\001\n\014SnapshotMeta\022\026\n\tlog_index\030\001 \001(\003H\000\210\001" +
       "\001\022\025\n\010log_term\030\002 \001(\003H\001\210\001\001\022(\n\nattributes\030\003" +
       " \003(\0132\024.jpacifica.AttributeB\014\n\n_log_index" +
-      "B\013\n\t_log_term\"\247\001\n\nLogEntryPO\022*\n\004type\030\001 \001" +
+      "B\013\n\t_log_term\"\313\001\n\nLogEntryPO\022*\n\004type\030\001 \001" +
       "(\0162\027.jpacifica.LogEntryTypeH\000\210\001\001\022\026\n\tlog_" +
       "index\030\002 \001(\003H\001\210\001\001\022\025\n\010log_term\030\003 \001(\003H\002\210\001\001\022" +
-      "\021\n\004data\030\004 \001(\014H\003\210\001\001B\007\n\005_typeB\014\n\n_log_inde" +
-      "xB\013\n\t_log_termB\007\n\005_data*&\n\014LogEntryType\022" +
-      "\013\n\007OP_DATA\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacif" +
-      "ica.protoB\tRpcCommonb\006proto3"
+      "\025\n\010checksum\030\004 \001(\003H\003\210\001\001\022\021\n\004data\030\005 \001(\014H\004\210\001" +
+      "\001B\007\n\005_typeB\014\n\n_log_indexB\013\n\t_log_termB\013\n" +
+      "\t_checksumB\007\n\005_data*&\n\014LogEntryType\022\013\n\007O" +
+      "P_DATA\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacifica." +
+      "protoB\tRpcCommonb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -4378,7 +4479,7 @@ public final class RpcCommon {
     internal_static_jpacifica_LogEntryPO_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_LogEntryPO_descriptor,
-        new java.lang.String[] { "Type", "LogIndex", "LogTerm", "Data", });
+        new java.lang.String[] { "Type", "LogIndex", "LogTerm", "Checksum", "Data", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

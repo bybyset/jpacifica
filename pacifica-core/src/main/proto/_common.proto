@@ -37,5 +37,6 @@ message LogEntryPO {
   optional LogEntryType type = 1;
   optional int64 log_index = 2;
   optional int64 log_term = 3;
-  optional bytes data = 4;
+  optional int64 checksum = 4;
+  optional bytes data = 5;
 }
