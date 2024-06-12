@@ -30,6 +30,8 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
 
     private int blockIndex;
 
+    private int lastGetPosition = -1;
+
     public LinkedDataBuffer(List<DataBuffer> dataBuffers) {
         this.blockIndex = 0;
         this.blocks = new Block[dataBuffers.size()];
@@ -44,8 +46,8 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
             totalLimit += dataBuffer.limit();
             totalCapacity += dataBuffer.capacity();
         }
-        this.limit(totalLimit);
         this.totalCapacity = totalCapacity;
+        this.limit(totalLimit);
     }
 
 
@@ -64,12 +66,23 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
         if (pos >= limit()) {
             throw new BufferUnderflowException();
         }
-
-        if (!this.blocks[blockIndex].dataBuffer.hasRemaining()) {
+        Block block = null;
+        if (this.lastGetPosition != pos) {
+            block = findDataBuffer(pos);
+            int blockPos = pos - block.startIndex;
+            block.dataBuffer.position(blockPos);
+        } else {
+            block = this.blocks[blockIndex];
+        }
+        if (block == null) {
+            throw new BufferUnderflowException();
+        }
+        if (!block.dataBuffer.hasRemaining()) {
             blockIndex++;
         }
+        this.lastGetPosition = pos;
         position(++pos);
-        return this.blocks[blockIndex].dataBuffer.get();
+        return block.dataBuffer.get();
     }
 
     @Override

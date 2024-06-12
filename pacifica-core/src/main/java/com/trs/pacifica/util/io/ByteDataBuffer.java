@@ -17,30 +17,37 @@
 
 package com.trs.pacifica.util.io;
 
-import com.trs.pacifica.error.NotSupportedException;
-
 import java.nio.BufferUnderflowException;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class ByteDataBuffer extends AbstractDataBuffer{
 
     private final byte[] bytes;
 
+    private final int offset;
+
+    private final int length;
+
     public ByteDataBuffer(byte[] bytes) {
-        this.bytes = bytes;
+        this(bytes, 0, bytes.length);
+    }
+
+    public ByteDataBuffer(byte[] bytes, int offset) {
+        this(bytes, offset, bytes.length - offset);
     }
 
     public ByteDataBuffer(byte[] bytes, int offset, int length) {
         Objects.checkFromIndexSize(offset, length, bytes.length);
         this.bytes = bytes;
-        this.position(offset);
-        this.limit(offset + length);
+        this.offset = offset;
+        this.length = length;
+        this.limit(length);
+        this.position(0);
     }
 
     @Override
     public int capacity() {
-        return bytes.length;
+        return this.length;
     }
 
 
@@ -50,7 +57,7 @@ public class ByteDataBuffer extends AbstractDataBuffer{
         if (pos >= limit()) {
             throw new BufferUnderflowException();
         }
-        return bytes[this.position++];
+        return bytes[offset + this.position++];
     }
 
     @Override
@@ -58,7 +65,7 @@ public class ByteDataBuffer extends AbstractDataBuffer{
         if (index < 0 || index > limit()) {
             throw new IndexOutOfBoundsException(String.format("index(%d) is less than 0 or greater than limit(%d).", index, limit()));
         }
-        return bytes[index];
+        return bytes[offset + index];
     }
 
     @Override
@@ -67,7 +74,7 @@ public class ByteDataBuffer extends AbstractDataBuffer{
         int pos = position();
         if (length > limit() - pos)
             throw new BufferUnderflowException();
-        System.arraycopy(bytes, position(), dst, offset, length);
+        System.arraycopy(bytes, this.offset + position(), dst, offset, length);
         position(pos + length);
         return this;
     }
@@ -75,11 +82,11 @@ public class ByteDataBuffer extends AbstractDataBuffer{
 
     @Override
     public DataBuffer slice() {
-        return new ByteDataBuffer(this.bytes);
+        return new ByteDataBuffer(this.bytes, this.offset, this.length);
     }
 
     @Override
     public DataBuffer slice(int index, int length) {
-        return new ByteDataBuffer(this.bytes, index, length);
+        return new ByteDataBuffer(this.bytes, this.offset + index, length);
     }
 }
