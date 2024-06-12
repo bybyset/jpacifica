@@ -34,6 +34,7 @@ public class FsLogStorageTest extends BaseStorageTest {
         final LogEntryEncoder logEntryEncoder = null;
         final LogEntryDecoder logEntryDecoder = null;
         final FsLogStorageOption option = new FsLogStorageOption();
-
     }
+
+
 }

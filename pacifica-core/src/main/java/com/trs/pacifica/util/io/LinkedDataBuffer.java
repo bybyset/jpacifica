@@ -109,17 +109,19 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
             }
             int remaining = blocks[blockIndex].dataBuffer.remaining();
             if (remaining > 0) {
-                if (remaining < length) {
+                int readLen = length - tmpOffset;
+                if (remaining < readLen) {
                     blocks[blockIndex++].dataBuffer.get(dst, tmpOffset, remaining);
                     tmpOffset += remaining;
                 } else {
-                    blocks[blockIndex].dataBuffer.get(dst, tmpOffset, length);
-                    tmpOffset += length;
+                    blocks[blockIndex].dataBuffer.get(dst, tmpOffset, readLen);
+                    tmpOffset += readLen;
                 }
             } else {
                 blockIndex++;
             }
         } while (tmpOffset - offset < length);
+        this.position(pos + tmpOffset - offset);
         return this;
     }
 

@@ -81,8 +81,9 @@ public class DefaultLogEntryCodecFactory implements LogEntryCodecFactory {
             }
             final byte version = headerBytes[i++];
             //
-            try (InputStream inputStream = new DataBufferInputStream(data)) {
-                RpcCommon.LogEntryPO logEntryPO = RpcCommon.LogEntryPO.parseFrom(inputStream);
+            try {
+                byte[] logDataBytes = data.readRemain();
+                RpcCommon.LogEntryPO logEntryPO = RpcCommon.LogEntryPO.parseFrom(logDataBytes);
                 final long logIndex = logEntryPO.getLogIndex();
                 final long logTerm = logEntryPO.getLogTerm();
                 LogEntry.Type type = RpcUtil.toLogEntryType(logEntryPO.getType());

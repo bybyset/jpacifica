@@ -20,6 +20,7 @@ package com.trs.pacifica.log.store;
 import com.trs.pacifica.test.TestUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,9 @@ public class BaseStorageTest {
 
     protected String path;
 
+
+
+    @BeforeEach
     public void setup() throws Exception {
         this.path = TestUtils.mkTempDir();
         FileUtils.forceMkdir(new File(this.path));

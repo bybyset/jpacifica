@@ -20,6 +20,7 @@ package com.trs.pacifica.util.io;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class LinkedDataBufferTest {
@@ -28,14 +29,18 @@ public class LinkedDataBufferTest {
     DataBuffer dataBuffer2;
     LinkedDataBuffer linkedDataBuffer;
 
+    byte[] bytes1;
+
+    byte[] bytes2;
+
     {
         int len = 10;
-        byte[] bytes1 = new byte[len];
+        this.bytes1 = new byte[len];
         for (int i = 0; i < 10; i++) {
             bytes1[i] = (byte) i;
         }
         dataBuffer1 = new ByteDataBuffer(bytes1);
-        byte[] bytes2 = new byte[len];
+        this.bytes2 = new byte[len];
         for (int i = 10; i < 20; i++) {
             bytes2[i - 10] = (byte) i;
         }
@@ -77,6 +82,36 @@ public class LinkedDataBufferTest {
         linkedDataBuffer.position(19);
         result = linkedDataBuffer.get();
         Assertions.assertEquals((byte) 19, result);
+    }
+
+    @Test
+    void testGetBytes() {
+        byte[] bytes = new byte[20];
+        linkedDataBuffer.get(bytes);
+        byte[] bytes3 = new byte[20];
+        System.arraycopy(this.bytes1, 0, bytes3, 0, 10);
+        System.arraycopy(this.bytes2, 0, bytes3, 10, 10);
+        Assertions.assertArrayEquals(bytes, bytes3);
+    }
+
+    @Test
+    void testGetBytes1() {
+        byte[] bytes = new byte[12];
+        linkedDataBuffer.get(bytes);
+        byte[] bytes3 = new byte[12];
+        System.arraycopy(this.bytes1, 0, bytes3, 0, 10);
+        System.arraycopy(this.bytes2, 0, bytes3, 10, 2);
+        Assertions.assertArrayEquals(bytes, bytes3);
+    }
+
+    @Test
+    void testReadRemain() {
+        byte[] b = new byte[2];
+        this.linkedDataBuffer.get(b);
+        byte[] bytes = this.linkedDataBuffer.readRemain();
+
+        Assertions.assertEquals(18, bytes.length);
+
     }
 
 

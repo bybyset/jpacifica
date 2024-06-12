@@ -17,7 +17,9 @@
 
 package com.trs.pacifica.log.codec;
 
+import com.google.protobuf.ByteString;
 import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.util.io.DataBuffer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,21 +38,15 @@ public class DefaultLogEntryCodecFactoryTest {
         final long logIndex = 1001;
         final long logTerm = 2;
         final ByteBuffer logData = ByteBuffer.wrap("test".getBytes());
+        ByteBuffer testLogData = logData.asReadOnlyBuffer();
         LogEntry logEntry = new LogEntry(logIndex, logTerm, LogEntry.Type.OP_DATA);
         logEntry.setLogData(logData);
         final DataBuffer encodes = logEntryEncoder.encode(logEntry);
-        byte[] bytes = encodes.readRemain();
-
+        logEntry.setLogData(testLogData);
+        Assertions.assertEquals(0, encodes.position());
         LogEntry logEntryDecode = logEntryDecoder.decode(encodes);
-
-        Assertions.assertEquals(logEntry, logEntryDecode);
-
-
-
+        Assertions.assertEquals(true, logEntry.equals(logEntryDecode));
     }
-
-
-
 
     @Test
     void testEncodeHeader() {
