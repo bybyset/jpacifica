@@ -22,19 +22,32 @@ import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
 import com.trs.pacifica.log.store.BaseStorageTest;
 
-public class FsLogStorageTest extends BaseStorageTest {
+public class FsLogStorageTest extends BaseLogStorageTest {
 
 
     private FsLogStorage logStorage;
+
+    public FsLogStorageTest() {
+        super();
+    }
+
+    @Override
+    public LogStorage getLogStorage() {
+        return logStorage;
+    }
 
     @Override
     public void setup() throws Exception {
         super.setup();
         final String path = this.path;
-        final LogEntryEncoder logEntryEncoder = null;
-        final LogEntryDecoder logEntryDecoder = null;
         final FsLogStorageOption option = new FsLogStorageOption();
+        logStorage = new FsLogStorage(path, this.logEntryEncoder, this.logEntryDecoder, option);
+        logStorage.open();
     }
 
-
+    @Override
+    public void teardown() throws Exception {
+        logStorage.close();
+        super.teardown();
+    }
 }

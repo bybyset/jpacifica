@@ -16,7 +16,13 @@
  */
 package com.trs.pacifica.test;
 
+import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
+
+import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test helper
@@ -30,5 +36,32 @@ public class TestUtils {
 
     public static String mkTempDir() {
         return Paths.get(System.getProperty("java.io.tmpdir", "/tmp"), "jpacifica_test_" + System.nanoTime()).toString();
+    }
+
+    public static LogEntry mockEntry(final long index, final long term) {
+        return mockEntry(index, term, 0);
+    }
+
+    public static LogEntry mockEntry(final LogId logId) {
+        return mockEntry(logId.getIndex(), logId.getTerm(), 0);
+    }
+
+    public static LogEntry mockEntry(final long index, final long term, final int dataSize) {
+        LogEntry entry = new LogEntry(index, term, LogEntry.Type.OP_DATA);
+        if (dataSize > 0) {
+            byte[] bs = new byte[dataSize];
+            entry.setLogData(ByteBuffer.wrap(bs));
+        }
+        return entry;
+    }
+
+    public static List<LogEntry> mockEntries(final int n) {
+        List<LogEntry> entries = new ArrayList<>();
+        for (int i = 1; i <= n; i++) {
+            LogEntry entry = mockEntry(i, i);
+            entry.setLogData(ByteBuffer.wrap(String.valueOf(i).getBytes()));
+            entries.add(entry);
+        }
+        return entries;
     }
 }
