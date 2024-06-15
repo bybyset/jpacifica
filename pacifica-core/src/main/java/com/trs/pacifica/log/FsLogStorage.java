@@ -405,9 +405,12 @@ public class FsLogStorage implements LogStorage {
                 LOGGER.warn("{} not found LogEntry for log_index={} when reset.", this.storagePath, nextLogIndex);
             }
             return appendLogEntry(entry);
+        } catch (IOException e) {
+            LOGGER.error("Failed to rest, storage_path={}", this.storagePath, e);
         } finally {
             this.writeLock.unlock();
         }
+        return false;
     }
 
 

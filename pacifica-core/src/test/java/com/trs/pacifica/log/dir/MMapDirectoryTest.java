@@ -114,39 +114,4 @@ class MMapDirectoryTest extends BaseStorageTest {
 
     }
 
-    @Test
-    void testClose() {
-    }
-
-
-    @Test
-    void testOpen() {
-    }
-
-
-
-
-
-    @Test
-    void testFileLength() {
-    }
-
-    @Test
-    void testSync() {
-    }
-
-    @Test
-    void testGetPendingDeletions() {
-    }
-
-
-
-    @Test
-    void testDeletePendingFiles() {
-    }
-
-    @Test
-    void testSync2() {
-
-    }
 }

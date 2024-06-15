@@ -563,10 +563,21 @@ public abstract class AbstractStore implements Closeable {
     }
 
     /**
-     *
+     * Delete all files and go back to the initial state
      */
-    public void reset() {
-
+    public void reset() throws IOException {
+        this.writeLock.lock();
+        try {
+            //
+            AbstractFile file = null;
+            while ((file = this.files.pop()) != null) {
+                this.directory.deleteFile(file.getFilename());
+            }
+            this.flushedPosition.set(0);
+            this.nextFileSequence.set(0);
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     @Override
