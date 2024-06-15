@@ -20,6 +20,7 @@ package com.trs.pacifica.log.dir;
 import com.trs.pacifica.log.io.InOutput;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.MappedByteBufferInputProvider;
+import com.trs.pacifica.util.OnlyForTest;
 import com.trs.pacifica.util.SystemConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +101,8 @@ public class MMapDirectory extends FsDirectory {
     }
 
 
+
+
     @Override
     public InOutput openInOutput(String name) throws IOException {
         ensureOpen();
@@ -115,6 +118,12 @@ public class MMapDirectory extends FsDirectory {
         return cache.clone();
     }
 
+
+    @OnlyForTest
+    InOutput getFileInOutput(final String filename) {
+        return this.fileInOutputCache.get(filename);
+    }
+
     @Override
     public synchronized void close() throws IOException {
         super.close();
@@ -125,6 +134,21 @@ public class MMapDirectory extends FsDirectory {
                 LOGGER.error("{} failed to close InOutput of file={}.", getDirectory(), name);
             }
         });
+    }
+
+    @Override
+    protected void onDeleteFileBefore(String filename) {
+        final InOutput inOutput = this.fileInOutputCache.remove(filename);
+        if (inOutput != null) {
+            try {
+                inOutput.close();
+            } catch (IOException e){
+                //
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error("Failed to close InOutput(dir={}, filename={})", this.getDirectory(), filename);
+                }
+            }
+        }
     }
 
     /**

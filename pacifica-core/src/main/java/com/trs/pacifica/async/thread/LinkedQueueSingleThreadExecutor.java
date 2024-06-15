@@ -15,37 +15,34 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.store;
+package com.trs.pacifica.async.thread;
 
-import com.trs.pacifica.test.TestUtils;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
-import java.io.File;
-import java.io.IOException;
+/**
+ *
+ */
+public class LinkedQueueSingleThreadExecutor implements SingleThreadExecutor{
 
-public class BaseStorageTest {
+    private final Executor executor;
 
-    protected String path;
-
-
-
-    @BeforeEach
-    public void setup() throws Exception {
-        this.path = TestUtils.mkTempDir();
-        FileUtils.forceMkdir(new File(this.path));
+    public LinkedQueueSingleThreadExecutor(Executor executor) {
+        this.executor = executor;
     }
 
-    @AfterEach
-    public void teardown() throws Exception {
-        FileUtils.deleteDirectory(new File(this.path));
+    @Override
+    public boolean shutdownGracefully() {
+        return false;
     }
 
-    protected String writeData() throws IOException {
-        File file = new File(this.path + File.separator + "data");
-        String data = "jraft is great!";
-        FileUtils.writeStringToFile(file, data);
-        return data;
+    @Override
+    public boolean shutdownGracefully(long timeout, TimeUnit unit) {
+        return false;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+
     }
 }

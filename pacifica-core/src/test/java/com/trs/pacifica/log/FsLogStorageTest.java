@@ -18,9 +18,6 @@
 package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
-import com.trs.pacifica.log.codec.LogEntryDecoder;
-import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.log.store.BaseStorageTest;
 
 public class FsLogStorageTest extends BaseLogStorageTest {
 

@@ -22,7 +22,7 @@ import com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.log.store.BaseStorageTest;
+import com.trs.pacifica.test.BaseStorageTest;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.test.TestUtils;

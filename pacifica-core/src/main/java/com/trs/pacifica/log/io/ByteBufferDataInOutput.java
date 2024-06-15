@@ -162,7 +162,7 @@ public class ByteBufferDataInOutput implements InOutput {
         final long sliceEnd = offset + length;
         final int startIndex = (int) (offset >>> chunkSizePower);
         final int endIndex = (int) (sliceEnd >>> chunkSizePower);
-        final ByteBuffer[] slices = new ByteBuffer[endIndex - startIndex];
+        final ByteBuffer[] slices = new ByteBuffer[Math.max(endIndex - startIndex, 1)];
         for (int i = 0; i < slices.length; i++) {
             slices[i] = buffers[startIndex + i].duplicate().order(ByteOrder.LITTLE_ENDIAN);
         }

@@ -33,6 +33,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
 import java.util.logging.Logger;
+
 import com.trs.pacifica.log.io.ByteBufferGuard.BufferCleaner;
 
 import static java.lang.invoke.MethodHandles.lookup;
@@ -67,7 +68,7 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
         }
 
         final String resourceDescription = "ByteBufferInOutput(path=\"" + path.toString() + "\")";
-        try (FileChannel fc = FileChannel.open(path, StandardOpenOption.READ)) {
+        try (FileChannel fc = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE)) {
             final long fileSize = fc.size();
             return ByteBufferDataInOutput.newInstance(
                     resourceDescription,
@@ -94,7 +95,9 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
     }
 
 
-    /** Maps a file into a set of buffers */
+    /**
+     * Maps a file into a set of buffers
+     */
     final ByteBuffer[] map(
             String resourceDescription, FileChannel fc, int chunkSizePower, boolean preload, long length)
             throws IOException {
@@ -104,7 +107,7 @@ public class MappedByteBufferInputProvider implements MMapDirectory.MMapInOutput
 
         final long chunkSize = 1L << chunkSizePower;
 
-        final int nrBuffers = (int) (length >>> chunkSizePower);
+        final int nrBuffers = (int) (length >>> chunkSizePower) + (length & (chunkSize - 1)) > 0 ? 1 : 0;
 
         final ByteBuffer[] buffers = new ByteBuffer[nrBuffers];
 

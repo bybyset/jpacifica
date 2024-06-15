@@ -218,7 +218,7 @@ public class FsLogStorage implements LogStorage {
                     return this.logEntryDecoder.decode(logEntryBytes);
                 }
             } catch (IOException e) {
-
+                LOGGER.error("Failed to get LogEntry for log_index={}", index, e);
             }
         }
         return null;
@@ -390,7 +390,24 @@ public class FsLogStorage implements LogStorage {
 
     @Override
     public boolean reset(long nextLogIndex) {
-        return false;
+        if (nextLogIndex <= 0) {
+            throw new IllegalArgumentException("Invalid next log index.");
+        }
+        this.writeLock.lock();
+        try {
+            LogEntry entry = getLogEntry(nextLogIndex);
+            // clear all file
+            this.indexStore.reset();
+            this.segmentStore.reset();
+            // append log entry
+            if (entry == null) {
+                entry = new LogEntry(nextLogIndex, 0, LogEntry.Type.NO_OP);
+                LOGGER.warn("{} not found LogEntry for log_index={} when reset.", this.storagePath, nextLogIndex);
+            }
+            return appendLogEntry(entry);
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
 

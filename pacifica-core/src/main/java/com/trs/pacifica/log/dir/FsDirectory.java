@@ -85,8 +85,17 @@ public abstract class FsDirectory extends BaseDirectory {
         if (pendingDeletes.contains(name)) {
             throw new NoSuchFileException("file \"" + name + "\" is already pending delete");
         }
+        onDeleteFileBefore(name);
         privateDeleteFile(name, false);
         maybeDeletePendingFiles();
+    }
+
+    /**
+     * Called before the file is deleted
+     * @param filename
+     */
+    protected void onDeleteFileBefore(String filename) {
+        //do nothing
     }
 
     @Override

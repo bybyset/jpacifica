@@ -154,13 +154,26 @@ public class ByteBufferDataInOutputTest {
     void testSlice() throws IOException {
         ByteBufferDataInOutput clone = (ByteBufferDataInOutput) this.byteBufferDataInOutput.slice("test_slice", 0, (long)this.length);
         Assertions.assertEquals(this.length, clone.getLength());
+        Assertions.assertEquals(this.byteBuffers.length, clone.byteBuffers.length);
+        clone.close();
+        Mockito.verify(guard, times(0)).invalidateAndUnmap(any());
+    }
+
+    @Test
+    void testSlice0() throws IOException {
+        ByteBufferDataInOutput clone = (ByteBufferDataInOutput) this.byteBufferDataInOutput.slice("test_slice", 0, DEFAULT_MAX_CHUNK_SIZE - 1);
+        Assertions.assertEquals(DEFAULT_MAX_CHUNK_SIZE - 1, clone.getLength());
+        Assertions.assertEquals(1, clone.byteBuffers.length);
+
         clone.close();
         Mockito.verify(guard, times(0)).invalidateAndUnmap(any());
     }
 
     @Test
     void testClone() throws IOException {
-        InOutput clone = this.byteBufferDataInOutput.clone();
+        ByteBufferDataInOutput clone = (ByteBufferDataInOutput) this.byteBufferDataInOutput.clone();
+        Assertions.assertEquals(this.length, clone.getLength());
+        Assertions.assertEquals(this.byteBuffers.length, clone.byteBuffers.length);
         clone.close();
         Mockito.verify(guard, times(0)).invalidateAndUnmap(any());
     }

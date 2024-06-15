@@ -15,22 +15,29 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.log.io;
+package com.trs.pacifica.test;
 
-import java.io.Closeable;
+import com.trs.pacifica.test.TestUtils;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.io.File;
 import java.io.IOException;
 
-public interface Output extends Closeable {
+public class BaseStorageTest {
 
-    /**
-     * @param index
-     * @param bytes
-     * @throws IOException
-     */
-    void writeBytes(final int index, final byte[] bytes, final int offset, final int length) throws IOException;
+    protected String path;
 
-    default void writeBytes(final int index, final byte[] bytes) throws IOException {
-        writeBytes(index, bytes, 0, bytes.length);
+    @BeforeEach
+    public void setup() throws Exception {
+        this.path = TestUtils.mkTempDir();
+        FileUtils.forceMkdir(new File(this.path));
+    }
+
+    @AfterEach
+    public void teardown() throws Exception {
+        FileUtils.deleteDirectory(new File(this.path));
     }
 
 }

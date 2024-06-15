@@ -562,6 +562,13 @@ public abstract class AbstractStore implements Closeable {
         return calculateFileStartOffset(lastFile);
     }
 
+    /**
+     *
+     */
+    public void reset() {
+
+    }
+
     @Override
     public String toString() {
         final StringBuilder infoBuilder = new StringBuilder(this.getClass().getSimpleName());
