@@ -61,11 +61,14 @@ public class SegmentStore extends AbstractStore {
     public Tuple2<Integer, Long> appendLogData(final long logIndex, final DataBuffer logEntryData) throws IOException {
         assert logEntryData != null;
         assert logIndex > 0;
+        final long lastLogIndex = getLastLogIndex();
+        if (lastLogIndex > 0 && logIndex != lastLogIndex + 1) {
+            throw new IllegalArgumentException("expect logIndex=" + (lastLogIndex + 1) + ", but logIndex=" + logIndex);
+        }
         final int minFreeByteSize = getMinWriteByteSize();
         int firstStartWritePos = -1;
         long expectFlushPos = -1L;
         int logEntryDataWritePos = 0;
-        // TODO  the write lock should be moved to a lower level segment file
         this.writeLock.lock();
         try {
             do {

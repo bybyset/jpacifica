@@ -97,7 +97,7 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
     }
 
     @Override
-    public DataBuffer get(byte[] dst, final int offset, int length) {
+    public DataBuffer get(byte[] dst, final int offset, final int length) {
         Objects.checkFromIndexSize(offset, length, dst.length);
         int pos = position();
         if (length > limit() - pos)
@@ -109,7 +109,7 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
             }
             int remaining = blocks[blockIndex].dataBuffer.remaining();
             if (remaining > 0) {
-                int readLen = length - tmpOffset;
+                int readLen = offset + length - tmpOffset;
                 if (remaining < readLen) {
                     blocks[blockIndex++].dataBuffer.get(dst, tmpOffset, remaining);
                     tmpOffset += remaining;

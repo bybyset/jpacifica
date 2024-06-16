@@ -153,6 +153,9 @@ public abstract class AbstractStore implements Closeable {
         }
     }
 
+    public int getFileSize() {
+        return this.fileSize;
+    }
 
     private final String getNextFilename() {
         return String.format("%019d", this.nextFileSequence.getAndIncrement()) + getFileSuffix();

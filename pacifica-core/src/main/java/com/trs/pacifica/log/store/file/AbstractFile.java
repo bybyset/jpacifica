@@ -207,7 +207,7 @@ public abstract class AbstractFile implements Closeable {
             this.saveHeader();
         }
         final int writeBytes = appendData(dataInput);
-        assert writeBytes == dataInput.remaining();
+        assert writeBytes == dataInput.limit();
         return writeBytes;
     }
 

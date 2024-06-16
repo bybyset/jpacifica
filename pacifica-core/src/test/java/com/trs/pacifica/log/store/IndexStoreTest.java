@@ -31,8 +31,6 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 
-import static org.mockito.Mockito.when;
-
 public class IndexStoreTest extends BaseStorageTest {
 
     IndexStore indexStore;
@@ -127,86 +125,6 @@ public class IndexStoreTest extends BaseStorageTest {
         Assertions.assertEquals(position1, result1);
         int result2 = this.indexStore.lookupPositionAt(1002);
         Assertions.assertEquals(position2, result2);
-    }
-
-    @Test
-    void testNewAbstractFile() {
-    }
-
-
-    @Test
-    void testGetFileSize() {
-        int result = IndexStore.getFileSize(0);
-        Assertions.assertEquals(0, result);
-    }
-
-    @Test
-    void testEnsureOpen() {
-        indexStore.ensureOpen();
-    }
-
-    @Test
-    void testLoad() {
-    }
-
-    @Test
-    void testClose() {
-    }
-
-    @Test
-    void testGetNextFile() {
-    }
-
-    @Test
-    void testGetLastFile() {
-    }
-
-    @Test
-    void testLookupFile() {
-    }
-
-    @Test
-    void testSliceFile() {
-    }
-
-    @Test
-    void testGetFirstLogIndex() {
-    }
-
-    @Test
-    void testGetFirstLogPosition() {
-    }
-
-    @Test
-    void testGetLastLogIndex() {
-    }
-
-    @Test
-    void testTruncatePrefix() {
-    }
-
-    @Test
-    void testTruncateSuffix() {
-    }
-
-    @Test
-    void testTruncateSuffix2() {
-    }
-
-    @Test
-    void testDeleteFile() {
-    }
-
-    @Test
-    void testFlush() {
-    }
-
-    @Test
-    void testGetFlushedPosition() {
-    }
-
-    @Test
-    void testWaitForFlush() {
     }
 
 }
