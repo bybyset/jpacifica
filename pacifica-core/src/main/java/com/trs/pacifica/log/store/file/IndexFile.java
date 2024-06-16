@@ -49,14 +49,23 @@ public class IndexFile extends AbstractFile {
         return FileHeader.getBytesSize() + getWriteByteSize() * (int)(logIndex - firstLogIndex);
     }
 
-
+    /**
+     * append index
+     * @param logId
+     * @param logPosition
+     * @return the starting position before writing to the file
+     * @throws IOException
+     */
     public int appendIndexData(final LogId logId, final int logPosition) throws IOException {
         final long logIndex = logId.getIndex();
         final byte[] appendData = new byte[_INDEX_ENTRY_BYTE_SIZE];
         encodeIndexEntryHeader(appendData);
         byte[] indexEntry = encodeIndexEntry(logId, logPosition);
         System.arraycopy(indexEntry, 0, appendData, IndexEntryHeader.byteSize(), indexEntry.length);
-        return doAppendData(logIndex, new ByteDataBuffer(appendData));
+        int startWritePosition = this.getWrotePosition();
+        int writeBytes = doAppendData(logIndex, new ByteDataBuffer(appendData));
+        assert writeBytes == appendData.length;
+        return startWritePosition;
     }
 
     /**
@@ -77,7 +86,9 @@ public class IndexFile extends AbstractFile {
                 assert len == _INDEX_ENTRY_BYTE_SIZE;
                 final IndexEntryHeader indexEntryHeader = IndexEntryHeader.from(bytes);
                 final IndexEntryCodec indexEntryCodec = INDEX_ENTRY_CODEC_FACTORY.getIndexEntryCodec(indexEntryHeader);
-                return indexEntryCodec.decode(bytes, IndexEntryHeader.byteSize());
+                final byte[] indexEntryBytes = new byte[bytes.length - IndexEntryHeader.byteSize()];
+                System.arraycopy(bytes, IndexEntryHeader.byteSize(), indexEntryBytes, 0, indexEntryBytes.length);
+                return indexEntryCodec.decode(indexEntryBytes, IndexEntryHeader.byteSize());
             }
         }
         return null;

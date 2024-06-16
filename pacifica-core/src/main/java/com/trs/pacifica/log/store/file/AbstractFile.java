@@ -188,7 +188,7 @@ public abstract class AbstractFile implements Closeable {
             this.saveHeader();
         }
         final int writeBytes = appendData(dataInput);
-        assert writeBytes == dataInput.remaining();
+        assert writeBytes == dataInput.limit();
         // set last log index
         this.lastLogIndex = logIndex;
         return writeBytes;
@@ -212,6 +212,10 @@ public abstract class AbstractFile implements Closeable {
     }
 
 
+    /**
+     *
+     * @throws IOException
+     */
     private void saveHeader() throws IOException {
         final byte[] headerData = this.header.encode();
         final int writeBytes = putData(0, new ByteDataBuffer(headerData));
@@ -238,11 +242,11 @@ public abstract class AbstractFile implements Closeable {
         int writeByteSize = 0;
         final byte[] buffer = new byte[WRITE_BYTE_BUFFER_SIZE];
         try (final Output output = this.parentDir.openInOutput(this.filename);) {
-            int freeByteSize = this.fileSize - position;
+            int freeByteSize = this.fileSize - index;
             while (data.hasRemaining() && freeByteSize > 0) {
                 int readLen = Math.min(buffer.length, data.limit() - data.position());
                 data.get(buffer, 0, readLen);
-                output.writeBytes(position + writeByteSize, buffer, 0, readLen);
+                output.writeBytes(index + writeByteSize, buffer, 0, readLen);
                 writeByteSize += readLen;
                 freeByteSize -= readLen;
             }
@@ -291,9 +295,8 @@ public abstract class AbstractFile implements Closeable {
         }
         try (Input input = this.parentDir.openInOutput(this.filename)) {
             input.seek(position);
-            input.readBytes(bytes, len);
+            return input.readBytes(bytes);
         }
-        return -1;
     }
 
     /**
@@ -450,7 +453,7 @@ public abstract class AbstractFile implements Closeable {
         this.rest();
     }
 
-    void rest() {
+    public void rest() {
         final int resetPosition = FileHeader.getBytesSize();
         this.setWrotePosition(resetPosition);
         this.setFlushedPosition(resetPosition);

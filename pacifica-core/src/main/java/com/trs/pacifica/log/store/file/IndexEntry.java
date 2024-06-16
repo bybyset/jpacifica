@@ -41,7 +41,24 @@ public class IndexEntry {
     }
 
 
-    static int byteSize() {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof IndexEntry)) {
+            return false;
+        }
+        if (!this.logId.equals(((IndexEntry) obj).logId)) {
+            return false;
+        }
+        return this.position == ((IndexEntry) obj).position;
+    }
+
+    public static int byteSize() {
         return Long.BYTES + Long.BYTES + Integer.BYTES;
     }
 

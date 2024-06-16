@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -131,8 +132,52 @@ public class ByteBufferDataInOutputTest {
         buffer.put(testBytes);
         this.byteBufferDataInOutput.seek(0);
         byte[] readBytes = new byte[len];
-        this.byteBufferDataInOutput.readBytes(readBytes, readBytes.length);
+        int readLen = this.byteBufferDataInOutput.readBytes(readBytes, 0, readBytes.length);
+        Assertions.assertEquals(len, readLen);
         Assertions.assertArrayEquals(testBytes, readBytes);
+
+    }
+
+    @Test
+    void testReadBytes1() throws IOException {
+        //
+        byte[] helloBytes = "hello".getBytes("UTF-8");
+        byte[] testBytes = "test".getBytes("UTF-8");
+        int len = testBytes.length;
+        ByteBuffer buffer = this.byteBuffers[1];
+        buffer = buffer.duplicate();
+        buffer.put(helloBytes);
+        buffer.put(testBytes);
+        this.byteBufferDataInOutput.seek(DEFAULT_MAX_CHUNK_SIZE + helloBytes.length);
+        byte[] readBytes = new byte[len];
+        int readLen = this.byteBufferDataInOutput.readBytes(readBytes, 0, readBytes.length);
+        Assertions.assertEquals(len, readLen);
+        Assertions.assertArrayEquals(testBytes, readBytes);
+
+    }
+
+    @Test
+    void testReadBytes2() throws IOException {
+        //
+        byte[] helloBytes = "hello".getBytes("UTF-8");
+        byte[] testBytes = "test".getBytes("UTF-8");
+        ByteBuffer buffer = this.byteBuffers[0];
+        buffer = buffer.duplicate();
+        buffer.position((int) DEFAULT_MAX_CHUNK_SIZE - helloBytes.length);
+        buffer.put(helloBytes);
+        buffer = this.byteBuffers[1];
+        buffer = buffer.duplicate();
+        buffer.put(testBytes);
+
+        this.byteBufferDataInOutput.seek(DEFAULT_MAX_CHUNK_SIZE - helloBytes.length);
+        int len = helloBytes.length + testBytes.length;
+        byte[] readBytes = new byte[len];
+        int readLen = this.byteBufferDataInOutput.readBytes(readBytes, 0, readBytes.length);
+        Assertions.assertEquals(len, readLen);
+        byte[] expected = new byte[len];
+        System.arraycopy(helloBytes, 0, expected, 0, helloBytes.length);
+        System.arraycopy(testBytes, 0, expected, helloBytes.length, testBytes.length);
+        Assertions.assertArrayEquals(expected, readBytes);
     }
 
     @Test

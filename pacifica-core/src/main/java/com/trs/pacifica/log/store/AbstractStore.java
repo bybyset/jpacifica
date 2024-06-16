@@ -190,6 +190,7 @@ public abstract class AbstractStore implements Closeable {
         this.directory.createFile(filename, this.fileSize);
         final AbstractFile abstractFile = newAbstractFile(filename);
         abstractFile.setStartOffset(calculateFileStartOffset());
+        abstractFile.rest();
         return abstractFile;
     }
 
@@ -271,6 +272,7 @@ public abstract class AbstractStore implements Closeable {
                 }
                 // do allocate file
                 lastFile = allocateNextFile();
+                this.files.offer(lastFile);
             } finally {
                 this.writeLock.unlock();
             }

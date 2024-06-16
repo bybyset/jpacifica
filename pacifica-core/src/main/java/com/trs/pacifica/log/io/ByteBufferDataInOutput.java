@@ -83,6 +83,34 @@ public class ByteBufferDataInOutput implements InOutput {
         return this.inputContext.curByteBuffer.get();
     }
 
+
+    @Override
+    public int readBytes(byte[] b, int off, int len) throws IOException {
+        Objects.checkFromIndexSize(off, len, b.length);
+        if (len <= 0) {
+            return 0;
+        }
+        int totalRead = 0;
+        do {
+            ByteBuffer curByteBuffer = this.inputContext.curByteBuffer;
+            if (!curByteBuffer.hasRemaining()) {
+                // next
+                int currentIndex = this.inputContext.curByteBufferIndex + 1;
+                if (currentIndex >= byteBuffers.length) {
+                    break;
+                }
+                setCurByteBuffer(this.inputContext, currentIndex);
+                curByteBuffer = this.inputContext.curByteBuffer;
+            }
+
+            int readLen = Math.min(curByteBuffer.remaining(), len - totalRead);
+            this.inputContext.curByteBuffer.get(b, off, readLen);
+            off += readLen;
+            totalRead += readLen;
+        } while (totalRead < len);
+        return totalRead == 0? -1 : totalRead;
+    }
+
     @Override
     public void writeBytes(int index, byte[] bytes, int offset, int length) throws IOException {
         //check
