@@ -233,7 +233,7 @@ public abstract class AbstractStore implements Closeable {
             int index = Arrays.binarySearch(fileArray, currentFile, new Comparator<AbstractFile>() {
                 @Override
                 public int compare(AbstractFile left, AbstractFile right) {
-                    return (int) (getFileSequenceFromFile(right) - getFileSequenceFromFile(left));
+                    return (int) (getFileSequenceFromFile(left) - getFileSequenceFromFile(right));
                 }
             });
             if (index >= 0 && ++index < fileArray.length) {
