@@ -153,6 +153,7 @@ public class LogEntry implements Checksum {
                 ", type=" + type +
                 ", checksum=" + checksum +
                 ", hasChecksum=" + hasChecksum +
+                ", logData=" + logData +
                 '}';
     }
 

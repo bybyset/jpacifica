@@ -290,7 +290,7 @@ public abstract class AbstractFile implements Closeable {
         if (len == 0) {
             return 0;
         }
-        if (position < this.flushedPosition.get()) {
+        if (position > this.flushedPosition.get()) {
             return -1;
         }
         try (Input input = this.parentDir.openInOutput(this.filename)) {
@@ -307,8 +307,8 @@ public abstract class AbstractFile implements Closeable {
      */
     DataBuffer readDataBuffer(final int position, final int len) throws IOException {
         final int currentFlushPosition = this.flushedPosition.get();
-        if (position < currentFlushPosition) {
-            throw new IndexOutOfBoundsException(String.format("position(%d) less than current_flush_position(%d).", position, currentFlushPosition));
+        if (position > currentFlushPosition) {
+            throw new IndexOutOfBoundsException(String.format("position(%d) greater than current_flush_position(%d).", position, currentFlushPosition));
         }
         if (position + len > this.fileSize) {
             throw new IndexOutOfBoundsException(String.format("position(%d)+len(%d) greater than file_size(%d)", position, len, fileSize));

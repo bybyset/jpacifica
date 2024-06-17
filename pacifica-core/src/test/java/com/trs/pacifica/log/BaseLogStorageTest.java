@@ -29,6 +29,7 @@ import com.trs.pacifica.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BaseLogStorageTest extends BaseStorageTest {
@@ -72,14 +73,20 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
     public void testAddManyEntries() {
         final LogStorage logStorage = getLogStorage();
         final List<LogEntry> entries = TestUtils.mockEntries(20);
-        Assertions.assertEquals(20, logStorage.appendLogEntries(entries));
-        Assertions.assertEquals(0, logStorage.getFirstLogId().getIndex());
-        Assertions.assertEquals(19, logStorage.getLastLogId().getIndex());
-        for (int i = 0; i < 20; i++) {
+        List<LogEntry> expecteds = toExpected(entries);
+        int logEntryCount = logStorage.appendLogEntries(entries);
+        Assertions.assertEquals(20, logEntryCount);
+        LogId firstLogId = logStorage.getFirstLogId();
+        Assertions.assertNotNull(firstLogId);
+        Assertions.assertEquals(1, firstLogId.getIndex());
+        LogId lastLogId = logStorage.getLastLogId();
+        Assertions.assertNotNull(lastLogId);
+        Assertions.assertEquals(20, lastLogId.getIndex());
+        for (int i = 1; i < 21; i++) {
             final LogEntry entry = logStorage.getLogEntry(i);
             Assertions.assertNotNull(entry);
             Assertions.assertEquals(i, entry.getLogId().getTerm());
-            Assertions.assertEquals(entries.get(i), entry);
+            Assertions.assertEquals(expecteds.get(i - 1), entry);
         }
     }
 
@@ -139,4 +146,17 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
         }
     }
 
+
+    static List<LogEntry> toExpected(List<LogEntry> logEntries) {
+        List<LogEntry> expecteds = new ArrayList<>(logEntries.size());
+        logEntries.forEach( logEntry -> {
+            LogEntry expected = new LogEntry(logEntry.getLogId(), logEntry.getType());
+            expected.setLogData(logEntry.getLogData().duplicate());
+            if (logEntry.hasChecksum()) {
+                expected.setChecksum(logEntry.getChecksum());
+            }
+            expecteds.add(expected);
+        });
+        return expecteds;
+    }
 }
