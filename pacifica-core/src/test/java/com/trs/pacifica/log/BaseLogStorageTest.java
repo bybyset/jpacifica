@@ -42,6 +42,10 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
         this.logEntryDecoder = logEntryCodecFactory.getLogEntryDecoder();
     }
 
+    @Override
+    public void setup() throws Exception {
+        super.setup();
+    }
 
     public abstract LogStorage getLogStorage();
 

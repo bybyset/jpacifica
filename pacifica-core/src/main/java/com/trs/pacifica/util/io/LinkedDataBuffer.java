@@ -127,12 +127,44 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
 
     @Override
     public DataBuffer slice() {
-        throw new NotSupportedException("not support slice");
+        DataBuffer[] dataBuffers = new DataBuffer[blocks.length];
+        for (int i = 0; i < blocks.length; i++) {
+            dataBuffers[i] = blocks[i].dataBuffer.slice();
+        }
+        return new LinkedDataBuffer(dataBuffers);
     }
 
     @Override
     public DataBuffer slice(int index, int length) {
-        throw new NotSupportedException("not support slice");
+        if (index >= this.limit()) {
+            throw new IndexOutOfBoundsException(String.format("index(%d) greater than limit(%d).", index, limit()));
+        }
+        if (length <= 0) {
+            return new EmptyDataBuffer();
+        }
+        List<DataBuffer> dataBuffers = new ArrayList<>(blocks.length);
+        int i = 0;
+        for (; i < blocks.length;) {
+            DataBuffer dataBuffer = blocks[i].dataBuffer;
+            if (index >= blocks[i].startIndex && index < blocks[i].startIndex + dataBuffer.limit()) {
+                int sliceIndex = Math.max(0, index - blocks[i].startIndex);
+                int sliceLen = Math.min(length, dataBuffer.limit() - sliceIndex);
+                dataBuffer = dataBuffer.slice(sliceIndex, sliceLen);
+                dataBuffers.add(dataBuffer);
+                length -= sliceLen;
+                i++;
+                break;
+            }
+            i++;
+        }
+        for (; i < blocks.length && length > 0; i++) {
+            DataBuffer dataBuffer = blocks[i].dataBuffer;
+            int sliceLen = Math.min(length, dataBuffer.limit());
+            dataBuffer = dataBuffer.slice(0, sliceLen);
+            dataBuffers.add(dataBuffer);
+            length -= sliceLen;
+        }
+        return new LinkedDataBuffer(dataBuffers);
     }
 
     private Block findDataBuffer(int index) {

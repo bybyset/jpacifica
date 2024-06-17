@@ -27,11 +27,16 @@ public class LinkedDataBufferTest {
 
     DataBuffer dataBuffer1;
     DataBuffer dataBuffer2;
+    DataBuffer dataBuffer3;
     LinkedDataBuffer linkedDataBuffer;
 
     byte[] bytes1;
 
     byte[] bytes2;
+
+    byte[] bytes3;
+
+    int limit;
 
     {
         int len = 10;
@@ -45,18 +50,25 @@ public class LinkedDataBufferTest {
             bytes2[i - 10] = (byte) i;
         }
         dataBuffer2 = new ByteDataBuffer(bytes2);
-        linkedDataBuffer = new LinkedDataBuffer(dataBuffer1, dataBuffer2);
+
+        this.bytes3 = new byte[len];
+        for (int i = 20; i < 30; i++) {
+            bytes3[i - 20] = (byte) i;
+        }
+        dataBuffer3 = new ByteDataBuffer(bytes3);
+        this.limit = 30;
+        linkedDataBuffer = new LinkedDataBuffer(dataBuffer1, dataBuffer2, dataBuffer3);
     }
 
     @Test
     void testCapacity() {
         int result = linkedDataBuffer.capacity();
-        Assertions.assertEquals(20, result);
+        Assertions.assertEquals(limit, result);
     }
 
     @Test
     void testGet() {
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < limit; i++) {
             byte b = linkedDataBuffer.get();
             Assertions.assertEquals((byte)i, b);
         }
@@ -109,8 +121,7 @@ public class LinkedDataBufferTest {
         byte[] b = new byte[2];
         this.linkedDataBuffer.get(b);
         byte[] bytes = this.linkedDataBuffer.readRemain();
-
-        Assertions.assertEquals(18, bytes.length);
+        Assertions.assertEquals(limit - 2, bytes.length);
 
     }
 
@@ -124,7 +135,44 @@ public class LinkedDataBufferTest {
     @Test
     void testLimit() {
         int result = linkedDataBuffer.limit();
-        Assertions.assertEquals(20, result);
+        Assertions.assertEquals(limit, result);
+    }
+
+
+    @Test
+    void testSlice() {
+        DataBuffer dataBuffer = this.linkedDataBuffer.slice();
+        Assertions.assertEquals(this.linkedDataBuffer.capacity(), dataBuffer.capacity());
+        Assertions.assertEquals(this.linkedDataBuffer.limit(), dataBuffer.limit());
+
+        byte[] b = new byte[10];
+        dataBuffer.get(b);
+        Assertions.assertArrayEquals(this.bytes1, b);
+
+        dataBuffer.get(b);
+        Assertions.assertArrayEquals(this.bytes2, b);
+
+        dataBuffer.get(b);
+        Assertions.assertArrayEquals(this.bytes3, b);
+
+    }
+
+    @Test
+    void testSliceIndexAndLength() {
+        int index = 5;
+        int len = 20;
+        DataBuffer dataBuffer = this.linkedDataBuffer.slice(index, len);
+        Assertions.assertEquals(len, dataBuffer.capacity());
+        Assertions.assertEquals(len, dataBuffer.limit());
+
+        byte[] bytes = new byte[len];
+        dataBuffer.get(bytes);
+        byte b = 5;
+        for (int i = 0; i < len; i++) {
+            Assertions.assertEquals(b, bytes[i]);
+            b++;
+        }
+
     }
 
 }

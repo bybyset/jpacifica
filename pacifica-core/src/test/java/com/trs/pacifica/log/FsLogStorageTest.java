@@ -18,22 +18,26 @@
 package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.io.IOException;
 
 public class FsLogStorageTest extends BaseLogStorageTest {
 
 
     private FsLogStorage logStorage;
 
-    public FsLogStorageTest() {
+    public FsLogStorageTest() throws IOException {
         super();
     }
-
     @Override
     public LogStorage getLogStorage() {
         return logStorage;
     }
 
     @Override
+    @BeforeEach
     public void setup() throws Exception {
         super.setup();
         final String path = this.path;
@@ -43,6 +47,7 @@ public class FsLogStorageTest extends BaseLogStorageTest {
     }
 
     @Override
+    @AfterEach
     public void teardown() throws Exception {
         logStorage.close();
         super.teardown();
