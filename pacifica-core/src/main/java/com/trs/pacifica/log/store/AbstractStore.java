@@ -363,7 +363,6 @@ public abstract class AbstractStore implements Closeable {
     }
 
     /**
-     *
      * @return
      */
     public int getFirstLogPosition() {
@@ -424,6 +423,7 @@ public abstract class AbstractStore implements Closeable {
      * truncate logs from storage's head. We only deleted the expired file that
      * the last log index of file is less than firstIndexKept
      * we will return first log index of the store.
+     *
      * @param firstIndexKept
      * @return first log index of the store.
      * @throws IOException
@@ -451,7 +451,14 @@ public abstract class AbstractStore implements Closeable {
         return truncateSuffix(lastIndexKept, -1);
     }
 
-    public boolean truncateSuffix(long lastIndexKept, final int lastLogPosition) {
+    /**
+     * truncate suffix,
+     *
+     * @param lastIndexKept The last log index to keep
+     * @param resetPosition resets the position of the file to align. eg: end position of the last log entry + 1
+     * @return
+     */
+    public boolean truncateSuffix(long lastIndexKept, final int resetPosition) {
         ensureOpen();
         this.writeLock.lock();
         try {
@@ -459,17 +466,18 @@ public abstract class AbstractStore implements Closeable {
                 return true;
             }
             final AbstractFile[] files = new AbstractFile[this.files.size()];
+            this.files.toArray(files);
             for (int i = files.length - 1; i >= 0; i--) {
                 final AbstractFile tailFile = files[i];
                 if (tailFile.isAvailable() && tailFile.getLastLogIndex() <= lastIndexKept) {
                     return true;
                 }
-                if (tailFile.getFirstLogIndex() < lastIndexKept) {
+                if (tailFile.getFirstLogIndex() > lastIndexKept) {
                     // rest file
                     tailFile.restFile();
                 } else {
                     // fill blank
-                    int pos = tailFile.truncate(lastIndexKept, lastLogPosition);
+                    int pos = tailFile.truncate(lastIndexKept, resetPosition);
                     if (pos > 0) {
                         this.setFlushedPosition(tailFile.getStartOffset() + pos);
                     }
@@ -575,7 +583,7 @@ public abstract class AbstractStore implements Closeable {
         try {
             //
             AbstractFile file = null;
-            while ((file = this.files.pop()) != null) {
+            while ((file = this.files.poll()) != null) {
                 this.directory.deleteFile(file.getFilename());
             }
             this.flushedPosition.set(0);

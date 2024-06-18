@@ -54,6 +54,11 @@ public abstract class AbstractFile implements Closeable {
     protected static final byte _FILE_END_BYTE = 'x';
     protected static final int BLANK_HOLE_SIZE = 64;
     protected final FileHeader header = new FileHeader();
+
+    /**
+     * the position of the file that has been written.
+     * not include current value
+     */
     private final AtomicInteger wrotePosition = new AtomicInteger();
     private final AtomicInteger flushedPosition = new AtomicInteger();
     protected final Directory parentDir;
@@ -121,33 +126,54 @@ public abstract class AbstractFile implements Closeable {
     /**
      * Truncate file entries to logIndex
      *
-     * @param logIndex the target logIndex
-     * @param pos      the position of this entry, this parameter is needed only if
-     *                 this file is a segmentFile
+     * @param logIndex      the target logIndex
+     * @param resetPosition the need to rest position of the file, this parameter is needed only if
+     *                      this file is a segmentFile
      */
-    public int truncate(final long logIndex, int pos) throws IOException {
+    public int truncate(final long logIndex, int resetPosition) throws IOException {
         if (logIndex < this.header.getFirstLogIndex() || logIndex > this.lastLogIndex) {
             return 0;
         }
-        if (pos < 0) {
-            pos = lookupPositionFromHead(logIndex);
+        if (resetPosition < 0) {
+            resetPosition = lookupStartPositionFromHead(logIndex + 1);
         }
-        if (pos > 0) {
-            restPosition(pos);
-            this.clear(pos);
+        if (resetPosition > 0) {
+            restPosition(resetPosition);
+            this.clear(resetPosition);
             this.lastLogIndex = logIndex;
-            return pos;
+            return resetPosition;
         }
         return 0;
     }
 
     /**
-     * Start at the file header and look for the logIndex to be specified at the position of the file
+     * Start at the file header and look for the logIndex to be specified at the start position of the file
      *
      * @param logIndex
      * @return
      */
-    protected abstract int lookupPositionFromHead(final long logIndex);
+    protected int lookupStartPositionFromHead(final long logIndex) throws IOException {
+        int position = FileHeader.getBytesSize();
+        long currentLogIndex = this.getFirstLogIndex();
+        try (final Input input = this.parentDir.openInOutput(this.filename)) {
+            while (position < this.fileSize && currentLogIndex < logIndex) {
+                input.seek(position);
+                final CheckEntryResult result = checkEntry(input);
+                if (result.resultType == CheckEntryResultType.END) {
+                    break;
+                }
+                if (result.resultType == CheckEntryResultType.FAIL) {
+
+                    break;
+                }
+                if (result.resultType == CheckEntryResultType.SUCCESS) {
+                    position += result.size;
+                    currentLogIndex += result.entryNum;
+                }
+            }
+        }
+        return position;
+    }
 
     boolean loadHeader() throws IOException {
         try (final Input input = this.parentDir.openInOutput(this.filename);) {
@@ -213,7 +239,6 @@ public abstract class AbstractFile implements Closeable {
 
 
     /**
-     *
      * @throws IOException
      */
     private void saveHeader() throws IOException {
@@ -529,6 +554,18 @@ public abstract class AbstractFile implements Closeable {
 
         CheckEntryResult(int size, CheckEntryResultType resultType) {
             this(1, size, resultType);
+        }
+
+        public int getEntryNum() {
+            return entryNum;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public CheckEntryResultType getResultType() {
+            return resultType;
         }
 
         static CheckEntryResult fileEnd() {

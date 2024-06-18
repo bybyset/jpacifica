@@ -204,7 +204,6 @@ public class FsLogStorage implements LogStorage {
     @Override
     public LogEntry getLogEntry(long index) {
         if (index > 0) {
-            // TODO if out of range ??
             //look index  at IndexStore
             final int logPosition = this.indexStore.lookupPositionAt(index);
             if (logPosition == IndexFile._NOT_FOUND) {
@@ -363,7 +362,12 @@ public class FsLogStorage implements LogStorage {
             firstIndexKept = this.segmentStore.truncatePrefix(firstIndexKept);
             //TODO  if nothing at segment store we will clear index store
             this.indexStore.truncatePrefix(firstIndexKept);
-            return new LogId(0, 0);
+
+            LogId firstLogId = this.getLogIdAt(firstIndexKept);
+            if (firstLogId == null) {
+                firstLogId = new LogId(0, 0);
+            }
+            return firstLogId;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
@@ -375,17 +379,33 @@ public class FsLogStorage implements LogStorage {
     public LogId truncateSuffix(long lastIndexKept) {
         this.writeLock.lock();
         try {
-            int position = this.indexStore.lookupPositionAt(lastIndexKept);
-            if (position > 0) {
-                this.segmentStore.truncateSuffix(lastIndexKept, position);
+            LogId lastLogId = this.getLastLogId();
+            if (lastLogId == null) {
+                return new LogId(0, 0);
+            }
+            if (lastLogId.getIndex() <= lastIndexKept) {
+                // no truncate suffix
+                return lastLogId;
+            }
+            // need to truncate suffix
+            // find end position of lastIndexKept
+            int resetPosition = this.indexStore.lookupPositionAt(lastIndexKept + 1);
+            if (resetPosition > 0) {
+                this.segmentStore.truncateSuffix(lastIndexKept, resetPosition);
             } else {
                 this.segmentStore.truncateSuffix(lastIndexKept);
             }
             this.indexStore.truncateSuffix(lastIndexKept);
+
+            lastLogId = this.getLogIdAt(lastIndexKept);
+            if (lastLogId == null) {
+                lastLogId = new LogId(0, 0);
+            }
+            return lastLogId;
         } finally {
             this.writeLock.unlock();
         }
-        return new LogId(0, 0);
+
     }
 
     @Override

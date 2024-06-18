@@ -99,7 +99,9 @@ public class IndexStore extends AbstractStore {
         if (indexFile != null) {
             try {
                 final IndexEntry indexEntry = indexFile.lookupIndexEntry(logIndex);
-                assert indexEntry != null;
+                if (indexEntry == null) {
+                    return AbstractFile._NOT_FOUND;
+                }
                 return indexEntry.getPosition();
             } catch (IOException e){
                 throw new RuntimeException(e);

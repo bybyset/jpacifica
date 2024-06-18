@@ -95,8 +95,13 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
         final LogStorage logStorage = getLogStorage();
         testAddManyEntries();
         logStorage.reset(5);
-        Assertions.assertEquals(5, logStorage.getFirstLogId().getIndex());
-        Assertions.assertEquals(5, logStorage.getLastLogId().getIndex());
+        LogId firstLogId = logStorage.getFirstLogId();
+        Assertions.assertNotNull(firstLogId);
+        Assertions.assertEquals(5, firstLogId.getIndex());
+
+        LogId lastLogId = logStorage.getLastLogId();
+        Assertions.assertNotNull(lastLogId);
+        Assertions.assertEquals(5, lastLogId.getIndex());
     }
 
 
@@ -104,15 +109,23 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
     public void testTruncatePrefix() {
         final LogStorage logStorage = getLogStorage();
         final List<LogEntry> entries = TestUtils.mockEntries(10);
+
+        List<LogEntry> expecteds = toExpected(entries);
         Assertions.assertEquals(10, logStorage.appendLogEntries(entries));
-        logStorage.truncatePrefix(5);
-        Assertions.assertEquals(5, logStorage.getFirstLogId().getIndex());
-        Assertions.assertEquals(9, logStorage.getLastLogId().getIndex());
-        for (int i = 0; i < 10; i++) {
-            if (i < 5) {
+        LogId firstLogIdAfter = logStorage.truncatePrefix(5);
+        Assertions.assertNotNull(firstLogIdAfter);
+        LogId firstLogId = logStorage.getFirstLogId();
+        Assertions.assertNotNull(firstLogId);
+        Assertions.assertEquals(firstLogIdAfter, firstLogId);
+        Assertions.assertTrue(firstLogId.getIndex() <= 5);
+        LogId lastLogId = logStorage.getLastLogId();
+        Assertions.assertNotNull(lastLogId);
+        Assertions.assertEquals(10, lastLogId.getIndex());
+        for (int i = 1; i <= 10; i++) {
+            if (i < firstLogIdAfter.getIndex()) {
                 Assertions.assertNull(logStorage.getLogEntry(i));
             } else {
-                Assertions.assertEquals(entries.get(i), logStorage.getLogEntry(i));
+                Assertions.assertEquals(expecteds.get(i - 1), logStorage.getLogEntry(i));
             }
         }
     }
@@ -121,13 +134,21 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
     public void testTruncateSuffix() {
         final LogStorage logStorage = getLogStorage();
         final List<LogEntry> entries = TestUtils.mockEntries(7);
+        List<LogEntry> expecteds = toExpected(entries);
         Assertions.assertEquals(7, logStorage.appendLogEntries(entries));
-        logStorage.truncateSuffix(5);
-        Assertions.assertEquals(0, logStorage.getFirstLogId().getIndex());
-        Assertions.assertEquals(5, logStorage.getLastLogId().getIndex());
-        for (int i = 0; i < 7; i++) {
-            if (i <= 5) {
-                Assertions.assertEquals(entries.get(i), logStorage.getLogEntry(i));
+        LogId lastLogIdAfter = logStorage.truncateSuffix(5);
+        LogId firtLogId = logStorage.getFirstLogId();
+        Assertions.assertNotNull(firtLogId);
+        Assertions.assertEquals(1, firtLogId.getIndex());
+
+        LogId lastLogId = logStorage.getLastLogId();
+        Assertions.assertNotNull(lastLogId);
+        Assertions.assertEquals(lastLogIdAfter, lastLogId);
+        Assertions.assertEquals(5, lastLogId.getIndex());
+
+        for (int i = 1; i <= 7; i++) {
+            if (i <= lastLogIdAfter.getIndex()) {
+                Assertions.assertEquals(expecteds.get(i - 1), logStorage.getLogEntry(i));
             } else {
                 Assertions.assertNull(logStorage.getLogEntry(i));
             }

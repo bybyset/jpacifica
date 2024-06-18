@@ -42,6 +42,7 @@ public class FsLogStorageTest extends BaseLogStorageTest {
         super.setup();
         final String path = this.path;
         final FsLogStorageOption option = new FsLogStorageOption();
+        option.setSegmentFileSize(100 * 1024);//100k
         logStorage = new FsLogStorage(path, this.logEntryEncoder, this.logEntryDecoder, option);
         logStorage.open();
     }

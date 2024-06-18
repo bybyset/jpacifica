@@ -44,7 +44,7 @@ public class IndexFile extends AbstractFile {
     }
 
     @Override
-    protected int lookupPositionFromHead(long logIndex) {
+    protected int lookupStartPositionFromHead(long logIndex) {
         final long firstLogIndex = this.header.getFirstLogIndex();
         return FileHeader.getBytesSize() + getWriteByteSize() * (int)(logIndex - firstLogIndex);
     }
@@ -85,6 +85,9 @@ public class IndexFile extends AbstractFile {
             if (len != -1) {
                 assert len == _INDEX_ENTRY_BYTE_SIZE;
                 final IndexEntryHeader indexEntryHeader = IndexEntryHeader.from(bytes);
+                if (!indexEntryHeader.isLegal()) {
+                    return null;
+                }
                 final IndexEntryCodec indexEntryCodec = INDEX_ENTRY_CODEC_FACTORY.getIndexEntryCodec(indexEntryHeader);
                 final byte[] indexEntryBytes = new byte[bytes.length - IndexEntryHeader.byteSize()];
                 System.arraycopy(bytes, IndexEntryHeader.byteSize(), indexEntryBytes, 0, indexEntryBytes.length);

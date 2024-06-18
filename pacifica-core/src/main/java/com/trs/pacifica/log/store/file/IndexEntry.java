@@ -86,6 +86,9 @@ public class IndexEntry {
             return version;
         }
 
+        public boolean isLegal() {
+            return this.magic == HEADER_MAGIC;
+        }
 
         static IndexEntryHeader from(byte[] bytes) {
             assert bytes.length > 2;
