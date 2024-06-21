@@ -33,12 +33,8 @@ import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -168,7 +164,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                 return false;
             }
             final LogEntry lastLogEntry = logEntries.get(logEntries.size() - 1);
-            final long committedLogIndex = this.stateMachineCaller.getCommittedLogIndex();
+            final long committedLogIndex = this.stateMachineCaller.getLastCommittedLogIndex();
             if (lastLogEntry.getLogId().getIndex() <= committedLogIndex) {
                 //has been committed
                 final String errorMsg = String.format("The received logEntries(last_log_index=%d) have all been committed(commit_point=%d), and we keep them unchanged",
@@ -387,7 +383,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             if (lastIndexKept > this.lastLogIndex) {
                 return;
             }
-            if (lastIndexKept < this.stateMachineCaller.getCommittedLogIndex()) {
+            if (lastIndexKept < this.stateMachineCaller.getLastCommittedLogIndex()) {
                 return;
             }
             final LogId lastLogId = this.logStorage.truncateSuffix(lastIndexKept);

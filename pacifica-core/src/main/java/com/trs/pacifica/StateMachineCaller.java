@@ -19,6 +19,7 @@ package com.trs.pacifica;
 
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.core.fsm.OperationIterator;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
@@ -37,28 +38,22 @@ public interface StateMachineCaller {
      */
     boolean commitAt(final long logIndex);
 
+    /**
+     * Get the index of the LogEntry last applied to the state machine
+     *
+     * @return 0 if nothing to apply
+     * @see StateMachine#onApply(OperationIterator)
+     */
+    long getLastAppliedLogIndex();
 
     /**
-     * get commit point (last log entry index to apply state machine)
+     * Get the index of LogEntry that was committed to replica group
+     * It is possible: LastCommittedLogIndex >= LastAppliedLogIndex
      *
-     * @return LogId(0, 0) if nothing commit,
+     * @return 0 if nothing to commit
+     * @see StateMachineCaller#commitAt(long)
      */
-    LogId getCommitPoint();
-
-
-    /**
-     * get committing log index
-     *
-     * @return
-     */
-    long getCommittingLogIndex();
-
-    /**
-     * get committed log index
-     *
-     * @return
-     */
-    long getCommittedLogIndex();
+    long getLastCommittedLogIndex();
 
     /**
      * Snapshot loading event.

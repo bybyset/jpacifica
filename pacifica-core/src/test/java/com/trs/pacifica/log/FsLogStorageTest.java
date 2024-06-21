@@ -49,8 +49,8 @@ public class FsLogStorageTest extends BaseLogStorageTest {
 
     @Override
     @AfterEach
-    public void teardown() throws Exception {
+    public void shutdown() throws Exception {
         logStorage.close();
-        super.teardown();
+        super.shutdown();
     }
 }

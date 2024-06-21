@@ -196,23 +196,23 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_SAVING)) {
                 this.readLock.lock();
                 try {
-                    final LogId commitPoint = this.stateMachineCaller.getCommitPoint();
-                    if (commitPoint.getIndex() < this.lastSnapshotLogId.getIndex()) {
+                    final long lastAppliedLogIndex = this.stateMachineCaller.getLastAppliedLogIndex();
+                    if (lastAppliedLogIndex < this.lastSnapshotLogId.getIndex()) {
                         // Our program should not go into this code block.
                         // TODO This error should probably be reported to the replica?
-                        throw new PacificaException(PacificaErrorCode.INTERNAL, String.format("committed_log_index=%d less than snapshot_log_index=%d", commitPoint.getIndex(), this.lastSnapshotLogId.getIndex()));
+                        throw new PacificaException(PacificaErrorCode.INTERNAL, String.format("committed_log_index=%d less than snapshot_log_index=%d", lastAppliedLogIndex, this.lastSnapshotLogId.getIndex()));
                     }
-                    if (commitPoint.getIndex() == this.lastSnapshotLogId.getIndex()) {
+                    if (lastAppliedLogIndex == this.lastSnapshotLogId.getIndex()) {
                         // ok, no need to execute.
                         ThreadUtil.runCallback(callback, Finished.success());
                         return;
                     }
-                    final long distance = commitPoint.getIndex() - this.lastSnapshotLogId.getIndex();
+                    final long distance = lastAppliedLogIndex - this.lastSnapshotLogId.getIndex();
                     if (distance < snapshotLogIndexMargin) {
                         // Set by the user, how many logs of operations will be kept without taking snapshot.
                         // snapshotLogIndexMargin
                         throw new PacificaException(PacificaErrorCode.UNAVAILABLE, String.format("You set snapshotLogIndexMargin=%d, " +
-                                "so skip it. committed_log_index=%s, last_snapshot_log_index=%d", snapshotLogIndexMargin, commitPoint.getIndex(), this.lastSnapshotLogId.getIndex()));
+                                "so skip it. committed_log_index=%s, last_snapshot_log_index=%d", snapshotLogIndexMargin, lastAppliedLogIndex, this.lastSnapshotLogId.getIndex()));
                     }
                     final SnapshotSaveCallback snapshotSaveCallback = new SnapshotSaveCallback(callback);
                     this.stateMachineCaller.onSnapshotSave(snapshotSaveCallback);

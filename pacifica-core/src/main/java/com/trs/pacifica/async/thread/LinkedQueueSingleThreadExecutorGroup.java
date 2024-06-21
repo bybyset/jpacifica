@@ -18,15 +18,24 @@
 package com.trs.pacifica.async.thread;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 public class LinkedQueueSingleThreadExecutorGroup implements ExecutorGroup {
 
 
+    static final int STATE_STARTED = 0;
+    static final int STATE_SHUTDOWN = 1;
+    static final int STATE_TERMINATED = 2;
+
+    private static final AtomicIntegerFieldUpdater<LinkedQueueSingleThreadExecutorGroup> _STATE_UPDATER = AtomicIntegerFieldUpdater
+            .newUpdater(LinkedQueueSingleThreadExecutorGroup.class, "state");
     private final Executor executor;
+    private volatile int state = STATE_STARTED;
 
     private final RejectedExecutionHandler rejectedExecutionHandler;
 
@@ -40,12 +49,26 @@ public class LinkedQueueSingleThreadExecutorGroup implements ExecutorGroup {
 
     @Override
     public boolean shutdownGracefully() {
-        return false;
+        _STATE_UPDATER.compareAndSet(this, STATE_STARTED, STATE_SHUTDOWN);
+        SingleThreadExecutor singleThreadExecutor = null;
+        boolean success = true;
+        while ((singleThreadExecutor = singleThreadExecutors.poll()) != null) {
+            success &= singleThreadExecutor.shutdownGracefully();
+        }
+        _STATE_UPDATER.compareAndSet(this, STATE_SHUTDOWN, STATE_TERMINATED);
+        return success;
     }
 
     @Override
     public boolean shutdownGracefully(long timeout, TimeUnit unit) {
-        return false;
+        _STATE_UPDATER.compareAndSet(this, STATE_STARTED, STATE_SHUTDOWN);
+        SingleThreadExecutor singleThreadExecutor = null;
+        boolean success = true;
+        while ((singleThreadExecutor = singleThreadExecutors.poll()) != null) {
+            success &= singleThreadExecutor.shutdownGracefully(timeout, unit);
+        }
+        _STATE_UPDATER.compareAndSet(this, STATE_SHUTDOWN, STATE_TERMINATED);
+        return success;
     }
 
     @Override
@@ -62,6 +85,23 @@ public class LinkedQueueSingleThreadExecutorGroup implements ExecutorGroup {
 
     @Override
     public void execute(Runnable command) {
+        Objects.requireNonNull(command, "command");
+        if (isShutdown()) {
+            reject(command);
+        }
+        executor.execute(command);
+    }
 
+    protected final void reject(final Runnable task) {
+        this.rejectedExecutionHandler.rejected(task, null);
+    }
+
+
+    public boolean isShutdown() {
+        return this.state >= STATE_SHUTDOWN;
+    }
+
+    public boolean isTerminated() {
+        return this.state == STATE_TERMINATED;
     }
 }

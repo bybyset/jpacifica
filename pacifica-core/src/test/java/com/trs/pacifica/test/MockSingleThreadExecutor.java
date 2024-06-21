@@ -15,26 +15,30 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.fsm;
+package com.trs.pacifica.test;
 
-import com.trs.pacifica.StateMachine;
-import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.async.thread.SingleThreadExecutor;
 
-public abstract class StateMachineAdapter implements StateMachine {
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class MockSingleThreadExecutor implements SingleThreadExecutor {
+
+    private Executor executor = Executors.newSingleThreadExecutor();
 
     @Override
-    public void onSnapshotLoad(final SnapshotReader snapshotReader) {
-        return ;
+    public boolean shutdownGracefully() {
+        return true;
     }
 
     @Override
-    public void onSnapshotSave(final SnapshotWriter snapshotWriter) {
-        return ;
+    public boolean shutdownGracefully(long timeout, TimeUnit unit) {
+        return true;
     }
 
     @Override
-    public void onShutdown() {
-
+    public void execute(Runnable command) {
+        executor.execute(command);
     }
 }

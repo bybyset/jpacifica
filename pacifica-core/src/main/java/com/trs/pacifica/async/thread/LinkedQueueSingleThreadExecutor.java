@@ -104,7 +104,7 @@ public class LinkedQueueSingleThreadExecutor implements SingleThreadExecutor {
     }
 
     public boolean isShutdown() {
-        return this.state == STATE_SHUTDOWN;
+        return this.state >= STATE_SHUTDOWN;
     }
 
     public boolean isTerminated() {

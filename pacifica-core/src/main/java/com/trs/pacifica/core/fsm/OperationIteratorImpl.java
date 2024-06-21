@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.fsm;
+package com.trs.pacifica.core.fsm;
 
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.async.Callback;
@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-class OperationIteratorImpl implements Iterator<LogEntry> {
+public class OperationIteratorImpl implements Iterator<LogEntry> {
 
     private final LogManager logManager;
     private final long startLogIndex;
@@ -42,7 +42,7 @@ class OperationIteratorImpl implements Iterator<LogEntry> {
     private PacificaException error = null;
 
 
-    OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong committingIndex, List<Callback> callbackList) {
+    public OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong committingIndex, List<Callback> callbackList) {
         this.logManager = logManager;
         this.startLogIndex = committingIndex.get() + 1;
         this.endLogIndex = endLogIndex;

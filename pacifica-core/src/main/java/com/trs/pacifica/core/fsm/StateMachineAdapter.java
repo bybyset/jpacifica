@@ -15,34 +15,26 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.fsm;
+package com.trs.pacifica.core.fsm;
 
 import com.trs.pacifica.StateMachine;
-import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.snapshot.SnapshotWriter;
 
-import java.nio.ByteBuffer;
-
-public abstract class AbstractStateMachine implements StateMachine {
+public abstract class StateMachineAdapter implements StateMachine {
 
     @Override
-    public void onApply(OperationIterator iterator) {
+    public void onSnapshotLoad(final SnapshotReader snapshotReader) {
+        return ;
+    }
 
-        try {
-            while (iterator.hasNext()) {
-                iterator.next();
-                final ByteBuffer logData = iterator.getLogData();
-                final long logIndex = iterator.getLogIndex();
-                final long logTerm = iterator.getLogTerm();
-                final Callback callback = iterator.getCallback();
-                //do something
+    @Override
+    public void onSnapshotSave(final SnapshotWriter snapshotWriter) {
+        return ;
+    }
 
-
-            }
-        } catch (Throwable throwable) {
-            iterator.interrupt(throwable);
-        }
-
-
+    @Override
+    public void onShutdown() {
 
     }
 }

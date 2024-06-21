@@ -17,13 +17,11 @@
 
 package com.trs.pacifica.test;
 
-import com.trs.pacifica.test.TestUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.File;
-import java.io.IOException;
 
 public class BaseStorageTest {
 
@@ -36,7 +34,7 @@ public class BaseStorageTest {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
+    public void shutdown() throws Exception {
         FileUtils.deleteDirectory(new File(this.path));
     }
 

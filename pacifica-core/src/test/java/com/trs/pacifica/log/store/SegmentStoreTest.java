@@ -48,9 +48,9 @@ public class SegmentStoreTest extends BaseStorageTest {
 
     @AfterEach
     @Override
-    public void teardown() throws Exception {
+    public void shutdown() throws Exception {
         this.segmentStore.close();
-        super.teardown();
+        super.shutdown();
     }
 
     @Test

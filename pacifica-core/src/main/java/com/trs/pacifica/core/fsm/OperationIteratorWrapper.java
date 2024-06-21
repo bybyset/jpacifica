@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.fsm;
+package com.trs.pacifica.core.fsm;
 
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.LogEntry;

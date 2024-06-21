@@ -46,9 +46,9 @@ public class IndexStoreTest extends BaseStorageTest {
 
     @AfterEach
     @Override
-    public void teardown() throws Exception {
+    public void shutdown() throws Exception {
         this.indexStore.close();
-        super.teardown();
+        super.shutdown();
     }
 
     @Test

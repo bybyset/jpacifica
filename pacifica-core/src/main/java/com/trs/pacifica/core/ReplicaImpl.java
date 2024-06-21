@@ -24,11 +24,10 @@ import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.error.NotSupportedException;
-import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fs.FileService;
 import com.trs.pacifica.fs.FileServiceFactory;
-import com.trs.pacifica.fsm.StateMachineCallerImpl;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.model.*;
 import com.trs.pacifica.proto.RpcRequest;
@@ -351,7 +350,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     public LogId getCommitPoint() {
         this.readLock.lock();
         try {
-            return this.stateMachineCaller.getCommitPoint();
+            return this.stateMachineCaller.getCommittedPont();
         } finally {
             this.readLock.unlock();
         }
