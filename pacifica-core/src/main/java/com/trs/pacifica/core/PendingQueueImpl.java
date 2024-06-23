@@ -26,7 +26,7 @@ public class PendingQueueImpl<E> implements PendingQueue<E> {
 
     private final Queue<NodeContext<E>> queue;
 
-    private long pendingIndex = 0;
+    private long pendingIndex = 1;
 
     public PendingQueueImpl() {
         this.queue = new LinkedList<>();
@@ -61,7 +61,7 @@ public class PendingQueueImpl<E> implements PendingQueue<E> {
     @Override
     public List<E> pollUntil(final long endIndex) {
         List<E> list = new ArrayList<>();
-        while (!this.isEmpty() && this.pendingIndex < endIndex) {
+        while (!this.isEmpty() && this.pendingIndex <= endIndex) {
             list.add(poll());
         }
         return list;

@@ -18,8 +18,8 @@
 package com.trs.pacifica;
 
 import com.trs.pacifica.async.Callback;
-import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.core.fsm.OperationIterator;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;

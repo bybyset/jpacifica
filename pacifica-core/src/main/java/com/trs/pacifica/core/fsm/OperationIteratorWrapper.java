@@ -17,23 +17,31 @@
 
 package com.trs.pacifica.core.fsm;
 
+import com.trs.pacifica.StateMachineCaller;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.error.PacificaErrorCode;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public class OperationIteratorWrapper implements OperationIterator {
 
     private final OperationIteratorImpl wrapper;
-
+    private final StateMachineCaller stateMachineCaller;
     private LogEntry currentLogEntry = null;
-
     private Callback currentCallback = null;
     private LogEntry nextLogEntry = null;
 
-    public OperationIteratorWrapper(OperationIteratorImpl wrapper) {
+    private volatile Throwable error;
+
+
+
+    public OperationIteratorWrapper(OperationIteratorImpl wrapper, StateMachineCaller stateMachineCaller) {
         this.wrapper = wrapper;
         this.nextLogEntry = wrapper.logEntry();
+        this.stateMachineCaller = stateMachineCaller;
     }
 
     @Override
@@ -69,13 +77,18 @@ public class OperationIteratorWrapper implements OperationIterator {
     }
 
     @Override
-    public void interrupt(Throwable throwable) {
-
+    public void breakAndRollback(Throwable throwable) {
+        Objects.requireNonNull(throwable);
+        this.error = throwable;
+        this.wrapper.rollback();
+        PacificaException pacificaException = new PacificaException(PacificaErrorCode.USER_ERROR,
+                "An exception occurred by user, msg=" + throwable.getMessage(), throwable);
+        this.stateMachineCaller.onError(pacificaException);
     }
 
     @Override
     public boolean hasNext() {
-        return this.nextLogEntry != null && LogEntry.Type.OP_DATA == nextLogEntry.getType();
+        return !hasError() && this.nextLogEntry != null && LogEntry.Type.OP_DATA == nextLogEntry.getType();
     }
 
     @Override
@@ -91,5 +104,13 @@ public class OperationIteratorWrapper implements OperationIterator {
 
     public LogEntry getNextLogEntry() {
         return this.nextLogEntry;
+    }
+
+    public boolean hasError() {
+        return this.error != null;
+    }
+
+    public Throwable getError() {
+        return this.error;
     }
 }

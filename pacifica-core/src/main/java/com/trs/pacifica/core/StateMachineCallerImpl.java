@@ -99,6 +99,10 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
                 this.eventExecutor = Objects.requireNonNull(option.getExecutor(), "executor");
                 this.callbackPendingQueue = Objects.requireNonNull(option.getCallbackPendingQueue(), "callbackPendingQueue");
                 this.logManager = Objects.requireNonNull(option.getLogManager(), "logManager");
+                final LogId bootstrapId = option.getBootstrapId() == null ? new LogId(0, 0) : option.getBootstrapId();
+                this.committedPont = bootstrapId.copy();
+                this.applyingLogIndex.set(bootstrapId.getIndex() + 1);
+                this.lastCommitLogIndex = bootstrapId.getIndex();
                 this.state = _STAT_SHUTDOWN;
             }
         } finally {
@@ -212,9 +216,9 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
             final LogEntry.Type type = logEntry.getType();
             switch (type) {
                 case OP_DATA: {
-                    final OperationIteratorWrapper wrapper = new OperationIteratorWrapper(iterator);
+                    final OperationIteratorWrapper wrapper = new OperationIteratorWrapper(iterator, this);
                     this.stateMachine.onApply(wrapper);
-                    logEntry = wrapper.getNextLogEntry();
+                    logEntry = wrapper.hasError()? null : wrapper.getNextLogEntry();
                     break;
                 }
                 case NO_OP:
@@ -256,6 +260,11 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
         } finally {
             this.writeLock.unlock();
         }
+    }
+
+    @OnlyForTest
+    PacificaException getError() {
+        return this.error;
     }
 
     /**
@@ -408,8 +417,8 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
         private StateMachine stateMachine;
         private LogManager logManager;
         private SingleThreadExecutor executor;
-
         private PendingQueue<Callback> callbackPendingQueue;
+        private LogId bootstrapId = new LogId(0, 0);
 
         public StateMachine getStateMachine() {
             return stateMachine;
@@ -441,6 +450,14 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
         public void setCallbackPendingQueue(PendingQueue<Callback> callbackPendingQueue) {
             this.callbackPendingQueue = callbackPendingQueue;
+        }
+
+        public LogId getBootstrapId() {
+            return bootstrapId;
+        }
+
+        public void setBootstrapId(LogId bootstrapId) {
+            this.bootstrapId = bootstrapId;
         }
     }
 }

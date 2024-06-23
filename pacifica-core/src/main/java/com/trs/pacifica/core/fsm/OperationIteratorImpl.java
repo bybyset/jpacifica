@@ -33,7 +33,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     private final LogManager logManager;
     private final long startLogIndex;
     private final long endLogIndex;
-    private final AtomicLong committingIndex;
+    private final AtomicLong applyingIndex;
     private final List<Callback> callbackList;
 
     private Callback curCallback = null;
@@ -42,11 +42,19 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     private PacificaException error = null;
 
 
-    public OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong committingIndex, List<Callback> callbackList) {
+    /**
+     * Operation iterator: range form applyingIndex to endLogIndex, containing the boundary values
+     *
+     * @param logManager
+     * @param endLogIndex
+     * @param applyingIndex
+     * @param callbackList
+     */
+    public OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong applyingIndex, List<Callback> callbackList) {
         this.logManager = logManager;
-        this.startLogIndex = committingIndex.get() + 1;
+        this.startLogIndex = applyingIndex.get();
         this.endLogIndex = endLogIndex;
-        this.committingIndex = committingIndex;
+        this.applyingIndex = applyingIndex;
         this.callbackList = callbackList;
     }
 
@@ -56,7 +64,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     }
 
     long logIndex() {
-        return this.committingIndex.get();
+        return this.applyingIndex.get();
     }
 
     Callback callback() {
@@ -73,7 +81,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
 
     @Override
     public boolean hasNext() {
-        return !hasError() && this.committingIndex.get() < this.endLogIndex;
+        return !hasError() && this.applyingIndex.get() <= this.endLogIndex;
     }
 
 
@@ -81,27 +89,36 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     public LogEntry next() {
         this.curLogEntry = null;
         this.curCallback = null;
-        final long prevLogIndex = this.committingIndex.get();
-        if (prevLogIndex < this.endLogIndex) {
-            final long currentLogIndex = prevLogIndex + 1;
-            if (this.committingIndex.compareAndSet(prevLogIndex, currentLogIndex)) {
-                try {
-                    this.curLogEntry = this.logManager.getLogEntryAt(currentLogIndex);
-                    if (curLogEntry == null) {
-                        throw new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
-                    }
-                    this.curCallback = this.callbackList.get((int)(currentLogIndex - startLogIndex));
-                } catch (Throwable e) {
-                    this.committingIndex.set(prevLogIndex);
-                    if (e instanceof PacificaException ) {
-                        this.error = (PacificaException) e;
-                    } else {
-                        this.error = new PacificaException(PacificaErrorCode.INTERNAL, "failed to get LogEntry at logIndex=" + currentLogIndex, e);
-                    }
+        final long currentLogIndex = this.applyingIndex.get();
+        if (currentLogIndex <= this.endLogIndex) {
+            try {
+                this.curLogEntry = this.logManager.getLogEntryAt(currentLogIndex);
+                if (curLogEntry == null) {
+                    throw new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
+                }
+                this.curCallback = this.callbackList.get((int) (currentLogIndex - startLogIndex));
+                this.applyingIndex.incrementAndGet();
+            } catch (Throwable e) {
+                if (e instanceof PacificaException) {
+                    this.error = (PacificaException) e;
+                } else {
+                    this.error = new PacificaException(PacificaErrorCode.INTERNAL, "failed to get LogEntry at logIndex=" + currentLogIndex, e);
                 }
             }
         }
         return this.curLogEntry;
+    }
+
+    /**
+     * roll back
+     * @param ntail
+     */
+    void rollback(long ntail) {
+        this.applyingIndex.addAndGet(Math.negateExact(ntail));
+    }
+
+    void rollback() {
+        rollback(1);
     }
 
 }

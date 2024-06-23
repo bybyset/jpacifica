@@ -32,18 +32,21 @@ public interface OperationIterator extends Iterator<ByteBuffer> {
 
     /**
      * Return the data whose content is the same as what was passed to {@link Replica#apply } in the primary replica.
+     *
      * @return
      */
     public ByteBuffer getLogData();
 
     /**
      * get current index of op log
+     *
      * @return
      */
     public long getLogIndex();
 
     /**
      * get current term of op log
+     *
      * @return
      */
     public long getLogTerm();
@@ -51,10 +54,16 @@ public interface OperationIterator extends Iterator<ByteBuffer> {
 
     /**
      * get current callback of {@link Operation#getOnFinish()}}, to see {@link Replica#apply(Operation)}
+     *
      * @return
      */
     public Callback getCallback();
 
 
-    public void interrupt(Throwable throwable);
+    /**
+     * Break the current op in the iterator and roll back
+     *
+     * @param throwable catch error of StateMachine by user
+     */
+    public void breakAndRollback(Throwable throwable);
 }

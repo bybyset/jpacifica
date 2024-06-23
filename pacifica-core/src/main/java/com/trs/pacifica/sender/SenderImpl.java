@@ -515,7 +515,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         requestBuilder.setTargetId(RpcUtil.protoReplicaId(this.toId));
         requestBuilder.setTerm(this.option.getReplicaGroup().getPrimaryTerm());
         requestBuilder.setVersion(this.option.getReplicaGroup().getVersion());
-        requestBuilder.setCommitPoint(this.option.getStateMachineCaller().getCommitPoint().getIndex());
+        requestBuilder.setCommitPoint(this.option.getStateMachineCaller().getLastAppliedLogIndex());
         return true;
     }
 

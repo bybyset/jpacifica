@@ -164,11 +164,11 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                 return false;
             }
             final LogEntry lastLogEntry = logEntries.get(logEntries.size() - 1);
-            final long committedLogIndex = this.stateMachineCaller.getLastCommittedLogIndex();
-            if (lastLogEntry.getLogId().getIndex() <= committedLogIndex) {
+            final long lastAppliedLogIndex = this.stateMachineCaller.getLastAppliedLogIndex();
+            if (lastLogEntry.getLogId().getIndex() <= lastAppliedLogIndex) {
                 //has been committed
                 final String errorMsg = String.format("The received logEntries(last_log_index=%d) have all been committed(commit_point=%d), and we keep them unchanged",
-                        lastLogEntry.getLogId().getIndex(), committedLogIndex);
+                        lastLogEntry.getLogId().getIndex(), lastAppliedLogIndex);
                 ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.CONFLICT_LOG, errorMsg)));
                 return false;
             }
