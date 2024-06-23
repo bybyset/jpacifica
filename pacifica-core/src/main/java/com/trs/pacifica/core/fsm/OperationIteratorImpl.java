@@ -64,7 +64,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     }
 
     long logIndex() {
-        return this.applyingIndex.get();
+        return this.applyingIndex.get() - 1;
     }
 
     Callback callback() {
@@ -87,15 +87,14 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
 
     @Override
     public LogEntry next() {
-        this.curLogEntry = null;
-        this.curCallback = null;
         final long currentLogIndex = this.applyingIndex.get();
         if (currentLogIndex <= this.endLogIndex) {
             try {
-                this.curLogEntry = this.logManager.getLogEntryAt(currentLogIndex);
-                if (curLogEntry == null) {
+                LogEntry logEntry = this.logManager.getLogEntryAt(currentLogIndex);
+                if (logEntry == null) {
                     throw new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
                 }
+                this.curLogEntry = logEntry;
                 this.curCallback = this.callbackList.get((int) (currentLogIndex - startLogIndex));
                 this.applyingIndex.incrementAndGet();
             } catch (Throwable e) {
@@ -111,10 +110,10 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
 
     /**
      * roll back
-     * @param ntail
+     * @param tailCount num of roll back on tail
      */
-    void rollback(long ntail) {
-        this.applyingIndex.addAndGet(Math.negateExact(ntail));
+    void rollback(long tailCount) {
+        this.applyingIndex.addAndGet(Math.negateExact(tailCount));
     }
 
     void rollback() {
