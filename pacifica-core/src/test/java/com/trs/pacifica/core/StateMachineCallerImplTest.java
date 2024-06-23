@@ -19,14 +19,18 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.LogManager;
 import com.trs.pacifica.PendingQueue;
+import com.trs.pacifica.StateMachineCaller;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.core.fsm.BaseStateMachine;
 import com.trs.pacifica.core.fsm.OperationIterator;
+import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.snapshot.SnapshotReader;
+import com.trs.pacifica.snapshot.SnapshotWriter;
 import com.trs.pacifica.test.MockSingleThreadExecutor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -156,5 +160,46 @@ public class StateMachineCallerImplTest {
         }
     }
 
+
+    @Test
+    public void testOnSnapshotLoad() throws InterruptedException {
+        StateMachineCaller.SnapshotLoadCallback callback = Mockito.mock(StateMachineCaller.SnapshotLoadCallback.class);
+        LogId snapshotLogId = new LogId(13, 1);
+        SnapshotReader snapshotReader = Mockito.mock(SnapshotReader.class);
+        Mockito.when(snapshotReader.getSnapshotLogId()).thenReturn(snapshotLogId);
+        Mockito.when(callback.getSnapshotReader()).thenReturn(snapshotReader);
+        this.stateMachineCaller.onSnapshotLoad(callback);
+        this.stateMachineCaller.flush();
+        Assertions.assertEquals(snapshotLogId.getIndex(), this.stateMachineCaller.getLastAppliedLogIndex());
+        Assertions.assertEquals(snapshotLogId.getIndex(), this.stateMachineCaller.getLastCommittedLogIndex());
+    }
+
+    @Test
+    public void testOnSnapshotSave() throws InterruptedException {
+        StateMachineCaller.SnapshotSaveCallback callback = Mockito.mock(StateMachineCaller.SnapshotSaveCallback.class);
+        SnapshotWriter snapshotWriter = Mockito.mock(SnapshotWriter.class);
+        LogId snapshotLogId = new LogId(4, 1);
+        Mockito.when(callback.getSaveLogId()).thenReturn(snapshotLogId);
+        Mockito.doReturn(snapshotWriter).when(callback).start(Mockito.any());
+        this.stateMachineCaller.onSnapshotSave(callback);
+        this.stateMachineCaller.flush();
+        Assertions.assertEquals(snapshotLogId.getIndex(), this.stateMachineCaller.getLastAppliedLogIndex());
+        Assertions.assertEquals(snapshotLogId.getIndex(), this.stateMachineCaller.getLastCommittedLogIndex());
+        Mockito.verify(this.stateMachine).onSnapshotSave(snapshotWriter);
+    }
+
+
+    @Test
+    public void testOnError() throws InterruptedException {
+        PacificaException pacificaException = new PacificaException(PacificaErrorCode.INTERNAL, "test error");
+        this.stateMachineCaller.onError(pacificaException);
+        this.stateMachineCaller.flush();
+        Assertions.assertEquals(pacificaException, this.stateMachineCaller.getError());
+
+        Mockito.verify(this.replicaImpl).onError(pacificaException);
+        Mockito.verify(this.stateMachine).onError(pacificaException);
+        Mockito.verify(this.replicaImpl, Mockito.times(1)).onError(pacificaException);
+
+    }
 
 }
