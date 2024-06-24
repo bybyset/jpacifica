@@ -284,13 +284,32 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
     @Override
     public LogId getFirstLogId() {
-
-        return null;
+        this.readLock.lock();
+        try {
+            final LogId logId = this.logStorage.getFirstLogId();
+            if (logId == null) {
+                return new LogId(0, 0);
+            } else {
+                return logId;
+            }
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
     public LogId getLastLogId() {
-        return null;
+        this.readLock.lock();
+        try {
+            final LogId logId = this.logStorage.getLastLogId();
+            if (logId == null) {
+                return new LogId(0, 0);
+            } else {
+                return logId;
+            }
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
 
