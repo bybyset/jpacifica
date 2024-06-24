@@ -29,6 +29,7 @@ import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
 import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.util.OnlyForTest;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -343,6 +344,16 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         }
     }
 
+    @OnlyForTest
+    long getLastLogIndex() {
+        return this.lastLogIndex;
+    }
+
+    @OnlyForTest
+    long getFirstLogIndex() {
+        return this.firstLogIndex;
+    }
+
     private boolean unsafeReset(final long nextLogIndex) {
         // TODO
         this.firstLogIndex = nextLogIndex;
@@ -406,9 +417,8 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                 return;
             }
             final LogId lastLogId = this.logStorage.truncateSuffix(lastIndexKept);
-            if (lastLogId != null && lastLogId.getIndex() > this.lastLogIndex) {
+            if (lastLogId != null && lastLogId.getIndex() < this.lastLogIndex) {
                 this.lastLogIdOnDisk = lastLogId.copy();
-                this.lastLogIndex = this.lastLogIdOnDisk.getIndex();
             }
         } finally {
             this.writeLock.unlock();
