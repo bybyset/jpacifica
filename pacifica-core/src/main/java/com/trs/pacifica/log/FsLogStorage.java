@@ -359,12 +359,15 @@ public class FsLogStorage implements LogStorage {
     public LogId truncatePrefix(long firstIndexKept) {
         this.writeLock.lock();
         try {
-            firstIndexKept = this.segmentStore.truncatePrefix(firstIndexKept);
-            //TODO  if nothing at segment store we will clear index store
-            this.indexStore.truncatePrefix(firstIndexKept);
-
-            LogId firstLogId = this.getLogIdAt(firstIndexKept);
-            if (firstLogId == null) {
+            long segmentFirstIndexKept = this.segmentStore.truncatePrefix(firstIndexKept);
+            if (segmentFirstIndexKept > 0) {
+                firstIndexKept = segmentFirstIndexKept;
+            }
+            long indexFirstIndexKept = this.indexStore.truncatePrefix(firstIndexKept);
+            LogId firstLogId = null;
+            if (indexFirstIndexKept > 0) {
+                firstLogId = this.getLogIdAt(firstIndexKept);
+            } else {
                 firstLogId = new LogId(0, 0);
             }
             return firstLogId;

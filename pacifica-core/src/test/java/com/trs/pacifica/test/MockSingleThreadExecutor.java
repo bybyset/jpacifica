@@ -18,6 +18,7 @@
 package com.trs.pacifica.test;
 
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.util.NamedThreadFactory;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MockSingleThreadExecutor implements SingleThreadExecutor {
 
-    private Executor executor = Executors.newSingleThreadExecutor();
+    private Executor executor = Executors.newFixedThreadPool (1, new NamedThreadFactory("jpacifica-test-single-thread"));
 
     @Override
     public boolean shutdownGracefully() {

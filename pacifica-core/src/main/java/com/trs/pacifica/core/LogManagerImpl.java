@@ -36,6 +36,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -53,7 +56,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     private final Lock writeLock = lock.writeLock();
     private final ReplicaImpl replica;
     private Option option;
-    private SingleThreadExecutor executor;
+    private SingleThreadExecutor eventExecutor;
     private LogStorage logStorage;
     private StateMachineCaller stateMachineCaller;
     private LogStorageFactory logStorageFactory;
@@ -90,7 +93,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         this.writeLock.lock();
         try {
             this.option = Objects.requireNonNull(option);
-            this.executor = Objects.requireNonNull(option.getLogManagerExecutor());
+            this.eventExecutor = Objects.requireNonNull(option.getLogManagerExecutor());
             this.logStorageFactory = Objects.requireNonNull(option.getLogStorageFactory(), "log storage factory");
             this.logEntryCodecFactory = Objects.requireNonNull(option.getLogEntryCodecFactory(), "logEntryCodecFactory");
             this.stateMachineCaller = Objects.requireNonNull(option.getStateMachineCaller(), "stateMachineCaller");
@@ -329,7 +332,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
                 truncatePrefix(snapshotLogIndex + 1, null);
             } else if (localSnapshotLogTerm == snapshotLogTerm) {
                 // truncate prefix and reserved
-                final long firstIndexKept = Math.max(0, snapshotLogIndex - this.option.getReplicaOption().getSnapshotLogIndexReserved());
+                final long firstIndexKept = Math.max(0, snapshotLogIndex + 1 - this.option.getReplicaOption().getSnapshotLogIndexReserved());
                 if (firstIndexKept > 0) {
                     truncatePrefix(firstIndexKept, null);
                 }
@@ -354,6 +357,12 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         return this.firstLogIndex;
     }
 
+
+    @OnlyForTest
+    LogId getLastSnapshotLogId() {
+        return this.lastSnapshotLogId;
+    }
+
     private boolean unsafeReset(final long nextLogIndex) {
         // TODO
         this.firstLogIndex = nextLogIndex;
@@ -362,7 +371,7 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
     }
 
     void storeLogEntries(final List<LogEntry> logEntries, final AppendLogEntriesCallback callback) {
-        this.executor.execute(new StoreLogEntriesEvent(logEntries, callback));
+        this.eventExecutor.execute(new StoreLogEntriesEvent(logEntries, callback));
     }
 
     /**
@@ -403,8 +412,8 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         return infoBuilder.toString();
     }
 
-    void truncateSuffix(final long lastIndexKept, final Callback callback) {
-        this.executor.execute(new TruncateSuffixEvent(lastIndexKept));
+    boolean truncateSuffix(final long lastIndexKept, final Callback callback) {
+        return submitEvent(new TruncateSuffixEvent(lastIndexKept, callback));
     }
 
     private void doTruncateSuffix(final long lastIndexKept) {
@@ -425,9 +434,8 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         }
     }
 
-    void truncatePrefix(final long firstIndexKept, final Callback callback) {
-
-        this.executor.execute(new TruncatePrefixEvent(firstIndexKept));
+    boolean truncatePrefix(final long firstIndexKept, final Callback callback) {
+        return submitEvent(new TruncatePrefixEvent(firstIndexKept, callback));
     }
 
     private void doTruncatePrefix(final long firstLogIndexKept) {
@@ -438,7 +446,8 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             }
             if (firstLogIndexKept > this.lastLogIndex) {
                 // out of range log queue
-                this.lastLogIndex = firstLogIndexKept;
+                this.firstLogIndex = firstLogIndexKept;
+                this.lastLogIndex = firstLogIndexKept - 1;
             }
             final LogId firstLogId = this.logStorage.truncatePrefix(firstLogIndexKept);
             if (firstLogId != null && firstLogId.getIndex() > this.firstLogIndex) {
@@ -448,6 +457,25 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
             this.writeLock.unlock();
         }
 
+    }
+
+    private boolean submitEvent(final Runnable run) {
+        assert run != null;
+        try {
+            this.eventExecutor.execute(run);
+        } catch (RejectedExecutionException e) {
+            LOGGER.warn("{} reject to submit event.", this.replica.getReplicaId(), e);
+            return false;
+        }
+        return true;
+    }
+
+    @OnlyForTest
+    void flush() throws InterruptedException {
+        FlushEvent flushEvent = new FlushEvent();
+        if (submitEvent(flushEvent)) {
+            flushEvent.await();
+        }
     }
 
     class StoreLogEntriesEvent implements Runnable {
@@ -477,27 +505,61 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
 
         private final long lastIndexKept;
 
-        TruncateSuffixEvent(final long lastIndexKept) {
+        private final Callback callback;
+
+        TruncateSuffixEvent(final long lastIndexKept, Callback callback) {
             this.lastIndexKept = lastIndexKept;
+            this.callback = callback;
         }
 
         @Override
         public void run() {
-            doTruncateSuffix(lastIndexKept);
+            try {
+                doTruncateSuffix(lastIndexKept);
+                ThreadUtil.runCallback(callback, Finished.success());
+            } catch (Throwable e) {
+                ThreadUtil.runCallback(callback, Finished.failure(e));
+            }
         }
     }
 
     class TruncatePrefixEvent implements Runnable {
         private final long firstIndexKept;
 
-        TruncatePrefixEvent(final long firstIndexKept) {
+        private final Callback callback;
+
+        TruncatePrefixEvent(final long firstIndexKept, Callback callback) {
             this.firstIndexKept = firstIndexKept;
+            this.callback = callback;
         }
 
 
         @Override
         public void run() {
-            doTruncatePrefix(firstIndexKept);
+            try {
+                doTruncatePrefix(firstIndexKept);
+                ThreadUtil.runCallback(callback, Finished.success());
+            } catch (Throwable e) {
+                ThreadUtil.runCallback(callback, Finished.failure(e));
+            }
+        }
+    }
+
+
+    class FlushEvent implements Runnable {
+
+        private final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        @Override
+        public void run() {
+            this.countDownLatch.countDown();
+        }
+
+        public void await() throws InterruptedException {
+            this.countDownLatch.await();
+        }
+        public void await(long timeout, TimeUnit unit) throws InterruptedException {
+            this.countDownLatch.await(timeout, unit);
         }
     }
 

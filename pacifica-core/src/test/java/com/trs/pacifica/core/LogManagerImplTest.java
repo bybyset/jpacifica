@@ -223,6 +223,35 @@ public class LogManagerImplTest {
         Assertions.assertEquals(0, logEntriesCallback.getAppendCount());
     }
 
+    @Test
+    public void testAppendLogEntriesOnSecondaryLessThanAppliedLogIndex() throws InterruptedException {
+
+        Mockito.doReturn(25L).when(this.stateMachineCaller).getLastAppliedLogIndex();
+        List<LogEntry> logEntries = new ArrayList<>();
+        for (long logIndex = 21; logIndex <= 25; logIndex++) {
+            LogId logId = new LogId(logIndex, 1);
+            LogEntry logEntry = new LogEntry(logId, LogEntry.Type.OP_DATA);
+            logEntries.add(logEntry);
+        }
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        AtomicReference<Finished> result = new AtomicReference<>(null);
+        LogManager.AppendLogEntriesCallback logEntriesCallback = new LogManager.AppendLogEntriesCallback() {
+            @Override
+            public void run(Finished finished) {
+                result.set(finished);
+                countDownLatch.countDown();
+
+            }
+        };
+        this.logManager.appendLogEntries(logEntries, logEntriesCallback);
+        countDownLatch.await();
+        Assertions.assertNotNull(result.get());
+        Assertions.assertInstanceOf(PacificaException.class, result.get().error());
+        Assertions.assertEquals(PacificaErrorCode.CONFLICT_LOG, ((PacificaException)(result.get().error())).getCode());
+        Assertions.assertEquals(0, logEntriesCallback.getFirstLogIndex());
+        Assertions.assertEquals(0, logEntriesCallback.getAppendCount());
+    }
+
 
     @Test
     public void testAppendLogEntriesOnSecondaryCrossOver() throws InterruptedException {
@@ -282,6 +311,42 @@ public class LogManagerImplTest {
     }
 
 
+    @Test
+    public void testOnSnapshotTruncatePrefix() throws InterruptedException {
+        long snapshotLogIndex = 17;
+        long snapshotLogTerm = 1;
+        this.logManager.onSnapshot(snapshotLogIndex, snapshotLogTerm);
+        this.logManager.flush();
+        Assertions.assertEquals(new LogId(snapshotLogIndex, snapshotLogTerm), this.logManager.getLastSnapshotLogId());
+        Assertions.assertEquals(18, this.logManager.getFirstLogIndex());
+        Assertions.assertEquals(20, this.logManager.getLastLogIndex());
+        Mockito.verify(this.logStorage).truncatePrefix(snapshotLogIndex + 1);
+    }
+
+    @Test
+    public void testOnSnapshotOutOfRangeLogEntryQueue() throws InterruptedException {
+        long snapshotLogIndex = 22;
+        long snapshotLogTerm = 1;
+        Mockito.doReturn(new LogId(0, 0)).when(this.logStorage).truncatePrefix(snapshotLogIndex + 1);
+        this.logManager.onSnapshot(snapshotLogIndex, snapshotLogTerm);
+        this.logManager.flush();
+        Assertions.assertEquals(new LogId(snapshotLogIndex, snapshotLogTerm), this.logManager.getLastSnapshotLogId());
+        Assertions.assertEquals(snapshotLogIndex + 1, this.logManager.getFirstLogIndex());
+        Assertions.assertEquals(22, this.logManager.getLastLogIndex());
+        Mockito.verify(this.logStorage).truncatePrefix(snapshotLogIndex + 1);
+    }
+
+    @Test
+    public void testOnSnapshotConflicting() throws InterruptedException {
+        long snapshotLogIndex = 17;
+        long snapshotLogTerm = 2;
+        this.logManager.onSnapshot(snapshotLogIndex, snapshotLogTerm);
+        this.logManager.flush();
+        Assertions.assertEquals(new LogId(snapshotLogIndex, snapshotLogTerm), this.logManager.getLastSnapshotLogId());
+        Assertions.assertEquals(snapshotLogIndex + 1, this.logManager.getFirstLogIndex());
+        Assertions.assertEquals(snapshotLogIndex, this.logManager.getLastLogIndex());
+        Mockito.verify(this.logStorage).reset(snapshotLogIndex + 1);
+    }
 
 
     private void mockLogStorage() {

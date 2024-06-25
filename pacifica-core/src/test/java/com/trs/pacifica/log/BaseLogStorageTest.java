@@ -131,6 +131,16 @@ public abstract class BaseLogStorageTest extends BaseStorageTest {
     }
 
     @Test
+    public void testTruncatePrefixOutOfRangeLogEntryQueue() {
+        final LogStorage logStorage = getLogStorage();
+        final List<LogEntry> entries = TestUtils.mockEntries(10);
+        List<LogEntry> expecteds = toExpected(entries);
+        Assertions.assertEquals(10, logStorage.appendLogEntries(entries));
+        LogId firstLogIdAfter = logStorage.truncatePrefix(11);
+        Assertions.assertEquals(new LogId(0, 0), firstLogIdAfter);
+    }
+
+    @Test
     public void testTruncateSuffix() {
         final LogStorage logStorage = getLogStorage();
         final List<LogEntry> entries = TestUtils.mockEntries(7);
