@@ -22,6 +22,7 @@ import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotDownloader;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
+import com.trs.pacifica.util.OnlyForTest;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,10 +54,13 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
 
     public DefaultSnapshotStorage(String storagePath) throws IOException {
         this.storagePath = storagePath;
-        load();
     }
 
-    private void load() throws IOException {
+    /**
+     *
+     * @throws IOException
+     */
+    public void load() throws IOException {
         File storageDir = new File(storagePath);
         FileUtils.forceMkdir(storageDir);
         //
@@ -84,6 +88,11 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
             this.lastSnapshotIndex = snapshotLogIndexList.get(snapshotCount - 1);
             incRef(getSnapshotName(this.lastSnapshotIndex));
         }
+    }
+
+    @OnlyForTest
+    long getLastSnapshotIndex() {
+        return this.lastSnapshotIndex;
     }
 
     String getSnapshotPath(final long logIndex) {
@@ -115,22 +124,22 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     }
 
 
-    void incRef(final String pathname) {
-        final AtomicInteger ref = this.refCounts.computeIfAbsent(pathname, (name) -> {
+    void incRef(final String snapshotName) {
+        final AtomicInteger ref = this.refCounts.computeIfAbsent(snapshotName, (name) -> {
             return new AtomicInteger(0);
         });
         ref.incrementAndGet();
     }
 
     /**
-     * @param pathname
+     * @param snapshotName
      * @return true if the file should be deleted
      */
-    boolean decRef(final String pathname) {
-        final AtomicInteger ref = this.refCounts.get(pathname);
+    boolean decRef(final String snapshotName) {
+        final AtomicInteger ref = this.refCounts.get(snapshotName);
         if (ref != null) {
             if (ref.decrementAndGet() <= 0) {
-                this.refCounts.remove(pathname);
+                this.refCounts.remove(snapshotName);
                 return true;
             } else {
                 return false;
@@ -158,8 +167,8 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
         return SNAPSHOT_WRITER_DIR;
     }
 
-    int getRef(final String pathname) {
-        final AtomicInteger ref = this.refCounts.get(pathname);
+    int getRef(final String snapshotName) {
+        final AtomicInteger ref = this.refCounts.get(snapshotName);
         if (ref != null) {
             return ref.get();
         } else {
@@ -200,7 +209,7 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
                 return new DefaultSnapshotWriter(snapshotLogId, this, tempSnapshotName);
             } while (false);
         } catch (IOException e) {
-            LOGGER.error("", e);
+            LOGGER.error(String.format("Failed to open SnapshotWriter for path=%s.", writerTempPath), e);
         }
         return null;
     }

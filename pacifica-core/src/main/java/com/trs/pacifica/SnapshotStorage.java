@@ -29,15 +29,33 @@ import java.io.IOException;
 public interface SnapshotStorage {
 
 
-    public SnapshotReader openSnapshotReader();
+    /**
+     * open a SnapshotReader,
+     * when the replica loading snapshot, will ask for a SnapshotReader to be opened.
+     *
+     * @return
+     */
+    SnapshotReader openSnapshotReader();
 
-    public SnapshotWriter openSnapshotWriter(final LogId snapshotLogId);
+    /**
+     * open a SnapshotWriter for snapshotLogId
+     * when the replica saving snapshot, will ask for a SnapshotWriter to be opened.
+     * snapshotLogId: Passed by PacificA, the user is expected to persist the store
+     * so that it can be loaded and read in SnapshotReader
+     *
+     * @param snapshotLogId
+     * @return
+     */
+    SnapshotWriter openSnapshotWriter(final LogId snapshotLogId);
 
 
     /**
+     * Start the task of downloading snapshots.
+     *
+     * @param downloadContext
      * @return
      */
-    public SnapshotDownloader startDownloadSnapshot(final DownloadContext downloadContext);
+    SnapshotDownloader startDownloadSnapshot(final DownloadContext downloadContext);
 
 
     public static class DownloadContext {

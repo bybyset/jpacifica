@@ -72,4 +72,16 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         super.shutdown();
     }
 
+
+    public void testDoSnapshot() {
+        this.snapshotManager.doSnapshot(null);
+
+    }
+
+    public void testInstallSnapshot() {
+
+        this.snapshotManager.installSnapshot(null, null);
+
+
+    }
 }

@@ -44,7 +44,9 @@ public class DefaultPacificaServiceFactory implements PacificaServiceFactory {
     @Override
     public SnapshotStorage newSnapshotStorage(final String path) throws PacificaException {
         try {
-            return new DefaultSnapshotStorage(path);
+            DefaultSnapshotStorage snapshotStorage = new DefaultSnapshotStorage(path);
+            snapshotStorage.load();
+            return snapshotStorage;
         } catch (IOException e) {
             throw new PacificaException(PacificaErrorCode.IO, String.format("failed to new SnapshotStorage, error_msg=%s", e.getMessage()), e);
         }
