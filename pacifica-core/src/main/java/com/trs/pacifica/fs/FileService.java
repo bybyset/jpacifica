@@ -20,15 +20,44 @@ package com.trs.pacifica.fs;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcRequestFinished;
 
+/**
+ * Declare and define the FileService interface
+ * to handle the access of snapshot files between replicas
+ */
 public interface FileService {
 
-    public FileReader getFileReader(final long readerId);
+    /**
+     * get the unique FileReader by readerId
+     *
+     * @param readerId
+     * @return FileReader
+     */
+    FileReader getFileReader(final long readerId);
 
-    public long addFileReader(final FileReader fileReader);
+    /**
+     * add the FileReader and return unique readerId
+     *
+     * @param fileReader
+     * @return unique readerId
+     */
+    long addFileReader(final FileReader fileReader);
 
-    public boolean removeFileReader(final long readerId);
+    /**
+     * remove the unique FileReader by readerId
+     *
+     * @param readerId
+     * @return true if success
+     */
+    boolean removeFileReader(final long readerId);
 
-    public RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback);
+    /**
+     * handle GetFileRequest from other replica
+     *
+     * @param request
+     * @param callback
+     * @return
+     */
+    RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback);
 
 
 }

@@ -4391,6 +4391,613 @@ public final class RpcCommon {
 
   }
 
+  public interface FileMetaOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:jpacifica.FileMeta)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int64 checksum = 1;</code>
+     * @return Whether the checksum field is set.
+     */
+    boolean hasChecksum();
+    /**
+     * <code>optional int64 checksum = 1;</code>
+     * @return The checksum.
+     */
+    long getChecksum();
+
+    /**
+     * <code>optional bytes user_meta = 2;</code>
+     * @return Whether the userMeta field is set.
+     */
+    boolean hasUserMeta();
+    /**
+     * <code>optional bytes user_meta = 2;</code>
+     * @return The userMeta.
+     */
+    com.google.protobuf.ByteString getUserMeta();
+  }
+  /**
+   * Protobuf type {@code jpacifica.FileMeta}
+   */
+  public static final class FileMeta extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:jpacifica.FileMeta)
+      FileMetaOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use FileMeta.newBuilder() to construct.
+    private FileMeta(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private FileMeta() {
+      userMeta_ = com.google.protobuf.ByteString.EMPTY;
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new FileMeta();
+    }
+
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_FileMeta_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_FileMeta_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.trs.pacifica.proto.RpcCommon.FileMeta.class, com.trs.pacifica.proto.RpcCommon.FileMeta.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int CHECKSUM_FIELD_NUMBER = 1;
+    private long checksum_ = 0L;
+    /**
+     * <code>optional int64 checksum = 1;</code>
+     * @return Whether the checksum field is set.
+     */
+    @java.lang.Override
+    public boolean hasChecksum() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional int64 checksum = 1;</code>
+     * @return The checksum.
+     */
+    @java.lang.Override
+    public long getChecksum() {
+      return checksum_;
+    }
+
+    public static final int USER_META_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString userMeta_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     * <code>optional bytes user_meta = 2;</code>
+     * @return Whether the userMeta field is set.
+     */
+    @java.lang.Override
+    public boolean hasUserMeta() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <code>optional bytes user_meta = 2;</code>
+     * @return The userMeta.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getUserMeta() {
+      return userMeta_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeInt64(1, checksum_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeBytes(2, userMeta_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, checksum_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, userMeta_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof com.trs.pacifica.proto.RpcCommon.FileMeta)) {
+        return super.equals(obj);
+      }
+      com.trs.pacifica.proto.RpcCommon.FileMeta other = (com.trs.pacifica.proto.RpcCommon.FileMeta) obj;
+
+      if (hasChecksum() != other.hasChecksum()) return false;
+      if (hasChecksum()) {
+        if (getChecksum()
+            != other.getChecksum()) return false;
+      }
+      if (hasUserMeta() != other.hasUserMeta()) return false;
+      if (hasUserMeta()) {
+        if (!getUserMeta()
+            .equals(other.getUserMeta())) return false;
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasChecksum()) {
+        hash = (37 * hash) + CHECKSUM_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getChecksum());
+      }
+      if (hasUserMeta()) {
+        hash = (37 * hash) + USER_META_FIELD_NUMBER;
+        hash = (53 * hash) + getUserMeta().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(com.trs.pacifica.proto.RpcCommon.FileMeta prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code jpacifica.FileMeta}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:jpacifica.FileMeta)
+        com.trs.pacifica.proto.RpcCommon.FileMetaOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_FileMeta_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_FileMeta_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.trs.pacifica.proto.RpcCommon.FileMeta.class, com.trs.pacifica.proto.RpcCommon.FileMeta.Builder.class);
+      }
+
+      // Construct using com.trs.pacifica.proto.RpcCommon.FileMeta.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        checksum_ = 0L;
+        userMeta_ = com.google.protobuf.ByteString.EMPTY;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.trs.pacifica.proto.RpcCommon.internal_static_jpacifica_FileMeta_descriptor;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.FileMeta getDefaultInstanceForType() {
+        return com.trs.pacifica.proto.RpcCommon.FileMeta.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.FileMeta build() {
+        com.trs.pacifica.proto.RpcCommon.FileMeta result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public com.trs.pacifica.proto.RpcCommon.FileMeta buildPartial() {
+        com.trs.pacifica.proto.RpcCommon.FileMeta result = new com.trs.pacifica.proto.RpcCommon.FileMeta(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(com.trs.pacifica.proto.RpcCommon.FileMeta result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.checksum_ = checksum_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.userMeta_ = userMeta_;
+          to_bitField0_ |= 0x00000002;
+        }
+        result.bitField0_ |= to_bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.trs.pacifica.proto.RpcCommon.FileMeta) {
+          return mergeFrom((com.trs.pacifica.proto.RpcCommon.FileMeta)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.trs.pacifica.proto.RpcCommon.FileMeta other) {
+        if (other == com.trs.pacifica.proto.RpcCommon.FileMeta.getDefaultInstance()) return this;
+        if (other.hasChecksum()) {
+          setChecksum(other.getChecksum());
+        }
+        if (other.hasUserMeta()) {
+          setUserMeta(other.getUserMeta());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                checksum_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 18: {
+                userMeta_ = input.readBytes();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private long checksum_ ;
+      /**
+       * <code>optional int64 checksum = 1;</code>
+       * @return Whether the checksum field is set.
+       */
+      @java.lang.Override
+      public boolean hasChecksum() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional int64 checksum = 1;</code>
+       * @return The checksum.
+       */
+      @java.lang.Override
+      public long getChecksum() {
+        return checksum_;
+      }
+      /**
+       * <code>optional int64 checksum = 1;</code>
+       * @param value The checksum to set.
+       * @return This builder for chaining.
+       */
+      public Builder setChecksum(long value) {
+
+        checksum_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 checksum = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearChecksum() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        checksum_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString userMeta_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes user_meta = 2;</code>
+       * @return Whether the userMeta field is set.
+       */
+      @java.lang.Override
+      public boolean hasUserMeta() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional bytes user_meta = 2;</code>
+       * @return The userMeta.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString getUserMeta() {
+        return userMeta_;
+      }
+      /**
+       * <code>optional bytes user_meta = 2;</code>
+       * @param value The userMeta to set.
+       * @return This builder for chaining.
+       */
+      public Builder setUserMeta(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        userMeta_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes user_meta = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearUserMeta() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        userMeta_ = getDefaultInstance().getUserMeta();
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:jpacifica.FileMeta)
+    }
+
+    // @@protoc_insertion_point(class_scope:jpacifica.FileMeta)
+    private static final com.trs.pacifica.proto.RpcCommon.FileMeta DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new com.trs.pacifica.proto.RpcCommon.FileMeta();
+    }
+
+    public static com.trs.pacifica.proto.RpcCommon.FileMeta getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<FileMeta>
+        PARSER = new com.google.protobuf.AbstractParser<FileMeta>() {
+      @java.lang.Override
+      public FileMeta parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<FileMeta> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<FileMeta> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.trs.pacifica.proto.RpcCommon.FileMeta getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_jpacifica_ReplicaId_descriptor;
   private static final 
@@ -4416,6 +5023,11 @@ public final class RpcCommon {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_jpacifica_LogEntryPO_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_jpacifica_FileMeta_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_jpacifica_FileMeta_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4442,9 +5054,11 @@ public final class RpcCommon {
       "index\030\002 \001(\003H\001\210\001\001\022\025\n\010log_term\030\003 \001(\003H\002\210\001\001\022" +
       "\025\n\010checksum\030\004 \001(\003H\003\210\001\001\022\021\n\004data\030\005 \001(\014H\004\210\001" +
       "\001B\007\n\005_typeB\014\n\n_log_indexB\013\n\t_log_termB\013\n" +
-      "\t_checksumB\007\n\005_data*&\n\014LogEntryType\022\013\n\007O" +
-      "P_DATA\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pacifica." +
-      "protoB\tRpcCommonb\006proto3"
+      "\t_checksumB\007\n\005_data\"T\n\010FileMeta\022\025\n\010check" +
+      "sum\030\001 \001(\003H\000\210\001\001\022\026\n\tuser_meta\030\002 \001(\014H\001\210\001\001B\013" +
+      "\n\t_checksumB\014\n\n_user_meta*&\n\014LogEntryTyp" +
+      "e\022\013\n\007OP_DATA\020\000\022\t\n\005NO_OP\020\001B#\n\026com.trs.pac" +
+      "ifica.protoB\tRpcCommonb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -4480,6 +5094,12 @@ public final class RpcCommon {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jpacifica_LogEntryPO_descriptor,
         new java.lang.String[] { "Type", "LogIndex", "LogTerm", "Checksum", "Data", });
+    internal_static_jpacifica_FileMeta_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_jpacifica_FileMeta_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_jpacifica_FileMeta_descriptor,
+        new java.lang.String[] { "Checksum", "UserMeta", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

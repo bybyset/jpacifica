@@ -40,3 +40,8 @@ message LogEntryPO {
   optional int64 checksum = 4;
   optional bytes data = 5;
 }
+
+message FileMeta {
+  optional int64 checksum = 1;
+  optional bytes user_meta = 2;
+}

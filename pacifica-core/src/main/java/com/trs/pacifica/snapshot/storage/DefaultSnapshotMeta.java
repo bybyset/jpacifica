@@ -17,7 +17,9 @@
 
 package com.trs.pacifica.snapshot.storage;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.trs.pacifica.model.LogId;
+import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.util.BitUtil;
 import com.trs.pacifica.util.IOUtils;
 import org.apache.commons.io.FileUtils;
@@ -35,15 +37,29 @@ public class DefaultSnapshotMeta {
     static final String SNAPSHOT_META_FILE = "_snapshot_meta";
     static final String TEMP_SUFFIX = ".temp";
 
+    static final RpcCommon.FileMeta.Builder EMPTY_FILEMETA_BUILDER = RpcCommon.FileMeta.newBuilder();
+
     private final LogId snapshotLogId;
-    private final Map<String, Object> files = new ConcurrentHashMap<>();
+    private final Map<String, RpcCommon.FileMeta> files = new ConcurrentHashMap<>();
 
     DefaultSnapshotMeta(final LogId snapshotLogId) {
         this.snapshotLogId = snapshotLogId;
     }
 
-    public boolean addFile(String filename, Object fileMeta) {
-        return this.files.putIfAbsent(filename, fileMeta) != null;
+    public boolean addFile(String filename, RpcCommon.FileMeta fileMeta) {
+        if (fileMeta == null) {
+            fileMeta = EMPTY_FILEMETA_BUILDER.build();
+        }
+        return this.files.putIfAbsent(filename, fileMeta) == null;
+    }
+
+
+    public boolean addFile(String filename) {
+        return addFile(filename, null);
+    }
+
+    public RpcCommon.FileMeta getFileMeta(String filename) {
+        return this.files.get(filename);
     }
 
     public boolean removeFile(String filename) {
@@ -120,6 +136,18 @@ public class DefaultSnapshotMeta {
             BitUtil.putInt(utf8FilenameLenBytes, 0, utf8Filename.length);
             bytes.add(utf8FilenameLenBytes);
             bytes.add(utf8Filename);
+
+            byte[] metaLenBytes = new byte[Integer.BYTES];
+            if (meta != null) {
+                byte[] metaBytes =  meta.toByteArray();
+                int metaLen = metaBytes.length;
+                BitUtil.putInt(metaLenBytes, 0, metaLen);
+                bytes.add(metaLenBytes);
+                bytes.add(metaBytes);
+            } else {
+                BitUtil.putInt(metaLenBytes, 0, 0);
+                bytes.add(metaLenBytes);
+            }
         });
         return bytes;
     }
@@ -140,7 +168,22 @@ public class DefaultSnapshotMeta {
             offset += Integer.BYTES;
             final String filename = new String(bytes, offset, utf8FilenameLen);
             offset += utf8FilenameLen;
-            meta.addFile(filename, "");
+
+            final int metaLen = BitUtil.getInt(bytes, offset);
+            offset += Integer.BYTES;
+            RpcCommon.FileMeta fileMeta = null;
+            if (metaLen > 0) {
+                byte[] fileMetaBytes = new byte[metaLen];
+                System.arraycopy(bytes, offset, fileMetaBytes, 0, metaLen);
+                offset += metaLen;
+                try {
+                    fileMeta = RpcCommon.FileMeta.parseFrom(fileMetaBytes);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException("invalid FileMeta", e);
+                }
+
+            }
+            meta.addFile(filename, fileMeta);
         }
         return meta;
     }

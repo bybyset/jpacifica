@@ -97,4 +97,9 @@ public class DefaultSnapshotReader implements SnapshotReader {
         }
     }
 
+
+    long getFileReaderId() {
+        return this.fileReaderId;
+    }
+
 }
