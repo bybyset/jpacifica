@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.snapshot.storage;
 
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 import com.trs.pacifica.util.IOUtils;
@@ -34,6 +35,7 @@ public class DefaultSnapshotWriter extends SnapshotWriter {
     private final DefaultSnapshotStorage snapshotStorage;
     private final String pathName;
 
+    private boolean closed = false;
 
     public DefaultSnapshotWriter(final LogId snapshotLogId, DefaultSnapshotStorage snapshotStorage, String pathName) {
         super(snapshotLogId);
@@ -41,8 +43,6 @@ public class DefaultSnapshotWriter extends SnapshotWriter {
         this.pathName = pathName;
         this.snapshotMeta = DefaultSnapshotMeta.newSnapshotMeta(snapshotLogId);
     }
-
-
 
     @Override
     public String getDirectory() {
@@ -56,27 +56,31 @@ public class DefaultSnapshotWriter extends SnapshotWriter {
 
     @Override
     public boolean addFile(String filename) {
+        ensureClosed();
         return this.snapshotMeta.addFile(filename, null);
     }
 
     @Override
     public boolean removeFile(String filename) {
-        this.snapshotMeta.removeFile(filename);
-        return true;
+        ensureClosed();
+        return this.snapshotMeta.removeFile(filename);
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         //TODO check successful
-        try {
-            // save snapshot log id
-            saveSnapshotMeta();
-            // rename temp dir to snapshot dir
-            atomicMove();
-            // set last snapshot index
-            this.snapshotStorage.setLastSnapshotIndex(this.snapshotLogId.getIndex());
-        } finally {
-            this.snapshotStorage.destroySnapshot(this.pathName);
+        if (!closed) {
+            try {
+                // save snapshot log id
+                saveSnapshotMeta();
+                // rename temp dir to snapshot dir
+                atomicMove();
+                // set last snapshot index
+                this.snapshotStorage.setLastSnapshotIndex(this.snapshotLogId.getIndex());
+            } finally {
+                this.snapshotStorage.destroySnapshot(this.pathName);
+            }
+            this.closed = true;
         }
     }
 
@@ -93,8 +97,14 @@ public class DefaultSnapshotWriter extends SnapshotWriter {
         final String targetDirPath = this.snapshotStorage.getSnapshotPath(snapshotLogIndex);
         File sourceDir = new File(sourceDirPath);
         File targetDir = new File(targetDirPath);
-        FileUtils.forceDelete(targetDir);
+        FileUtils.forceDeleteOnExit(targetDir);
         IOUtils.atomicMoveFile(sourceDir, targetDir, true);
     }
 
+
+    void ensureClosed() {
+        if (closed) {
+            throw new AlreadyClosedException(this.getClass().getSimpleName() + " already closed.");
+        }
+    }
 }
