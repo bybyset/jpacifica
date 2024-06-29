@@ -45,8 +45,11 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
 
     private volatile Throwable exception = null;
     protected DefaultSnapshotDownloader(PacificaClient pacificaClient, ReplicaId remoteId, long remoteReaderId, SnapshotWriter snapshotWriter) {
+        this(snapshotWriter, new RemoteFileDownloader(pacificaClient, remoteId, remoteReaderId));
+    }
+    protected DefaultSnapshotDownloader(final SnapshotWriter snapshotWriter, final RemoteFileDownloader remoteFileDownloader) {
         this.snapshotWriter = snapshotWriter;
-        remoteFileDownloader = new RemoteFileDownloader(pacificaClient, remoteId, remoteReaderId);
+        this.remoteFileDownloader = remoteFileDownloader;
     }
 
     @Override
@@ -121,7 +124,7 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
     public void awaitComplete() throws InterruptedException, ExecutionException {
         cdl.await();
         if (this.exception != null) {
-            throw new ExecutionException("", this.exception);
+            throw new ExecutionException("failed to download snapshot, msg=" + exception.getMessage(), this.exception);
         }
     }
 

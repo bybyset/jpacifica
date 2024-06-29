@@ -15,27 +15,8 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.snapshot;
+package com.trs.pacifica.fs.remote;
 
-import java.util.Map;
+public class RemoteFileDownloaderTest {
 
-public interface SnapshotMeta {
-
-    /**
-     * get last log index at snapshot
-     * @return
-     */
-    public long getSnapshotLogIndex();
-
-    /**
-     * get last log term at snapshot
-     * @return
-     */
-    public long getSnapshotLogTerm();
-
-    /**
-     *
-     * @return
-     */
-    public Map<String, String> getUserData();
 }

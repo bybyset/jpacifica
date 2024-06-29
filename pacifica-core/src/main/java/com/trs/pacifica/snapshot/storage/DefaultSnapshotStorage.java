@@ -221,7 +221,7 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
         //SnapshotWriter
         final SnapshotWriter snapshotWriter = this.openSnapshotWriter(downloadLogId);
         if (snapshotWriter == null) {
-
+            throw new RuntimeException("failed to open SnapshotWriter on start download snapshot.");
         }
         final DefaultSnapshotDownloader snapshotDownloader = new DefaultSnapshotDownloader(downloadContext.getPacificaClient(), downloadContext.getRemoteId(), downloadContext.getReaderId(), snapshotWriter);
         return snapshotDownloader;

@@ -26,8 +26,6 @@ import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.snapshot.ProtoSnapshotMeta;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -116,30 +114,6 @@ public class RpcUtil {
                 return null;
         }
     }
-
-    public static RpcCommon.SnapshotMeta protoSnapshotMeta(final SnapshotMeta snapshotMeta) {
-        List<RpcCommon.Attribute> attributes = new ArrayList<>();
-        final Map<String, String> userData = snapshotMeta.getUserData();
-        if (userData != null && userData.isEmpty()) {
-            userData.forEach((key, value) -> {
-                attributes.add(RpcCommon.Attribute.newBuilder()//
-                        .setKey(key)//
-                        .setValue(value)//
-                        .build()//
-                );
-            });
-        }
-        return RpcCommon.SnapshotMeta.newBuilder()
-                .setLogIndex(snapshotMeta.getSnapshotLogIndex())//
-                .setLogTerm(snapshotMeta.getSnapshotLogTerm())//
-                .addAllAttributes(attributes)//
-                .build();
-    }
-
-    public static SnapshotMeta toSnapshotMeta(final RpcCommon.SnapshotMeta snapshotMeta) {
-        return new ProtoSnapshotMeta(snapshotMeta);
-    }
-
 
     public static RpcRequest.ErrorResponse toErrorResponse(final PacificaException pacificaException) {
         return RpcRequest.ErrorResponse//

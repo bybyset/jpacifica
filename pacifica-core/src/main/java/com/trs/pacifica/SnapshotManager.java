@@ -20,7 +20,6 @@ package com.trs.pacifica;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.snapshot.SnapshotMeta;
 
 public interface SnapshotManager {
 
