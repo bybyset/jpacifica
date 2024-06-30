@@ -18,6 +18,7 @@
 package com.trs.pacifica.fs.remote;
 
 import com.google.protobuf.ByteString;
+import com.trs.pacifica.async.DirectExecutor;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.Task;
 import com.trs.pacifica.model.ReplicaId;
@@ -29,28 +30,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
+import java.util.Objects;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DownloadSession implements Task {
     static final Logger LOGGER = LoggerFactory.getLogger(DownloadSession.class);
-    static final int DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
-    static final int DEFAULT_READ_LENGTH = 1024;
+    static final int DEFAULT_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+    static final int DEFAULT_DOWNLOAD_LENGTH_ONCE = 10 * 1024; // 10kb
+    static final int MIN_DOWNLOAD_LENGTH_ONCE = 10 * 1024;// 10kb
 
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile Throwable exception = null;
-
     private AtomicBoolean finished = new AtomicBoolean(false);
-
     private final PacificaClient pacificaClient;
     private final RpcRequest.GetFileRequest.Builder requestBuilder;
-    private int requestTimeoutMs = DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS;
-    private final int readLength = DEFAULT_READ_LENGTH;
+    private int downloadLengthOnce = DEFAULT_DOWNLOAD_LENGTH_ONCE;
+    private final Executor executor;
+    private final long deadLine;
 
 
-    DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename, int requestTimeoutMs) {
+    DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename, int timeoutMs, Executor executor) {
         this.pacificaClient = pacificaClient;
         this.requestBuilder = RpcRequest.GetFileRequest.newBuilder()
                 .setTargetId(RpcUtil.protoReplicaId(targetId))//
@@ -58,12 +58,24 @@ public abstract class DownloadSession implements Task {
                 .setFilename(filename)//
                 .setOffset(0)//
                 .setLength(0);
-        this.requestTimeoutMs = requestTimeoutMs;
+        this.deadLine = calculateDeadline(timeoutMs);
+        this.executor = Objects.requireNonNull(executor, "executor");
         continueDownload();
     }
 
     DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename) {
-        this(pacificaClient, targetId, readerId, filename, DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS);
+        this(pacificaClient, targetId, readerId, filename, DEFAULT_TIMEOUT_MS, new DirectExecutor());
+    }
+
+    DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename, Executor executor) {
+        this(pacificaClient, targetId, readerId, filename, DEFAULT_TIMEOUT_MS, executor);
+    }
+
+    static long calculateDeadline(int timeoutMs) {
+        if (timeoutMs > 0) {
+            return System.currentTimeMillis() + timeoutMs;
+        }
+        return Long.MAX_VALUE;
     }
 
     void continueDownload() {
@@ -75,9 +87,15 @@ public abstract class DownloadSession implements Task {
         final int offset = requestBuilder.getOffset() + requestBuilder.getLength();
         RpcRequest.GetFileRequest request = requestBuilder
                 .setOffset(offset)//
-                .setLength(readLength)//
+                .setLength(downloadLengthOnce)//
                 .build();
-        pacificaClient.getFile(request, new ExecutorRequestFinished<RpcRequest.GetFileResponse>() {
+
+        int requestTimeoutMs = getRequestTimeout();
+        if (requestTimeoutMs < 0) {
+            handleGetFileError(new TimeoutException("Timeout, the download task is dead."));
+            return;
+        }
+        pacificaClient.getFile(request, new ExecutorRequestFinished<RpcRequest.GetFileResponse>(this.executor) {
             @Override
             protected void doRun(Finished finished) {
                 if (finished.isOk()) {
@@ -88,6 +106,11 @@ public abstract class DownloadSession implements Task {
             }
         }, requestTimeoutMs);
     }
+
+    int getRequestTimeout() {
+        return (int) (this.deadLine - System.currentTimeMillis());
+    }
+
 
     void handleGetFileResponse(RpcRequest.GetFileResponse response) {
         //handle success
@@ -129,7 +152,7 @@ public abstract class DownloadSession implements Task {
         if (finished.compareAndSet(false, true)) {
             this.exception = throwable;
             this.latch.countDown();
-            return true;
+            return onFinish();
         }
         return false;
     }
@@ -138,15 +161,20 @@ public abstract class DownloadSession implements Task {
      * Attempts to cancel execution of this task.
      * This method has no effect if the task is already completed or cancelled,
      * or could not be cancelled for some other reason.
+     *
      * @return false if the task could not be cancelled, typically because it has already completed;
      * true otherwise.  If two or more threads cause a task to be cancelled, then at least one of them returns true.
      */
     @Override
     public boolean cancel() {
-       return onFinished(new CancellationException("cancel download task."));
+        return onFinished(new CancellationException("cancel download task."));
     }
 
     protected abstract void onDownload(byte[] bytes) throws IOException;
+
+    protected boolean onFinish() {
+        return true;
+    }
 
     @Override
     public boolean isCancelled() {
@@ -156,5 +184,13 @@ public abstract class DownloadSession implements Task {
     @Override
     public boolean isCompleted() {
         return finished.get();
+    }
+
+    public int getDownloadLengthOnce() {
+        return downloadLengthOnce;
+    }
+
+    public void setDownloadLengthOnce(int downloadLengthOnce) {
+        this.downloadLengthOnce = Math.max(MIN_DOWNLOAD_LENGTH_ONCE, downloadLengthOnce);
     }
 }

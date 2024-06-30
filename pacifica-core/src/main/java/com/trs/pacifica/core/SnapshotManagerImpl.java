@@ -19,6 +19,7 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.*;
 import com.trs.pacifica.async.Callback;
+import com.trs.pacifica.async.DirectExecutor;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.error.PacificaException;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -147,6 +149,15 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                     //1、download snapshot from Primary
                     LOGGER.info("{} download snapshot from Primary={}", this.replica.getReplicaId(), primaryId);
                     final SnapshotStorage.DownloadContext context = new SnapshotStorage.DownloadContext(installLogId, installSnapshotRequest.getReaderId(), this.pacificaClient, primaryId);
+                    int downloadSnapshotTimeoutMs = this.option.getDownloadSnapshotTimeoutMs();
+                    if (downloadSnapshotTimeoutMs > 0) {
+                        context.setTimeoutMs(downloadSnapshotTimeoutMs);
+                    }
+                    Executor downloadExecutor = this.option.getReplicaOption().getDownloadSnapshotExecutor();
+                    if (downloadExecutor == null) {
+                        downloadExecutor = new DirectExecutor();
+                    }
+                    context.setDownloadExecutor(downloadExecutor);
                     try (final SnapshotDownloader snapshotDownloader = this.snapshotStorage.startDownloadSnapshot(context)) {
                         this.snapshotDownloader = snapshotDownloader;
                         snapshotDownloader.start();
@@ -440,17 +451,14 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
     public static class Option {
 
+
         private ReplicaOption replicaOption;
-
         private String storagePath;
-
         private SnapshotStorageFactory snapshotStorageFactory;
-
         private StateMachineCaller stateMachineCaller;
-
         private LogManager logManager;
-
         private PacificaClient pacificaClient;
+        private int downloadSnapshotTimeoutMs;
 
         public PacificaClient getPacificaClient() {
             return pacificaClient;
@@ -498,6 +506,14 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
         public void setLogManager(LogManager logManager) {
             this.logManager = logManager;
+        }
+
+        public int getDownloadSnapshotTimeoutMs() {
+            return downloadSnapshotTimeoutMs;
+        }
+
+        public void setDownloadSnapshotTimeoutMs(int downloadSnapshotTimeoutMs) {
+            this.downloadSnapshotTimeoutMs = downloadSnapshotTimeoutMs;
         }
     }
 

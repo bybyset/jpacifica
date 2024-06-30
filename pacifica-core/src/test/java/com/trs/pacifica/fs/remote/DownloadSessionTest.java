@@ -34,6 +34,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 
 public class DownloadSessionTest {
 
@@ -84,7 +85,7 @@ public class DownloadSessionTest {
 
 
     @Test
-    public void testSuccess() throws UnsupportedEncodingException {
+    public void testSuccess() throws UnsupportedEncodingException, ExecutionException, InterruptedException {
         mockSuccessRpc();
         final List<byte[]> response = new ArrayList<>(3);
         this.downloadSession = new DownloadSession(this.pacificaClient, this.targetId, this.readId, this.fileName ) {
@@ -93,13 +94,42 @@ public class DownloadSessionTest {
                 response.add(bytes);
             }
         };
-
+        this.downloadSession.awaitComplete();
         Assertions.assertEquals(3, response.size());
         Assertions.assertArrayEquals("hello".getBytes("utf-8"), response.get(0));
         Assertions.assertArrayEquals("jpcafica".getBytes("utf-8"), response.get(1));
         Assertions.assertArrayEquals("world".getBytes("utf-8"), response.get(2));
 
+        Assertions.assertTrue(downloadSession.isCompleted());
+        Assertions.assertFalse(downloadSession.isCancelled());
+    }
+
+    private void mockFailureRpc() throws UnsupportedEncodingException {
+        Mockito.doAnswer( invocation -> {
+            RpcRequestFinished<RpcRequest.GetFileResponse> callback = invocation.getArgument(1, RpcRequestFinished.class);
+            callback.run(Finished.failure(new RuntimeException("test failure")));
+            return null;
+        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyLong());
+    }
+
+    @Test
+    public void testFailure() throws UnsupportedEncodingException {
+        mockFailureRpc();
+        final List<byte[]> response = new ArrayList<>(3);
+        this.downloadSession = new DownloadSession(this.pacificaClient, this.targetId, this.readId, this.fileName ) {
+            @Override
+            protected void onDownload(byte[] bytes) throws IOException {
+                response.add(bytes);
+            }
+        };
+        Assertions.assertThrows(ExecutionException.class, ()->{
+            this.downloadSession.awaitComplete();
+        });
+        Assertions.assertEquals(0, response.size());
+        Assertions.assertTrue(downloadSession.isCompleted());
+        Assertions.assertFalse(downloadSession.isCancelled());
 
     }
+
 
 }

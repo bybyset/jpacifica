@@ -17,6 +17,25 @@
 
 package com.trs.pacifica.fs.remote;
 
+import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.client.PacificaClient;
+import org.mockito.Mockito;
+
 public class RemoteFileDownloaderTest {
+
+
+    private RemoteFileDownloader remoteFileDownloader;
+
+    private PacificaClient pacificaClient;
+
+    private ReplicaId remoteId = new ReplicaId("test_group", "test_node");
+
+    private long readId = 1L;
+
+
+    public void setup() {
+        this.pacificaClient = Mockito.mock(PacificaClient.class);
+        this.remoteFileDownloader = new RemoteFileDownloader(this.pacificaClient, this.remoteId, this.readId);
+    }
 
 }

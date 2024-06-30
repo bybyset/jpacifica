@@ -57,7 +57,6 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     }
 
     /**
-     *
      * @throws IOException
      */
     public void load() throws IOException {
@@ -223,7 +222,8 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
         if (snapshotWriter == null) {
             throw new RuntimeException("failed to open SnapshotWriter on start download snapshot.");
         }
-        final DefaultSnapshotDownloader snapshotDownloader = new DefaultSnapshotDownloader(downloadContext.getPacificaClient(), downloadContext.getRemoteId(), downloadContext.getReaderId(), snapshotWriter);
+        final DefaultSnapshotDownloader snapshotDownloader = new DefaultSnapshotDownloader(downloadContext.getPacificaClient(),
+                downloadContext.getRemoteId(), downloadContext.getReaderId(), snapshotWriter, downloadContext.getTimeoutMs(), downloadContext.getDownloadExecutor());
         return snapshotDownloader;
     }
 

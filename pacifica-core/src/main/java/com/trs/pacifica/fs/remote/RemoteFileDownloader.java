@@ -17,26 +17,27 @@
 
 package com.trs.pacifica.fs.remote;
 
+import com.trs.pacifica.async.DirectExecutor;
 import com.trs.pacifica.async.Task;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 public class RemoteFileDownloader {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(RemoteFileDownloader.class);
+
     private final PacificaClient pacificaClient;
-
     private final ReplicaId remoteId;
-
     private final long remoteReaderId;
-
-    private final List<Task> subTasks = new ArrayList<>();
-
 
     public RemoteFileDownloader(PacificaClient pacificaClient, ReplicaId remoteId, long remoteReaderId) {
         this.pacificaClient = pacificaClient;
@@ -60,16 +61,38 @@ public class RemoteFileDownloader {
         }
     }
 
-    public Task asyncDownloadToOutputStream(final String filename, final OutputStream outputStream) throws IOException {
+    public Task asyncDownloadToOutputStream(final String filename, final OutputStream outputStream, int timeoutMs, Executor executor) throws IOException {
         Objects.requireNonNull(filename, "filename");
         Objects.requireNonNull(outputStream, "outputStream");
-        DownloadSession downloadSession = new DownloadSession(this.pacificaClient, this.remoteId, remoteReaderId, filename) {
+        if (timeoutMs <= 0) {
+            throw new IllegalArgumentException("timeoutMs must be greater than 0");
+        }
+        if (executor == null) {
+            executor = new DirectExecutor();
+        }
+
+        DownloadSession downloadSession = new DownloadSession(this.pacificaClient, this.remoteId, remoteReaderId, filename, timeoutMs, executor) {
             @Override
             protected void onDownload(byte[] bytes) throws IOException {
                 outputStream.write(bytes);
             }
+
+            @Override
+            protected boolean onFinish() {
+                try {
+                    outputStream.flush();
+                    return true;
+                } catch (IOException e) {
+                    LOGGER.error("Failed to flush on download file={}", filename, e);
+                    return false;
+                }
+            }
         };
         return downloadSession;
+    }
+
+    public Task asyncDownloadToOutputStream(final String filename, final OutputStream outputStream) throws IOException {
+        return asyncDownloadToOutputStream(filename, outputStream, DownloadSession.DEFAULT_TIMEOUT_MS, new DirectExecutor());
     }
 
     public void downloadToFile(final String filename, final File destFile) throws IOException, FileNotFoundException {
@@ -77,7 +100,14 @@ public class RemoteFileDownloader {
         Objects.requireNonNull(destFile, "file");
         try (final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destFile))) {
             downloadToOutputStream(filename, outputStream);
-            outputStream.flush();
+        }
+    }
+
+    public Task asyncDownloadToFile(final String filename, final File destFile, int timeout, Executor executor) throws IOException, FileNotFoundException {
+        Objects.requireNonNull(filename, "filename");
+        Objects.requireNonNull(destFile, "file");
+        try (final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destFile))) {
+            return asyncDownloadToOutputStream(filename, outputStream, timeout, executor);
         }
     }
 

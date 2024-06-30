@@ -31,6 +31,7 @@ import com.trs.pacifica.rpc.node.EndpointFactory;
 import com.trs.pacifica.util.timer.TimerFactory;
 import com.trs.pacifica.util.timer.TimerFactoryHolder;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 public class ReplicaOption {
@@ -44,6 +45,7 @@ public class ReplicaOption {
     public static final int DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED = 10;
     public static final int DEFAULT_SNAPSHOT_LOG_INDEX_MARGIN = 0;
     public static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
+    public static final int DEFAULT_DOWNLOAD_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(10);
 
 
     /**
@@ -104,6 +106,14 @@ public class ReplicaOption {
 
     private ExecutorGroup senderExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
+    private Executor downloadSnapshotExecutor = ReplicaExecutorGroupHolder.getDefaultInstance();
+
+    /**
+     * download snapshot timeout ms
+     */
+    private int downloadSnapshotTimeoutMs = DEFAULT_DOWNLOAD_SNAPSHOT_TIMEOUT_MS;
+
+
     private LogEntryCodecFactory logEntryCodecFactory = LogEntryCodecFactoryHolder.getInstance();
 
     private TimerFactory timerFactory = TimerFactoryHolder.getInstance();
@@ -143,7 +153,6 @@ public class ReplicaOption {
     public void setLeasePeriodTimeoutRatio(int leasePeriodTimeoutRatio) {
         this.leasePeriodTimeoutRatio = leasePeriodTimeoutRatio;
     }
-
 
 
     public int getSnapshotTimeoutMs() {
@@ -313,5 +322,21 @@ public class ReplicaOption {
 
     public void setFileServiceFactory(FileServiceFactory fileServiceFactory) {
         this.fileServiceFactory = fileServiceFactory;
+    }
+
+    public Executor getDownloadSnapshotExecutor() {
+        return downloadSnapshotExecutor;
+    }
+
+    public void setDownloadSnapshotExecutor(Executor downloadSnapshotExecutor) {
+        this.downloadSnapshotExecutor = downloadSnapshotExecutor;
+    }
+
+    public int getDownloadSnapshotTimeoutMs() {
+        return downloadSnapshotTimeoutMs;
+    }
+
+    public void setDownloadSnapshotTimeoutMs(int downloadSnapshotTimeoutMs) {
+        this.downloadSnapshotTimeoutMs = downloadSnapshotTimeoutMs;
     }
 }

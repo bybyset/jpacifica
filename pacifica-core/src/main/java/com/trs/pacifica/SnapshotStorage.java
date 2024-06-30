@@ -17,6 +17,7 @@
 
 package com.trs.pacifica;
 
+import com.trs.pacifica.core.ReplicaOption;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
@@ -25,6 +26,7 @@ import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 public interface SnapshotStorage {
 
@@ -68,6 +70,10 @@ public interface SnapshotStorage {
 
         private final ReplicaId remoteId;
 
+        private Executor downloadExecutor;
+
+        private int timeoutMs = ReplicaOption.DEFAULT_DOWNLOAD_SNAPSHOT_TIMEOUT_MS;
+
         public DownloadContext(LogId downloadLogId, long readerId, PacificaClient pacificaClient, ReplicaId remoteId) {
             this.downloadLogId = downloadLogId;
             this.readerId = readerId;
@@ -89,6 +95,21 @@ public interface SnapshotStorage {
 
         public ReplicaId getRemoteId() {
             return remoteId;
+        }
+
+        public Executor getDownloadExecutor() {
+            return downloadExecutor;
+        }
+        public void setDownloadExecutor(Executor downloadExecutor) {
+            this.downloadExecutor = downloadExecutor;
+        }
+
+        public int getTimeoutMs() {
+            return timeoutMs;
+        }
+
+        public void setTimeoutMs(int timeoutMs) {
+            this.timeoutMs = timeoutMs;
         }
     }
 

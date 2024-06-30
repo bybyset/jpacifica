@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.snapshot.storage;
 
+import com.trs.pacifica.async.DirectExecutor;
+import com.trs.pacifica.async.Task;
 import com.trs.pacifica.fs.remote.RemoteFileDownloader;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
@@ -26,30 +28,39 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class DefaultSnapshotDownloader implements SnapshotDownloader {
 
+    static final int DEFAULT_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
     private final RemoteFileDownloader remoteFileDownloader;
-
     private final SnapshotWriter snapshotWriter;
-
     private DefaultSnapshotMeta remoteSnapshotMeta = null;
-
     private volatile boolean canceled = false;
-
-    private final CountDownLatch cdl = new CountDownLatch(1);
-
     private volatile Throwable exception = null;
-    protected DefaultSnapshotDownloader(PacificaClient pacificaClient, ReplicaId remoteId, long remoteReaderId, SnapshotWriter snapshotWriter) {
-        this(snapshotWriter, new RemoteFileDownloader(pacificaClient, remoteId, remoteReaderId));
+    private final Executor executor;
+    private int timeoutMs = DEFAULT_TIMEOUT_MS;
+    private final BlockingQueue<Task> tasks = new LinkedBlockingQueue<>();
+
+
+    protected DefaultSnapshotDownloader(PacificaClient pacificaClient, ReplicaId remoteId, long remoteReaderId, SnapshotWriter snapshotWriter, int timeoutMs, Executor executor) {
+        this(snapshotWriter, new RemoteFileDownloader(pacificaClient, remoteId, remoteReaderId), timeoutMs, executor);
     }
-    protected DefaultSnapshotDownloader(final SnapshotWriter snapshotWriter, final RemoteFileDownloader remoteFileDownloader) {
+
+    protected DefaultSnapshotDownloader(final SnapshotWriter snapshotWriter, final RemoteFileDownloader remoteFileDownloader, int timeoutMs, Executor executor) {
         this.snapshotWriter = snapshotWriter;
         this.remoteFileDownloader = remoteFileDownloader;
+        if (executor == null) {
+            executor = new DirectExecutor();
+        }
+        this.executor = executor;
+        this.timeoutMs = timeoutMs;
+    }
+
+    protected DefaultSnapshotDownloader(final SnapshotWriter snapshotWriter, final RemoteFileDownloader remoteFileDownloader) {
+        this(snapshotWriter, remoteFileDownloader, DEFAULT_TIMEOUT_MS, new DirectExecutor());
     }
 
     @Override
@@ -58,13 +69,10 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
             startDownload();
         } catch (Throwable e) {
             this.exception = e;
-        } finally {
-            cdl.countDown();
         }
     }
 
 
-    // TODO Break point resume
     private void startDownload() throws IOException {
         //1. list files of the remote snapshot
         loadRemoteSnapshotMeta();
@@ -76,7 +84,10 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
             if (downloadFile.exists()) {
                 FileUtils.forceDelete(downloadFile);
             }
-            this.remoteFileDownloader.downloadToFile(filename, downloadFile);
+            final Task task = this.remoteFileDownloader.asyncDownloadToFile(filename, downloadFile, timeoutMs, executor);
+            if (task != null) {
+                this.tasks.add(task);
+            }
         }
     }
 
@@ -102,17 +113,23 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
 
     @Override
     public boolean cancel() {
-        if (!canceled && this.cdl.getCount() > 0) {
+        if (!canceled && this.tasks.isEmpty()) {
             try {
+                cancelAllTask();
                 ensureCanceled();
             } catch (Throwable e) {
                 this.exception = e;
-            } finally {
-                this.cdl.countDown();
             }
             return true;
         }
         return false;
+    }
+
+    private void cancelAllTask() {
+        Task task = null;
+        while ((task = tasks.poll()) != null) {
+            task.cancel();
+        }
     }
 
     @Override
@@ -122,7 +139,10 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
 
     @Override
     public void awaitComplete() throws InterruptedException, ExecutionException {
-        cdl.await();
+        Task task = null;
+        while ((task = tasks.poll()) != null) {
+            task.awaitComplete();
+        }
         if (this.exception != null) {
             throw new ExecutionException("failed to download snapshot, msg=" + exception.getMessage(), this.exception);
         }
@@ -130,7 +150,7 @@ public class DefaultSnapshotDownloader implements SnapshotDownloader {
 
     @Override
     public boolean isCompleted() {
-        return this.cdl.getCount()  <= 0;
+        return this.tasks.isEmpty();
     }
 
     @Override

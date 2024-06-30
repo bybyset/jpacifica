@@ -146,6 +146,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         snapshotManagerOption.setStateMachineCaller(this.stateMachineCaller);
         snapshotManagerOption.setLogManager(this.logManager);
         snapshotManagerOption.setPacificaClient(this.pacificaClient);
+        snapshotManagerOption.setDownloadSnapshotTimeoutMs(option.getDownloadSnapshotTimeoutMs());
         this.snapshotManager.init(snapshotManagerOption);
     }
 
