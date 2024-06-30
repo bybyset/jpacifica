@@ -24,6 +24,7 @@ import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public interface StateMachineCaller {
@@ -105,7 +106,7 @@ public interface StateMachineCaller {
          * @param saveLogId
          * @return
          */
-        SnapshotWriter start(final LogId saveLogId);
+        SnapshotWriter start(final LogId saveLogId) throws IOException;
 
         /**
          * get save LogId on snapshot save

@@ -176,51 +176,42 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     }
 
     @Override
-    public SnapshotReader openSnapshotReader() {
+    public SnapshotReader openSnapshotReader() throws IOException {
         final String snapshotName = getSnapshotName(this.lastSnapshotIndex);
-        try {
-            final DefaultSnapshotReader snapshotReader = new DefaultSnapshotReader(this, snapshotName);
-            incRef(snapshotName);
-            return snapshotReader;
-        } catch (IOException e) {
-            LOGGER.error("Failed to open snapshot reader, path={}", this.getSnapshotPath(snapshotName), e);
-        }
-        return null;
+        final DefaultSnapshotReader snapshotReader = new DefaultSnapshotReader(this, snapshotName);
+        incRef(snapshotName);
+        return snapshotReader;
     }
 
     @Override
-    public SnapshotWriter openSnapshotWriter(final LogId snapshotLogId) {
+    public SnapshotWriter openSnapshotWriter(final LogId snapshotLogId) throws IOException {
         final String tempSnapshotName = getTempSnapshotName();
         final String writerTempPath = getSnapshotPath(tempSnapshotName);
-        try {
-            do {
-                final File tempFile = new File(writerTempPath);
-                if (tempFile.exists()) {
-                    if (getRef(tempSnapshotName) != 0) {
-                        break;
-                    }
-                    if (!destroySnapshot(tempSnapshotName)) {
-                        break;
-                    }
+        do {
+            final File tempFile = new File(writerTempPath);
+            if (tempFile.exists()) {
+                if (getRef(tempSnapshotName) != 0) {
+                    break;
                 }
-                FileUtils.forceMkdir(tempFile);
-                incRef(tempSnapshotName);
-                return new DefaultSnapshotWriter(snapshotLogId, this, tempSnapshotName);
-            } while (false);
-        } catch (IOException e) {
-            LOGGER.error(String.format("Failed to open SnapshotWriter for path=%s.", writerTempPath), e);
-        }
+                if (!destroySnapshot(tempSnapshotName)) {
+                    break;
+                }
+            }
+            FileUtils.forceMkdir(tempFile);
+            incRef(tempSnapshotName);
+            return new DefaultSnapshotWriter(snapshotLogId, this, tempSnapshotName);
+        } while (false);
         return null;
     }
 
 
     @Override
-    public SnapshotDownloader startDownloadSnapshot(DownloadContext downloadContext) {
+    public SnapshotDownloader startDownloadSnapshot(DownloadContext downloadContext) throws IOException {
         final LogId downloadLogId = downloadContext.getDownloadLogId();
         //SnapshotWriter
         final SnapshotWriter snapshotWriter = this.openSnapshotWriter(downloadLogId);
         if (snapshotWriter == null) {
-            throw new RuntimeException("failed to open SnapshotWriter on start download snapshot.");
+            throw new IOException("failed to open SnapshotWriter on start download snapshot.");
         }
         final DefaultSnapshotDownloader snapshotDownloader = new DefaultSnapshotDownloader(downloadContext.getPacificaClient(),
                 downloadContext.getRemoteId(), downloadContext.getReaderId(), snapshotWriter, downloadContext.getTimeoutMs(), downloadContext.getDownloadExecutor());

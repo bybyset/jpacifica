@@ -99,6 +99,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
             if (this.state == State.SHUTDOWN) {
                 final String storagePath = Objects.requireNonNull(option.getStoragePath(), "storage path");
                 this.snapshotStorage = this.snapshotStorageFactory.newSnapshotStorage(storagePath);
+                this.state = State.IDLE;
                 doFirstSnapshotLoad();
             }
         } finally {
@@ -275,9 +276,17 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
 
 
     private void doFirstSnapshotLoad() throws PacificaException {
-        final SnapshotReader snapshotReader = this.snapshotStorage.openSnapshotReader();
-        final FirstSnapshotLoadCallback firstSnapshotLoadCallback = new FirstSnapshotLoadCallback(snapshotReader);
-        doSnapshotLoad(firstSnapshotLoadCallback, State.IDLE);
+        try {
+            final SnapshotReader snapshotReader = this.snapshotStorage.openSnapshotReader();
+            if (snapshotReader == null) {
+                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, "can not open SnapshotReader");
+            }
+            final FirstSnapshotLoadCallback firstSnapshotLoadCallback = new FirstSnapshotLoadCallback(snapshotReader);
+            doSnapshotLoad(firstSnapshotLoadCallback, State.IDLE);
+        } catch (IOException e) {
+            throw new PacificaException(PacificaErrorCode.IO, "Failed to do first snapshot, msg=" + e.getMessage(), e);
+        }
+
     }
 
     private void onSnapshotLoadSuccess(final LogId loadSnapshotLogId) {
@@ -354,7 +363,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         }
 
         @Override
-        public SnapshotWriter start(LogId saveLogId) {
+        public SnapshotWriter start(LogId saveLogId) throws IOException {
             this.saveLogId = saveLogId;
             this.snapshotWriter = SnapshotManagerImpl.this.snapshotStorage.openSnapshotWriter(saveLogId);
             return this.snapshotWriter;

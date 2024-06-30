@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.util.PrimitiveIterator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -59,8 +60,8 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         Mockito.when(this.replica.getReplicaId()).thenReturn(new ReplicaId("test_group", "test_node"));
 
         this.logManager = Mockito.mock(LogManager.class);
-        this.stateMachineCaller = Mockito.mock(StateMachineCaller.class);
-        this.pacificaClient = Mockito.mock(PacificaClient.class);
+        mockStateMachineCaller();
+        mockPacificaClient();
         mockSnapshotStorageFactory();
         this.snapshotManager = new SnapshotManagerImpl(replica);
         ReplicaOption replicaOption = new ReplicaOption();
@@ -80,6 +81,19 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         super.shutdown();
     }
 
+    private void mockPacificaClient() {
+        this.pacificaClient = Mockito.mock(PacificaClient.class);
+    }
+
+    private void mockStateMachineCaller() {
+        this.stateMachineCaller = Mockito.mock(StateMachineCaller.class);
+        Mockito.doAnswer(invocation -> {
+            StateMachineCaller.SnapshotLoadCallback callback = invocation.getArgument(0, StateMachineCaller.SnapshotLoadCallback.class);
+            callback.run(Finished.success());
+            return true;
+        }).when(this.stateMachineCaller).onSnapshotLoad(Mockito.any());
+
+    }
     private void mockSnapshotStorageFactory() throws PacificaException, IOException {
         this.snapshotStorageFactory = Mockito.mock(SnapshotStorageFactory.class);
         this.snapshotStorage = new DefaultSnapshotStorage(this.path);
@@ -94,8 +108,6 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
             callback.run(Finished.success());
             return null;
         }).when(this.stateMachineCaller).onSnapshotLoad(Mockito.any());
-
-
     }
 
 

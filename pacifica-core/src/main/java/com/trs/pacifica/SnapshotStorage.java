@@ -36,8 +36,9 @@ public interface SnapshotStorage {
      * when the replica loading snapshot, will ask for a SnapshotReader to be opened.
      *
      * @return
+     * @throws IOException
      */
-    SnapshotReader openSnapshotReader();
+    SnapshotReader openSnapshotReader() throws IOException;
 
     /**
      * open a SnapshotWriter for snapshotLogId
@@ -47,8 +48,9 @@ public interface SnapshotStorage {
      *
      * @param snapshotLogId
      * @return
+     * @throws IOException
      */
-    SnapshotWriter openSnapshotWriter(final LogId snapshotLogId);
+    SnapshotWriter openSnapshotWriter(final LogId snapshotLogId) throws IOException;
 
 
     /**
@@ -56,8 +58,9 @@ public interface SnapshotStorage {
      *
      * @param downloadContext
      * @return
+     * @throws IOException
      */
-    SnapshotDownloader startDownloadSnapshot(final DownloadContext downloadContext);
+    SnapshotDownloader startDownloadSnapshot(final DownloadContext downloadContext) throws IOException;
 
 
     public static class DownloadContext {
@@ -100,6 +103,7 @@ public interface SnapshotStorage {
         public Executor getDownloadExecutor() {
             return downloadExecutor;
         }
+
         public void setDownloadExecutor(Executor downloadExecutor) {
             this.downloadExecutor = downloadExecutor;
         }
