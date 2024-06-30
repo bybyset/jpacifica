@@ -17,11 +17,24 @@
 
 package com.trs.pacifica.fs.remote;
 
+import com.google.protobuf.ByteString;
+import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.test.BaseStorageTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class RemoteFileDownloaderTest {
+import java.io.*;
+import java.util.ArrayDeque;
+import java.util.Queue;
+
+public class RemoteFileDownloaderTest extends BaseStorageTest {
 
 
     private RemoteFileDownloader remoteFileDownloader;
@@ -33,9 +46,57 @@ public class RemoteFileDownloaderTest {
     private long readId = 1L;
 
 
-    public void setup() {
+    @BeforeEach
+    @Override
+    public void setup() throws Exception {
+        super.setup();
         this.pacificaClient = Mockito.mock(PacificaClient.class);
         this.remoteFileDownloader = new RemoteFileDownloader(this.pacificaClient, this.remoteId, this.readId);
+    }
+
+    @AfterEach
+    @Override
+    public void shutdown() throws Exception {
+        super.shutdown();
+    }
+
+    @Test
+    public void testDownloadToFile() throws IOException {
+        mockSuccessRpc();
+        File file = new File(this.path, "test1");
+        this.remoteFileDownloader.downloadToFile("test1", file);
+        Assertions.assertTrue(file.exists());
+        try (FileReader fileReader = new FileReader(file);  BufferedReader bufferedReader = new BufferedReader(fileReader);){
+            String value = bufferedReader.readLine();
+            Assertions.assertEquals("hellojpcaficaworld", value);
+        }
+    }
+
+    private void mockSuccessRpc() throws UnsupportedEncodingException {
+        Queue<byte[]> bytesRes = new ArrayDeque<>(3);
+        bytesRes.add("hello".getBytes("utf-8"));
+        bytesRes.add("jpcafica".getBytes("utf-8"));
+        bytesRes.add("world".getBytes("utf-8"));
+        Mockito.doAnswer( invocation -> {
+            RpcRequestFinished<RpcRequest.GetFileResponse> callback = invocation.getArgument(1, RpcRequestFinished.class);
+            byte[] bytes = bytesRes.poll();
+            RpcRequest.GetFileResponse response;
+            if (bytes != null) {
+                response = RpcRequest.GetFileResponse.newBuilder()//
+                        .setData(ByteString.copyFrom(bytes))//
+                        .setReadLength(bytes.length)//
+                        .setEof(false)//
+                        .build();
+            } else {
+                response = RpcRequest.GetFileResponse.newBuilder()//
+                        .setReadLength(0)//
+                        .setEof(true)//
+                        .build();
+            }
+            callback.setRpcResponse(response);
+            callback.run(Finished.success());
+            return null;
+        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyLong());
     }
 
 }
