@@ -19,16 +19,18 @@ package com.trs.pacifica.snapshot.storage;
 
 import com.trs.pacifica.fs.remote.RemoteFileDownloader;
 import com.trs.pacifica.model.LogId;
-import com.trs.pacifica.model.ReplicaId;
-import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.test.BaseStorageTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class DefaultSnapshotDownloaderTest extends BaseStorageTest {
 
@@ -44,12 +46,14 @@ public class DefaultSnapshotDownloaderTest extends BaseStorageTest {
 
     private final LogId remoteLogId = new LogId(1003, 1);
 
+    private Executor executor = Executors.newFixedThreadPool(4);
+
     @BeforeEach
     @Override
     public void setup() throws Exception {
         super.setup();
         this.remoteFileDownloader = Mockito.mock(RemoteFileDownloader.class);
-        Mockito.doAnswer((invocation) -> {
+        Answer answer = (invocation) -> {
             String filename = invocation.getArgument(0, String.class);
             if (filename.equals(DefaultSnapshotMeta.SNAPSHOT_META_FILE)) {
                 File saveFile = invocation.getArgument(1, File.class);
@@ -63,11 +67,12 @@ public class DefaultSnapshotDownloaderTest extends BaseStorageTest {
             }
 
             return null;
-        }).when(this.remoteFileDownloader).downloadToFile(Mockito.anyString(), Mockito.any(File.class));
-
+        };
+        Mockito.doAnswer(answer).when(this.remoteFileDownloader).asyncDownloadToFile(Mockito.anyString(), Mockito.any(File.class), Mockito.anyInt(), Mockito.any());
+        Mockito.doAnswer(answer).when(this.remoteFileDownloader).downloadToFile(Mockito.anyString(), Mockito.any());
         this.snapshotWriter = Mockito.mock(DefaultSnapshotWriter.class);
         Mockito.doReturn(this.path).when(this.snapshotWriter).getDirectory();
-        this.snapshotDownloader = new DefaultSnapshotDownloader(this.snapshotWriter, this.remoteFileDownloader);
+        this.snapshotDownloader = new DefaultSnapshotDownloader(this.snapshotWriter, this.remoteFileDownloader, 10000, executor);
     }
 
 
@@ -78,15 +83,13 @@ public class DefaultSnapshotDownloaderTest extends BaseStorageTest {
     }
 
     @Test
-    public void testStart() {
+    public void testStart() throws ExecutionException, InterruptedException {
         this.snapshotDownloader.start();
+        this.snapshotDownloader.awaitComplete();
         File file1 = new File(this.path, "test1");
         File file2 = new File(this.path, "test2");
         Assertions.assertTrue(file1.exists());
         Assertions.assertTrue(file2.exists());
-
-
-
     }
 
 

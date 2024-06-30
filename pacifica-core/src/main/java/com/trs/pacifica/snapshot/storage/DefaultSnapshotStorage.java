@@ -52,7 +52,7 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
 
     private long lastSnapshotIndex = 0;
 
-    public DefaultSnapshotStorage(String storagePath) throws IOException {
+    public DefaultSnapshotStorage(String storagePath) {
         this.storagePath = storagePath;
     }
 
