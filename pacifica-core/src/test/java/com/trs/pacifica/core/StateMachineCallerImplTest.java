@@ -39,6 +39,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+
 
 public class StateMachineCallerImplTest {
 
@@ -175,7 +177,7 @@ public class StateMachineCallerImplTest {
     }
 
     @Test
-    public void testOnSnapshotSave() throws InterruptedException {
+    public void testOnSnapshotSave() throws InterruptedException, IOException {
         StateMachineCaller.SnapshotSaveCallback callback = Mockito.mock(StateMachineCaller.SnapshotSaveCallback.class);
         SnapshotWriter snapshotWriter = Mockito.mock(SnapshotWriter.class);
         LogId snapshotLogId = new LogId(4, 1);

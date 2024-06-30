@@ -286,7 +286,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 throw new PacificaException(PacificaErrorCode.REPLICATOR, "Not found SnapshotStorage.");
             }
             closeSnapshotReaderIfExist();
-            this.snapshotReader = snapshotStorage.openSnapshotReader();
+            try {
+                this.snapshotReader = snapshotStorage.openSnapshotReader();
+            } catch (IOException e) {
+                throw new PacificaException(PacificaErrorCode.IO, "Failed to open SnapshotReader");
+            }
             if (this.snapshotReader == null) {
                 throw new PacificaException(PacificaErrorCode.REPLICATOR, "Not found SnapshotReader.");
             }

@@ -279,7 +279,8 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         try {
             final SnapshotReader snapshotReader = this.snapshotStorage.openSnapshotReader();
             if (snapshotReader == null) {
-                throw new PacificaException(PacificaErrorCode.UNAVAILABLE, "can not open SnapshotReader");
+                LOGGER.info("{} do first load snapshot, but no snapshot data.", this.replica.getReplicaId());
+                return;
             }
             final FirstSnapshotLoadCallback firstSnapshotLoadCallback = new FirstSnapshotLoadCallback(snapshotReader);
             doSnapshotLoad(firstSnapshotLoadCallback, State.IDLE);

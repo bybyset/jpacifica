@@ -177,10 +177,14 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
 
     @Override
     public SnapshotReader openSnapshotReader() throws IOException {
-        final String snapshotName = getSnapshotName(this.lastSnapshotIndex);
-        final DefaultSnapshotReader snapshotReader = new DefaultSnapshotReader(this, snapshotName);
-        incRef(snapshotName);
-        return snapshotReader;
+        if (this.lastSnapshotIndex > 0) {
+            final String snapshotName = getSnapshotName(this.lastSnapshotIndex);
+            final DefaultSnapshotReader snapshotReader = new DefaultSnapshotReader(this, snapshotName);
+            incRef(snapshotName);
+            return snapshotReader;
+        }
+        // no data
+        return null;
     }
 
     @Override
