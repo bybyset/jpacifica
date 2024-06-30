@@ -46,11 +46,11 @@ public abstract class DownloadSession implements Task {
 
     private final PacificaClient pacificaClient;
     private final RpcRequest.GetFileRequest.Builder requestBuilder;
-    private final int requestTimeoutMs = DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS;
+    private int requestTimeoutMs = DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS;
     private final int readLength = DEFAULT_READ_LENGTH;
 
 
-    DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename) {
+    DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename, int requestTimeoutMs) {
         this.pacificaClient = pacificaClient;
         this.requestBuilder = RpcRequest.GetFileRequest.newBuilder()
                 .setTargetId(RpcUtil.protoReplicaId(targetId))//
@@ -58,7 +58,12 @@ public abstract class DownloadSession implements Task {
                 .setFilename(filename)//
                 .setOffset(0)//
                 .setLength(0);
+        this.requestTimeoutMs = requestTimeoutMs;
         continueDownload();
+    }
+
+    DownloadSession(PacificaClient pacificaClient, final ReplicaId targetId, final long readerId, final String filename) {
+        this(pacificaClient, targetId, readerId, filename, DEFAULT_GET_FILE_REQUEST_TIMEOUT_MS);
     }
 
     void continueDownload() {
@@ -87,8 +92,14 @@ public abstract class DownloadSession implements Task {
     void handleGetFileResponse(RpcRequest.GetFileResponse response) {
         //handle success
         try {
-            ByteString byteString = response.getData();
-            onDownload(byteString.toByteArray());
+            if (response.hasData()) {
+                ByteString byteString = response.getData();
+                onDownload(byteString.toByteArray());
+            } else {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("download file from {}, but is no data on Response. eof={}", this.requestBuilder, response.getEof());
+                }
+            }
             if (!response.getEof()) {
                 continueDownload();
             } else {
