@@ -453,6 +453,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                             .setSuccess(true)//
                             .build();
                     installSnapshotCallback.setResponse(response);
+                    onSnapshotLoadSuccess(snapshotReader.getSnapshotLogId());
                 }
                 ThreadUtil.runCallback(installSnapshotCallback, finished);
             } finally {

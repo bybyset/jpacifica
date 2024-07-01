@@ -113,7 +113,7 @@ public class DefaultSnapshotMeta {
 
     private static final byte[] HEADER = new byte[8];
 
-    static List<byte[]> encode(DefaultSnapshotMeta snapshotMeta) {
+    public static List<byte[]> encode(DefaultSnapshotMeta snapshotMeta) {
         List<byte[]> bytes = new ArrayList<>();
         bytes.add(HEADER);
         final long snapshotLogIndex = snapshotMeta.snapshotLogId.getIndex();
@@ -152,7 +152,7 @@ public class DefaultSnapshotMeta {
         return bytes;
     }
 
-    static DefaultSnapshotMeta decode(byte[] bytes) {
+    public static DefaultSnapshotMeta decode(byte[] bytes) {
         int offset = HEADER.length;
         final long snapshotLogIndex = BitUtil.getLong(bytes, offset);
         offset += Long.BYTES;

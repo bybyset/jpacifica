@@ -17,7 +17,9 @@
 
 package com.trs.pacifica.core;
 
+import com.google.protobuf.ByteString;
 import com.trs.pacifica.LogManager;
+import com.trs.pacifica.SnapshotManager;
 import com.trs.pacifica.SnapshotStorageFactory;
 import com.trs.pacifica.StateMachineCaller;
 import com.trs.pacifica.async.Callback;
@@ -25,10 +27,13 @@ import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.proto.RpcRequest;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.storage.DefaultSnapshotMeta;
 import com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage;
 import com.trs.pacifica.test.BaseStorageTest;
+import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -38,6 +43,8 @@ import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -89,6 +96,38 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
 
     private void mockPacificaClient() {
         this.pacificaClient = Mockito.mock(PacificaClient.class);
+        Mockito.doAnswer(invocation -> {
+            RpcRequest.GetFileRequest request = invocation.getArgument(0, RpcRequest.GetFileRequest.class);
+            RpcRequestFinished<RpcRequest.GetFileResponse> callback = invocation.getArgument(1, RpcRequestFinished.class);
+            RpcRequest.GetFileResponse response = null;
+            if ("_snapshot_meta".equals(request.getFilename())) {
+                DefaultSnapshotMeta defaultSnapshotMeta = DefaultSnapshotMeta.newSnapshotMeta(new LogId(1003, 1));
+                defaultSnapshotMeta.addFile("test1");
+                defaultSnapshotMeta.addFile("test2");
+                List<byte[]> bytesList = DefaultSnapshotMeta.encode(defaultSnapshotMeta);
+                ByteBuffer buffer = ByteBuffer.allocate(1024);
+                for (byte[] bytes : bytesList) {
+                    buffer.put(bytes);
+                }
+                buffer.flip();
+                response = RpcRequest.GetFileResponse.newBuilder()//
+                        .setEof(true)//
+                        .setData(ByteString.copyFrom(buffer))//
+                        .setReadLength(buffer.limit())//
+                        .build();
+            } else {
+                byte[] data = "hello".getBytes();
+                response = RpcRequest.GetFileResponse.newBuilder()//
+                        .setEof(true)//
+                        .setData(ByteString.copyFrom(data))//
+                        .setReadLength(data.length)//
+                        .build();
+            }
+            callback.setRpcResponse(response);
+            ThreadUtil.runCallback(callback, Finished.success());
+            return null;
+        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyLong());
+
     }
 
     private void mockStateMachineCaller() {
@@ -214,10 +253,40 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
 
 
     @Test
-    public void testInstallSnapshot() {
+    public void testInstallSnapshot() throws PacificaException, InterruptedException {
 
-        this.snapshotManager.installSnapshot(null, null);
+        this.snapshotManager.startup();
+        Assertions.assertEquals(new LogId(0, 0), this.snapshotManager.getLastSnapshotLodId());
 
+        RpcRequest.InstallSnapshotRequest request = RpcRequest.InstallSnapshotRequest.newBuilder()//
+                .setReaderId(1L)//
+                .setPrimaryId(RpcUtil.protoReplicaId(new ReplicaId("group1", "node1")))//
+                .setTargetId(RpcUtil.protoReplicaId(new ReplicaId("group2", "node2")))//
+                .setSnapshotLogIndex(1003)//
+                .setSnapshotLogTerm(1)//
+                .setTerm(1)//
+                .setVersion(2)//
+                .build();
+        CountDownLatch downLatch = new CountDownLatch(1);
+        AtomicReference<Finished> atomicReference = new AtomicReference<>(null);
+        SnapshotManager.InstallSnapshotCallback callback = new SnapshotManager.InstallSnapshotCallback() {
+
+            @Override
+            public void run(Finished finished) {
+                atomicReference.set(finished);
+                downLatch.countDown();
+            }
+        };
+        this.snapshotManager.installSnapshot(request, callback);
+        downLatch.await();
+        Assertions.assertTrue(atomicReference.get().isOk());
+        Assertions.assertEquals(new LogId(1003, 1), this.snapshotManager.getLastSnapshotLodId());
+        File snapshotDir = new File(this.path, "snapshot_1003");
+        File file1 = new File(snapshotDir, "test1");
+        File file2 = new File(snapshotDir, "test1");
+
+        Assertions.assertTrue(file1.exists() && file1.isFile());
+        Assertions.assertTrue(file2.exists() && file2.isFile());
 
     }
 }
