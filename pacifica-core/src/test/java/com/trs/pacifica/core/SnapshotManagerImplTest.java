@@ -26,6 +26,7 @@ import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.snapshot.storage.DefaultSnapshotMeta;
 import com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage;
 import com.trs.pacifica.test.BaseStorageTest;
 import org.junit.jupiter.api.AfterEach;
@@ -34,10 +35,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.PrimitiveIterator;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SnapshotManagerImplTest extends BaseStorageTest {
 
@@ -98,8 +102,11 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         this.snapshotStorageFactory = Mockito.mock(SnapshotStorageFactory.class);
         this.snapshotStorage = new DefaultSnapshotStorage(this.path);
         this.snapshotStorage = Mockito.spy(snapshotStorage);
-        this.snapshotStorage.load();
-        Mockito.doReturn(this.snapshotStorage).when(this.snapshotStorageFactory).newSnapshotStorage(Mockito.anyString());
+        final DefaultSnapshotStorage snapshotStorage = this.snapshotStorage;
+        Mockito.doAnswer(invocation -> {
+            snapshotStorage.load();
+            return snapshotStorage;
+        }).when(this.snapshotStorageFactory).newSnapshotStorage(Mockito.anyString());
     }
 
     private void mockFsmCallerOnSnapshotLoad() {
@@ -110,6 +117,13 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         }).when(this.stateMachineCaller).onSnapshotLoad(Mockito.any());
     }
 
+    private void mockSnapshotDir() throws IOException {
+        File snapshotDir = new File(this.path, "snapshot_" + 1003);
+        snapshotDir.mkdir();
+        DefaultSnapshotMeta meta = DefaultSnapshotMeta.newSnapshotMeta(new LogId(1003, 1));
+        File snapshotMetaFile = new File(snapshotDir, "_snapshot_meta");
+        DefaultSnapshotMeta.saveToFile(meta, snapshotMetaFile.getPath(), true);
+    }
 
     @Test
     public void testStartupOnEmpty() throws PacificaException {
@@ -118,16 +132,29 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
     }
 
     @Test
-    public void testDoSnapshot() {
+    public void testStartupOnNonEmpty() throws PacificaException, IOException {
+        mockSnapshotDir();
+        this.snapshotManager.startup();
+        Assertions.assertEquals(new LogId(1003, 1), this.snapshotManager.getLastSnapshotLodId());
+    }
+
+    @Test
+    public void testDoSnapshotEqualsLastAppliedLogIndex() throws PacificaException, InterruptedException {
+        this.snapshotManager.startup();
+        Assertions.assertEquals(new LogId(0, 0), this.snapshotManager.getLastSnapshotLodId());
+        Mockito.doReturn(0L).when(this.stateMachineCaller).getLastAppliedLogIndex();
+        CountDownLatch downLatch = new CountDownLatch(1);
+        AtomicReference<Finished> atomicReference = new AtomicReference<>(null);
         Callback callback = new Callback() {
             @Override
             public void run(Finished finished) {
-
+                atomicReference.set(finished);
+                downLatch.countDown();
             }
         };
         this.snapshotManager.doSnapshot(callback);
-
-
+        downLatch.await();
+        Assertions.assertTrue(atomicReference.get().isOk());
     }
 
     @Test

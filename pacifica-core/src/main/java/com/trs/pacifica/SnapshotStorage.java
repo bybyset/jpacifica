@@ -35,7 +35,7 @@ public interface SnapshotStorage {
      * open a SnapshotReader,
      * when the replica loading snapshot, will ask for a SnapshotReader to be opened.
      *
-     * @return
+     * @return null if not found snapshot
      * @throws IOException
      */
     SnapshotReader openSnapshotReader() throws IOException;

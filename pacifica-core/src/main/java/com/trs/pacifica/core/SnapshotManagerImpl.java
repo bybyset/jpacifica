@@ -191,7 +191,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     }
 
     private boolean isStarted() {
-        return this.state.compareTo(State.UNINITIALIZED) > 0;
+        return this.state.compareTo(State.UNINITIALIZED) < 0;
     }
 
     private void ensureStarted() {
@@ -204,10 +204,10 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
     public void doSnapshot(final Callback callback) {
         try {
             ensureStarted();
-            final int snapshotLogIndexMargin = Math.max(0, this.option.getReplicaOption().getSnapshotLogIndexMargin());
             if (STATE_UPDATER.compareAndSet(this, State.IDLE, State.SNAPSHOT_SAVING)) {
                 this.readLock.lock();
                 try {
+                    final int snapshotLogIndexMargin = Math.max(0, this.option.getReplicaOption().getSnapshotLogIndexMargin());
                     final long lastAppliedLogIndex = this.stateMachineCaller.getLastAppliedLogIndex();
                     if (lastAppliedLogIndex < this.lastSnapshotLogId.getIndex()) {
                         // Our program should not go into this code block.
