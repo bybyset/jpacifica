@@ -100,12 +100,11 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 final String storagePath = Objects.requireNonNull(option.getStoragePath(), "storage path");
                 this.snapshotStorage = this.snapshotStorageFactory.newSnapshotStorage(storagePath);
                 this.state = State.IDLE;
-                doFirstSnapshotLoad();
             }
         } finally {
             this.writeLock.unlock();
         }
-
+        doFirstSnapshotLoad();
     }
 
     @Override
@@ -251,6 +250,12 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
         }
     }
 
+    /**
+     * may not lock code blocks in any way. write.lock on method(onSnapshotLoadSuccess) will conflict
+     * @param snapshotLoadCallback
+     * @param expectState
+     * @throws PacificaException
+     */
     private void doSnapshotLoad(final StateMachineCaller.SnapshotLoadCallback snapshotLoadCallback, final State expectState) throws PacificaException {
         if (STATE_UPDATER.compareAndSet(this, expectState, State.SNAPSHOT_LOADING)) {
             try {

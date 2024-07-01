@@ -29,6 +29,7 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.storage.DefaultSnapshotMeta;
 import com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage;
 import com.trs.pacifica.test.BaseStorageTest;
+import com.trs.pacifica.util.thread.ThreadUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,6 @@ import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.PrimitiveIterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -57,6 +57,8 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
 
     private Executor downloadExecutor = Executors.newFixedThreadPool(2);
 
+    private ReplicaOption replicaOption;
+
     @BeforeEach
     public void setup() throws Exception {
         super.setup();
@@ -68,7 +70,7 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         mockPacificaClient();
         mockSnapshotStorageFactory();
         this.snapshotManager = new SnapshotManagerImpl(replica);
-        ReplicaOption replicaOption = new ReplicaOption();
+        this.replicaOption = new ReplicaOption();
         replicaOption.setDownloadSnapshotExecutor(downloadExecutor);
         SnapshotManagerImpl.Option option = new SnapshotManagerImpl.Option();
         option.setStoragePath(this.path);
@@ -93,9 +95,16 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         this.stateMachineCaller = Mockito.mock(StateMachineCaller.class);
         Mockito.doAnswer(invocation -> {
             StateMachineCaller.SnapshotLoadCallback callback = invocation.getArgument(0, StateMachineCaller.SnapshotLoadCallback.class);
-            callback.run(Finished.success());
+            ThreadUtil.runCallback(callback, Finished.success());
             return true;
         }).when(this.stateMachineCaller).onSnapshotLoad(Mockito.any());
+
+        Mockito.doAnswer(invocation -> {
+            StateMachineCaller.SnapshotSaveCallback callback = invocation.getArgument(0, StateMachineCaller.SnapshotSaveCallback.class);
+            callback.start(new LogId(1003, 1));
+            ThreadUtil.runCallback(callback, Finished.success());
+            return null;
+        }).when(this.stateMachineCaller).onSnapshotSave(Mockito.any());
 
     }
     private void mockSnapshotStorageFactory() throws PacificaException, IOException {
@@ -156,6 +165,53 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
         downLatch.await();
         Assertions.assertTrue(atomicReference.get().isOk());
     }
+
+    @Test
+    public void testDoSnapshotLessThanLastAppliedLogIndex() throws PacificaException, InterruptedException {
+        this.snapshotManager.startup();
+        Assertions.assertEquals(new LogId(0, 0), this.snapshotManager.getLastSnapshotLodId());
+        Mockito.doReturn(1003L).when(this.stateMachineCaller).getLastAppliedLogIndex();
+        CountDownLatch downLatch = new CountDownLatch(1);
+        AtomicReference<Finished> atomicReference = new AtomicReference<>(null);
+        Callback callback = new Callback() {
+            @Override
+            public void run(Finished finished) {
+                atomicReference.set(finished);
+                downLatch.countDown();
+            }
+        };
+        this.snapshotManager.doSnapshot(callback);
+        downLatch.await();
+        Assertions.assertTrue(atomicReference.get().isOk());
+        Assertions.assertEquals(new LogId(1003, 1), this.snapshotManager.getLastSnapshotLodId());
+
+    }
+
+    @Test
+    public void testDoSnapshotLogIndexMargin() throws PacificaException, InterruptedException, IOException {
+        this.replicaOption.setSnapshotLogIndexMargin(10);
+        mockSnapshotDir();
+        this.snapshotManager.startup();
+        Assertions.assertEquals(new LogId(1003, 1), this.snapshotManager.getLastSnapshotLodId());
+        Mockito.doReturn(1008L).when(this.stateMachineCaller).getLastAppliedLogIndex();
+        CountDownLatch downLatch = new CountDownLatch(1);
+        AtomicReference<Finished> atomicReference = new AtomicReference<>(null);
+        Callback callback = new Callback() {
+            @Override
+            public void run(Finished finished) {
+                atomicReference.set(finished);
+                downLatch.countDown();
+            }
+        };
+        this.snapshotManager.doSnapshot(callback);
+        downLatch.await();
+        Assertions.assertFalse(atomicReference.get().isOk());
+        Assertions.assertEquals(new LogId(1003, 1), this.snapshotManager.getLastSnapshotLodId());
+        Mockito.verify(this.logManager).onSnapshot(1003, 1);
+    }
+
+
+
 
     @Test
     public void testInstallSnapshot() {
