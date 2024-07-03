@@ -163,10 +163,10 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
                 return false;
             }
             if (this.ballotQueue.isEmpty()) {
-                return true;
+                return false;
             }
             if (endLogIndex < pendingLogIndex) {
-                return true;
+                return false;
             }
             startLogIndex = Math.max(this.pendingLogIndex, startLogIndex);
             endLogIndex = Math.min(endLogIndex, this.pendingLogIndex + this.ballotQueue.size());

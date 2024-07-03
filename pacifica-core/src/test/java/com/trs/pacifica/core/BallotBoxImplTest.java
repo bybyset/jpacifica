@@ -99,4 +99,18 @@ public class BallotBoxImplTest {
 
     }
 
+    @Test
+    public void testBallotByNoInitiateBallot() {
+        ReplicaId primary = new ReplicaId("group", "primary");
+        // not initiateBallot
+        Assertions.assertFalse(this.ballotBox.ballotBy(primary, 1004, 1004));
+    }
+
+    @Test
+    public void testBallotByLessThanPendingLogIndex() {
+        ReplicaId primary = new ReplicaId("group", "primary");
+        // not initiateBallot
+        Assertions.assertFalse(this.ballotBox.ballotBy(primary, 1003, 1003));
+    }
+
 }
