@@ -19,6 +19,7 @@ package com.trs.pacifica.core;
 
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.util.OnlyForTest;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -43,6 +44,10 @@ public class CacheReplicaGroup implements ReplicaGroup {
         this.cache = null;
     }
 
+    @OnlyForTest
+    ReplicaGroup getInnerCache() {
+        return this.cache;
+    }
 
     protected ReplicaGroup getCache() {
         ReplicaGroup replicaGroup = this.cache;
