@@ -1237,21 +1237,24 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     class PrimaryAppendLogEntriesCallback extends LogManager.AppendLogEntriesCallback {
 
-        private final List<Callback> failureCallbacks;
+        private final List<Callback> callbacks;
 
-        PrimaryAppendLogEntriesCallback(List<Callback> failureCallbacks) {
-            this.failureCallbacks = failureCallbacks;
+        PrimaryAppendLogEntriesCallback(List<Callback> callbacks) {
+            this.callbacks = callbacks;
         }
 
 
         @Override
         public void run(final Finished finished) {
+            // When you've reached this point,
+            // it means that the Primary has persisted the op-log, or failure
+            final long startLogIndex = this.getFirstLogIndex();
             int appendCount = this.getAppendCount();
             int index = 0;
-            for (; index < this.getAppendCount(); index++) {
-                final Callback callback = this.failureCallbacks.get(index);
+            for (; index < appendCount; index++) {
+                final Callback callback = this.callbacks.get(index);
                 //initiate ballot to ballotBox
-                if (!ReplicaImpl.this.ballotBox.initiateBallot(ReplicaImpl.this.replicaGroup)) {
+                if (!ReplicaImpl.this.ballotBox.initiateBallot(startLogIndex + index, ReplicaImpl.this.replicaGroup)) {
                     ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.INTERNAL, String.format("replica=%s failed to initiate ballot", ReplicaImpl.this.replicaId))));
                     continue;
                 }
@@ -1260,12 +1263,11 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 }
             }
             //
-            final long startLogIndex = this.getFirstLogIndex();
             final long endLogIndex = startLogIndex + appendCount - 1;
             ReplicaImpl.this.senderGroup.continueAppendLogEntry(endLogIndex);
             ReplicaImpl.this.ballotBox.ballotBy(replicaId, startLogIndex, endLogIndex);
-            for (; index < this.failureCallbacks.size(); index++) {
-                Callback callback = this.failureCallbacks.get(index);
+            for (; index < this.callbacks.size(); index++) {
+                Callback callback = this.callbacks.get(index);
                 ThreadUtil.runCallback(callback, finished);
             }
         }

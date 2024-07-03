@@ -75,7 +75,7 @@ public class BallotBoxImplTest {
         Mockito.doReturn(1L).when(replicaGroup).getPrimaryTerm();
         Mockito.doReturn("group").when(replicaGroup).getGroupName();
 
-        Assertions.assertTrue(this.ballotBox.initiateBallot(replicaGroup));
+        Assertions.assertTrue(this.ballotBox.initiateBallot(1004, replicaGroup));
         List<BallotBoxImpl.Ballot> ballots = this.ballotBox.getBallotQueue();
         Assertions.assertEquals(1, ballots.size());
         BallotBoxImpl.Ballot ballot = ballots.get(0);

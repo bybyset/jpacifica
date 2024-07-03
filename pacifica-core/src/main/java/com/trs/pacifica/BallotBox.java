@@ -42,10 +42,11 @@ public interface BallotBox {
     /**
      * initiate ballot for the operation.
      *
+     * @param logIndex     the log index at initiate ballot
      * @param replicaGroup replica group
      * @return true if success
      */
-    boolean initiateBallot(final ReplicaGroup replicaGroup);
+    boolean initiateBallot(final long logIndex, final ReplicaGroup replicaGroup);
 
     /**
      * cancel ballot of the replicaId

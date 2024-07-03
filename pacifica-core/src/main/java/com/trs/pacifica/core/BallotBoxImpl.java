@@ -84,13 +84,16 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     }
 
     @Override
-    public boolean initiateBallot(ReplicaGroup replicaGroup) {
+    public boolean initiateBallot(final long logIndex, ReplicaGroup replicaGroup) {
         final ReplicaId primary = replicaGroup.getPrimary();
         final List<ReplicaId> secondaryList = replicaGroup.listSecondary();
         final Ballot ballot = new Ballot(primary);
         secondaryList.forEach(replicaId -> ballot.addGranter(replicaId));
         this.writeLock.lock();
         try {
+            if (logIndex != this.pendingLogIndex + ballotQueue.size()) {
+                return false;
+            }
             this.ballotQueue.add(ballot);
             return true;
         } finally {

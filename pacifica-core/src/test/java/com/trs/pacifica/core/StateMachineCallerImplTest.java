@@ -100,7 +100,6 @@ public class StateMachineCallerImplTest {
 
     @Test
     public void testCommitAtForNoLogEntry() throws InterruptedException {
-        this.callbacks.add(null);
         LogId commitPoint = new LogId(5L, 1L);
         Mockito.when(this.logManager.getLogEntryAt(commitPoint.getIndex())).thenReturn(null);
         Mockito.when(this.logManager.getLogTermAt(commitPoint.getIndex())).thenReturn(commitPoint.getTerm());
@@ -116,7 +115,6 @@ public class StateMachineCallerImplTest {
 
     @Test
     public void testCommitAtForStateMachineError() throws Exception {
-        this.callbacks.add(null);
         LogId commitPoint = new LogId(5L, 1L);
         final LogEntry log = new LogEntry(commitPoint, LogEntry.Type.OP_DATA);
         Mockito.when(this.logManager.getLogEntryAt(commitPoint.getIndex())).thenReturn(log);

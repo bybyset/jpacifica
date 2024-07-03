@@ -95,7 +95,11 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
                     throw new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
                 }
                 this.curLogEntry = logEntry;
-                this.curCallback = this.callbackList.get((int) (currentLogIndex - startLogIndex));
+                if (callbackList.isEmpty()) {
+                    this.curCallback = null;
+                } else {
+                    this.curCallback = this.callbackList.get((int) (currentLogIndex - startLogIndex));
+                }
                 this.applyingIndex.incrementAndGet();
             } catch (Throwable e) {
                 if (e instanceof PacificaException) {
