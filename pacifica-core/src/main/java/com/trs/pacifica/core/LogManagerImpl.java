@@ -347,8 +347,9 @@ public class LogManagerImpl implements LogManager, LifeCycle<LogManagerImpl.Opti
         }
     }
 
-    @OnlyForTest
-    long getLastLogIndex() {
+    @Override
+    public long getLastLogIndex() {
+
         return this.lastLogIndex;
     }
 

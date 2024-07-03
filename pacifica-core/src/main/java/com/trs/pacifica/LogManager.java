@@ -56,6 +56,7 @@ public interface LogManager {
 
     /**
      * get term of LogId at log index
+     *
      * @param logIndex
      * @return term of LogId at logIndex.
      * @return 0 if logIndex <= 0 or not found LogEntry.
@@ -63,18 +64,26 @@ public interface LogManager {
     long getLogTermAt(final long logIndex);
 
     /**
-     * get first log id
+     * Get first log id on disk
      *
      * @return LogId(0, 0) if nothing
      */
     LogId getFirstLogId();
 
     /**
-     * get last log id
+     * Get last log id on disk
      *
      * @return LogId(0, 0) if nothing
      */
     LogId getLastLogId();
+
+    /**
+     * Get last log index of prepare queue.
+     * It is possible to merge it into the snapshot.
+     *
+     * @return
+     */
+    long getLastLogIndex();
 
 
     /**

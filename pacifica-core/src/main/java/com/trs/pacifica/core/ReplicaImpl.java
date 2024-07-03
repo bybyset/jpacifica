@@ -246,7 +246,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.snapshotManager = new SnapshotManagerImpl(this);
                 this.stateMachineCaller = new StateMachineCallerImpl(this);
                 this.senderGroup = new SenderGroupImpl(this, this.pacificaClient);
-                this.ballotBox = new BallotBoxImpl();
+                this.ballotBox = new BallotBoxImpl(this);
                 initPacificaClient(option);
                 initApplyExecutor(option);
                 initLogManager(option);

@@ -37,10 +37,7 @@ import com.trs.pacifica.rpc.ExecutorRequestFinished;
 import com.trs.pacifica.rpc.RpcRequestFinishedAdapter;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.snapshot.SnapshotReader;
-import com.trs.pacifica.util.RpcLogUtil;
-import com.trs.pacifica.util.RpcUtil;
-import com.trs.pacifica.util.SystemPropertyUtil;
-import com.trs.pacifica.util.TimeUtils;
+import com.trs.pacifica.util.*;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import com.trs.pacifica.util.timer.RepeatedTimer;
 import com.trs.pacifica.util.timer.Timer;
@@ -147,6 +144,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 LOGGER.debug("{} is shutdown.", this);
             }
         }
+    }
+
+    @OnlyForTest
+    State getState() {
+        return this.state;
+    }
+
+    @OnlyForTest
+    long getNextLogIndex() {
+        return this.nextLogIndex;
     }
 
     private void updateLastResponseTime() {
@@ -332,7 +339,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
 
-    private void doSendProbeRequest() {
+    void doSendProbeRequest() {
         changeState(State.PROBE);
         sendEmptyLogEntries(false);
     }
@@ -388,7 +395,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
     }
 
-    private void doSendHeartbeat() {
+    void doSendHeartbeat() {
         sendEmptyLogEntries(true);
     }
 

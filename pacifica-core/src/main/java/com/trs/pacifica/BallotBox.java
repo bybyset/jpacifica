@@ -25,56 +25,72 @@ import javax.annotation.Nullable;
 import java.util.concurrent.locks.Lock;
 
 /**
+ * <p>
  * ballot box, managed by primary replica.
+ * After receiving all votes from the Secondary replicas,
+ * move forward the commit point, which is the callback {@link StateMachineCaller#commitAt(long)}
+ * </p>
+ * <p>
+ * Quorum: N < W + R
+ * <li> W = N </li>
+ * <li> R = 1 </li>
+ * </p>
  */
 public interface BallotBox {
 
 
     /**
      * initiate ballot for the operation.
+     *
      * @param replicaGroup replica group
      * @return true if success
      */
-    public boolean initiateBallot(final ReplicaGroup replicaGroup);
+    boolean initiateBallot(final ReplicaGroup replicaGroup);
 
     /**
      * cancel ballot of the replicaId
+     *
      * @param replicaId
      * @return
      */
-    public boolean cancelBallot(final ReplicaId replicaId);
+    boolean cancelBallot(final ReplicaId replicaId);
 
 
     /**
      * recover ballot of the replicaId from log index
+     *
      * @param replicaId
      * @param startLogIndex
      * @return
      */
-    public boolean recoverBallot(final ReplicaId replicaId, final long startLogIndex);
+    boolean recoverBallot(final ReplicaId replicaId, final long startLogIndex);
 
 
     /**
      * called by primary.
      * receive the ballots of replicaId, [startLogIndex, endLogIndex]
      * When the quorum is satisfied, we commit
+     *
      * @param replicaId
      * @param startLogIndex
      * @param endLogIndex
-     * @throws IllegalArgumentException if startLogIndex > endLogIndex
      * @return true is success
+     * @throws IllegalArgumentException if startLogIndex > endLogIndex
      */
-    public boolean ballotBy(final ReplicaId replicaId, final long startLogIndex, final long endLogIndex);
+    boolean ballotBy(final ReplicaId replicaId, final long startLogIndex, final long endLogIndex);
 
 
-    public Lock getCommitLock();
+    /**
+     * @return
+     */
+    Lock getCommitLock();
 
     /**
      * get last committed log index
      *
      * @return
      */
-    public long getLastCommittedLogIndex();
+    long getLastCommittedLogIndex();
 
 
 }
