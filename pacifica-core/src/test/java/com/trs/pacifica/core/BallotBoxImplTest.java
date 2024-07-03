@@ -17,7 +17,6 @@
 
 package com.trs.pacifica.core;
 
-import com.trs.pacifica.LogManager;
 import com.trs.pacifica.Replica;
 import com.trs.pacifica.StateMachineCaller;
 import com.trs.pacifica.model.ReplicaGroup;
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BallotBoxImplTest {
@@ -37,8 +37,14 @@ public class BallotBoxImplTest {
 
     private StateMachineCaller stateMachineCaller;
 
+    private ReplicaGroup replicaGroup;
+
     @BeforeEach
     public void setup() {
+
+        replicaGroup = Mockito.mock(ReplicaGroup.class);
+        mockReplicaGroup();
+
         this.stateMachineCaller = Mockito.mock(StateMachineCaller.class);
         Mockito.doReturn(1003L).when(this.stateMachineCaller).getLastCommittedLogIndex();
         Replica replica = Mockito.mock(Replica.class);
@@ -57,9 +63,7 @@ public class BallotBoxImplTest {
         this.ballotBox.shutdown();
     }
 
-    @Test
-    public void testInitiateBallotAndBallotBy() {
-        Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
+    private void mockReplicaGroup() {
         ReplicaId primary = new ReplicaId("group", "primary");
         ReplicaId secondary1 = new ReplicaId("group", "secondary1");
         ReplicaId secondary2 = new ReplicaId("group", "secondary2");
@@ -68,12 +72,27 @@ public class BallotBoxImplTest {
         secondaries.add(secondary1);
         secondaries.add(secondary2);
         secondaries.add(secondary3);
-        ReplicaGroup replicaGroup = Mockito.mock(ReplicaGroup.class);
         Mockito.doReturn(primary).when(replicaGroup).getPrimary();
         Mockito.doReturn(secondaries).when(replicaGroup).listSecondary();
         Mockito.doReturn(1L).when(replicaGroup).getVersion();
         Mockito.doReturn(1L).when(replicaGroup).getPrimaryTerm();
         Mockito.doReturn("group").when(replicaGroup).getGroupName();
+    }
+
+    @Test
+    public void testInitiateBallot() {
+        Assertions.assertFalse(this.ballotBox.initiateBallot(1005, replicaGroup));
+        Assertions.assertFalse(this.ballotBox.initiateBallot(1003, replicaGroup));
+    }
+
+    @Test
+    public void testInitiateBallotAndBallotBy() {
+        ReplicaId primary = new ReplicaId("group", "primary");
+        ReplicaId secondary1 = new ReplicaId("group", "secondary1");
+        ReplicaId secondary2 = new ReplicaId("group", "secondary2");
+        ReplicaId secondary3 = new ReplicaId("group", "secondary3");
+
+        Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
 
         Assertions.assertTrue(this.ballotBox.initiateBallot(1004, replicaGroup));
         List<BallotBoxImpl.Ballot> ballots = this.ballotBox.getBallotQueue();
@@ -111,6 +130,57 @@ public class BallotBoxImplTest {
         ReplicaId primary = new ReplicaId("group", "primary");
         // not initiateBallot
         Assertions.assertFalse(this.ballotBox.ballotBy(primary, 1003, 1003));
+    }
+
+    @Test
+    public void testRecoverBallot() {
+        ReplicaId candidate = new ReplicaId("group", "candidate");
+        long logIndex = 1004;
+        for (; logIndex < 1009; logIndex++) {
+            Assertions.assertTrue(this.ballotBox.initiateBallot(logIndex, this.replicaGroup));
+        }
+        Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
+        Assertions.assertEquals(1003, this.ballotBox.getLastCommittedLogIndex());
+        LinkedList<BallotBoxImpl.Ballot> ballots =  this.ballotBox.getBallotQueue();
+        Assertions.assertEquals(5, ballots.size());
+        for (BallotBoxImpl.Ballot ballot : ballots) {
+            Assertions.assertEquals(4, ballot.getQuorum());
+        }
+        this.ballotBox.recoverBallot(candidate, 1004);
+
+        Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
+        Assertions.assertEquals(1003, this.ballotBox.getLastCommittedLogIndex());
+        Assertions.assertEquals(5, ballots.size());
+
+        for (BallotBoxImpl.Ballot ballot : ballots) {
+            Assertions.assertEquals(5, ballot.getQuorum());
+        }
+
+    }
+
+    @Test
+    public void testCancelBallot() {
+        ReplicaId secondary2 = new ReplicaId("group", "secondary2");
+        long logIndex = 1004;
+        for (; logIndex < 1009; logIndex++) {
+            Assertions.assertTrue(this.ballotBox.initiateBallot(logIndex, this.replicaGroup));
+        }
+        Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
+        Assertions.assertEquals(1003, this.ballotBox.getLastCommittedLogIndex());
+        LinkedList<BallotBoxImpl.Ballot> ballots =  this.ballotBox.getBallotQueue();
+        Assertions.assertEquals(5, ballots.size());
+        for (BallotBoxImpl.Ballot ballot : ballots) {
+            Assertions.assertEquals(4, ballot.getQuorum());
+        }
+        this.ballotBox.cancelBallot(secondary2);
+        Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
+        Assertions.assertEquals(1003, this.ballotBox.getLastCommittedLogIndex());
+        Assertions.assertEquals(5, ballots.size());
+
+        for (BallotBoxImpl.Ballot ballot : ballots) {
+            Assertions.assertEquals(3, ballot.getQuorum());
+        }
+
     }
 
 }
