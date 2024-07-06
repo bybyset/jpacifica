@@ -39,6 +39,7 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.client.impl.DefaultPacificaClient;
 import com.trs.pacifica.rpc.node.EndpointFactory;
+import com.trs.pacifica.sender.BaseOnCaughtUp;
 import com.trs.pacifica.sender.Sender;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
@@ -896,6 +897,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                     try {
                         alignReplicaGroupVersion(higherVersion);
                     } catch (Throwable e) {
+                        //ignore
                     }
                 }
         );
@@ -1211,7 +1213,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     }
 
-    class CandidateCaughtUpCallback extends Sender.OnCaughtUp {
+    class CandidateCaughtUpCallback extends BaseOnCaughtUp {
 
         private final ReplicaId recoverId;
         private final RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback;
@@ -1228,11 +1230,15 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 LOGGER.error("Failed to recover. replica_id={}.", recoverId, finished.error());
                 return;
             }
-            //add secondary
-
-            //inc ballot
-
-
+            long version = this.getGroupVersion();
+            RpcRequest.ReplicaRecoverResponse response = RpcRequest.ReplicaRecoverResponse.newBuilder()//
+                    .setSuccess(true)//
+                    .setVersion(version)//
+                    .build();
+            callback.setRpcResponse(response);
+            ThreadUtil.runCallback(callback, Finished.success());
+            LOGGER.info("{} success to caught up, caught_up_log_index={}", recoverId, this.getCaughtUpLogIndex());
+            asyncAlignReplicaGroupVersion(version);
         }
     }
 

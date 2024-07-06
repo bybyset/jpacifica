@@ -255,6 +255,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             }
             this.type = SenderType.Secondary;
             onCaughtUp.setCaughtUpLogIndex(caughtUpLogIndex);
+            onCaughtUp.setGroupVersion(version + 1); //
             ThreadUtil.runCallback(onCaughtUp, Finished.success());
             return true;
         } catch (Throwable throwable) {
@@ -784,7 +785,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         this.option.getReplica().onReceiveHigherTerm(higherTerm);
     }
 
-    class OnCaughtUpTimeoutAble extends OnCaughtUp {
+    class OnCaughtUpTimeoutAble implements OnCaughtUp {
 
         private final OnCaughtUp wrapper;
 
@@ -802,7 +803,21 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         @Override
         public void setCaughtUpLogIndex(long logIndex) {
             wrapper.setCaughtUpLogIndex(logIndex);
-            super.setCaughtUpLogIndex(logIndex);
+        }
+
+        @Override
+        public long getCaughtUpLogIndex() {
+            return wrapper.getCaughtUpLogIndex();
+        }
+
+        @Override
+        public long getGroupVersion() {
+            return wrapper.getGroupVersion();
+        }
+
+        @Override
+        public void setGroupVersion(long groupVersion) {
+            wrapper.setGroupVersion(groupVersion);
         }
 
         @Override

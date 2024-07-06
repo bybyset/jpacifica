@@ -17,24 +17,29 @@
 
 package com.trs.pacifica.rpc.node;
 
-import com.trs.pacifica.spi.SPI;
+import com.trs.pacifica.spi.JPacificaServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+public class EndpointFactoryHolder {
 
-@SPI
-public class DefaultEndpointFactory implements EndpointFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFactoryHolder.class);
 
-    private final Map<String, Endpoint> nodeIdToEndpointMap = new ConcurrentHashMap<>();
+    private static final EndpointFactory ENDPOINT_FACTORY;
 
-    @Override
-    public Endpoint getEndpoint(String nodeId) {
-        return nodeIdToEndpointMap.get(nodeId);
+    static {
+        ENDPOINT_FACTORY = JPacificaServiceLoader//
+                .load(EndpointFactory.class)//
+                .first();
+        LOGGER.info("use EndpointFactory={}", ENDPOINT_FACTORY.getClass().getName());
     }
 
-    public void registerEndpoint(String nodeId, Endpoint endpoint) {
-        this.nodeIdToEndpointMap.put(nodeId, endpoint);
+
+    private EndpointFactoryHolder() {
     }
 
 
+    public static final EndpointFactory getInstance() {
+        return ENDPOINT_FACTORY;
+    }
 }

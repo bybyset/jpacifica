@@ -15,26 +15,34 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc.node;
+package com.trs.pacifica.core;
 
-import com.trs.pacifica.spi.SPI;
+import com.trs.pacifica.model.ReplicaId;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+public class ReplicaImplTest {
 
-@SPI
-public class DefaultEndpointFactory implements EndpointFactory {
 
-    private final Map<String, Endpoint> nodeIdToEndpointMap = new ConcurrentHashMap<>();
+    private ReplicaImpl replica;
 
-    @Override
-    public Endpoint getEndpoint(String nodeId) {
-        return nodeIdToEndpointMap.get(nodeId);
+
+    @BeforeEach
+    public void setup() {
+        replica = new ReplicaImpl(new ReplicaId("test_group", "test_node"));
+        this.replica = Mockito.spy(this.replica);
+
+
     }
 
-    public void registerEndpoint(String nodeId, Endpoint endpoint) {
-        this.nodeIdToEndpointMap.put(nodeId, endpoint);
+    @AfterEach
+    public void shutdown() {
+
     }
+
+
+
 
 
 }

@@ -15,26 +15,30 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc.node;
+package com.trs.pacifica.sender;
 
-import com.trs.pacifica.spi.SPI;
+public abstract class BaseOnCaughtUp implements Sender.OnCaughtUp {
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-@SPI
-public class DefaultEndpointFactory implements EndpointFactory {
-
-    private final Map<String, Endpoint> nodeIdToEndpointMap = new ConcurrentHashMap<>();
+    private long groupVersion = -1L;
+    private long caughtUpLogIndex = -1L;
 
     @Override
-    public Endpoint getEndpoint(String nodeId) {
-        return nodeIdToEndpointMap.get(nodeId);
+    public void setCaughtUpLogIndex(long caughtUpLogIndex) {
+        this.caughtUpLogIndex = caughtUpLogIndex;
     }
 
-    public void registerEndpoint(String nodeId, Endpoint endpoint) {
-        this.nodeIdToEndpointMap.put(nodeId, endpoint);
+    @Override
+    public long getCaughtUpLogIndex() {
+        return this.caughtUpLogIndex;
     }
 
+    @Override
+    public long getGroupVersion() {
+        return this.groupVersion;
+    }
 
+    @Override
+    public void setGroupVersion(long groupVersion) {
+        this.groupVersion = groupVersion;
+    }
 }

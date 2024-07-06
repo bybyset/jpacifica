@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.sender;
 
+import com.trs.pacifica.Replica;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaException;
 
@@ -80,17 +81,15 @@ public interface Sender {
     void shutdown() throws PacificaException;
 
 
-    static abstract class OnCaughtUp implements Callback {
+    static interface OnCaughtUp extends Callback {
 
-        private long caughtUpLogIndex = -1L;
+        public void setCaughtUpLogIndex(long logIndex);
 
-        public void setCaughtUpLogIndex(long logIndex) {
-            this.caughtUpLogIndex = logIndex;
-        }
+        public long getCaughtUpLogIndex();
 
-        public long getCaughtUpLogIndex() {
-            return caughtUpLogIndex;
-        }
+        public long getGroupVersion();
+
+        public void setGroupVersion(long groupVersion);
     }
 
 

@@ -132,6 +132,7 @@ public class SenderImplTest {
     private void mockConfigurationClient() {
         Mockito.doReturn(true).when(this.configurationClient).addSecondary(Mockito.anyLong(), Mockito.any());
     }
+
     private void mockBallotBox() {
         Lock lock = new ReentrantLock();
         Mockito.doReturn(lock).when(this.ballotBox).getCommitLock();
@@ -143,6 +144,7 @@ public class SenderImplTest {
     private void mockStateMachineCaller() {
         Mockito.doReturn(test_commitPoint).when(this.stateMachineCaller).getLastAppliedLogIndex();
     }
+
     private void mockReplicaGroup() {
         Mockito.doReturn(test_term).when(this.replicaGroup).getPrimaryTerm();
         Mockito.doReturn(test_version).when(this.replicaGroup).getVersion();
@@ -216,8 +218,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleAppendLogEntryResponseSuccess() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
@@ -236,8 +242,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleAppendLogEntryResponseError() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
@@ -252,8 +262,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleAppendLogEntryResponseFailureTermMismatch() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
@@ -270,8 +284,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleAppendLogEntryResponseFailureLogMismatch1() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
@@ -288,8 +306,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleAppendLogEntryResponseFailureLogMismatch2() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
@@ -310,8 +332,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleInstallSnapshotResponseSuccess() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         long snapshotLogIndex = 1000;
@@ -333,8 +359,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleInstallSnapshotResponseError() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         RpcRequest.InstallSnapshotRequest request = RpcRequest.InstallSnapshotRequest.newBuilder()
@@ -345,8 +375,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleInstallSnapshotResponseFailureTermMismatch() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         long snapshotLogIndex = 1000;
@@ -367,8 +401,12 @@ public class SenderImplTest {
 
     @Test
     public void testSecondaryHandleInstallSnapshotResponseFailure() throws PacificaException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
         this.sender.startup();
         long snapshotLogIndex = 1000;
@@ -424,12 +462,16 @@ public class SenderImplTest {
 
     @Test
     public void testWaitCaughtUpTimeout() throws PacificaException, InterruptedException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.startup();
         final AtomicReference<Finished> ref = new AtomicReference<>(null);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        Sender.OnCaughtUp onCaughtUp = new Sender.OnCaughtUp() {
+        Sender.OnCaughtUp onCaughtUp = new BaseOnCaughtUp() {
             @Override
             public void run(Finished finished) {
                 ref.set(finished);
@@ -449,12 +491,16 @@ public class SenderImplTest {
 
     @Test
     public void testWaitCaughtUpSuccess() throws PacificaException, InterruptedException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.startup();
         final AtomicReference<Finished> ref = new AtomicReference<>(null);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        Sender.OnCaughtUp onCaughtUp = new Sender.OnCaughtUp() {
+        Sender.OnCaughtUp onCaughtUp = new BaseOnCaughtUp() {
             @Override
             public void run(Finished finished) {
                 ref.set(finished);
@@ -474,12 +520,16 @@ public class SenderImplTest {
 
     @Test
     public void testNotifyOnCaughtUp() throws PacificaException, InterruptedException {
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
-        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {
+            return null;
+        }).when(this.sender).sendProbeRequest();
         this.sender.startup();
         final AtomicReference<Finished> ref = new AtomicReference<>(null);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        Sender.OnCaughtUp onCaughtUp = new Sender.OnCaughtUp() {
+        Sender.OnCaughtUp onCaughtUp = new BaseOnCaughtUp() {
             @Override
             public void run(Finished finished) {
                 ref.set(finished);
@@ -496,8 +546,6 @@ public class SenderImplTest {
         Assertions.assertEquals(lastLogIndex, onCaughtUp.getCaughtUpLogIndex());
 
     }
-
-
 
 
     RpcRequest.AppendEntriesRequest.Builder mockAppendEntriesRequestBuilder() {

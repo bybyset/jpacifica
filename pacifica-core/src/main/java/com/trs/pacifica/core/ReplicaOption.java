@@ -28,6 +28,7 @@ import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.EndpointFactory;
+import com.trs.pacifica.rpc.node.EndpointFactoryHolder;
 import com.trs.pacifica.util.timer.TimerFactory;
 import com.trs.pacifica.util.timer.TimerFactoryHolder;
 
@@ -122,7 +123,7 @@ public class ReplicaOption {
 
     private StateMachine stateMachine;
 
-    private EndpointFactory endpointFactory;
+    private EndpointFactory endpointFactory = EndpointFactoryHolder.getInstance();
 
     private RpcClient rpcClient;
 
