@@ -137,7 +137,7 @@ public class SnapshotManagerImpl implements SnapshotManager, LifeCycle<SnapshotM
                 if (installLogId.compareTo(this.lastSnapshotLogId) < 0) {
                     //installed
                     LOGGER.warn("{} receive InstallSnapshotRequest({}), but has been installed. local_snapshot_log_id={}",
-                            replica.getReplicaId(), RpcLogUtil.toLogString(installSnapshotRequest), this.lastSnapshotLogId);
+                            replica.getReplicaId(), RpcLogUtil.toLogInfo(installSnapshotRequest), this.lastSnapshotLogId);
                     throw new PacificaException(PacificaErrorCode.INTERNAL, "has been installed.");
                 }
             } finally {

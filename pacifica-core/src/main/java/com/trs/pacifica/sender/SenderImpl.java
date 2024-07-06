@@ -156,6 +156,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         return this.nextLogIndex;
     }
 
+    @OnlyForTest
+    OnCaughtUp getOnCaughtUp() {
+        return this.caughtUpRef.get();
+    }
+
     private void updateLastResponseTime() {
         this.lastResponseTime = TimeUtils.monotonicMs();
     }
@@ -213,11 +218,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
 
-    private void notifyOnCaughtUp(final long lastLogIndex) {
+    void notifyOnCaughtUp(final long lastLogIndex) {
         doNotifyOnCaughtUp(Finished.success(), lastLogIndex);
     }
 
-    private void notifyOnCaughtUp(Throwable failure) {
+    void notifyOnCaughtUp(Throwable failure) {
         doNotifyOnCaughtUp(Finished.failure(failure), -1L);
     }
 
@@ -231,7 +236,12 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             return false;
         }
         try {
-            if (caughtUpLogIndex < this.option.getBallotBox().getLastCommittedLogIndex()) {
+            final long lastCommittedLogIndex = this.option.getBallotBox().getLastCommittedLogIndex();
+            if (caughtUpLogIndex < lastCommittedLogIndex) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("{} not caught up, but caught_up_log_index={} less than last_committed_log_index={}.",
+                            this, caughtUpLogIndex, lastCommittedLogIndex);
+                }
                 return false;
             }
             final long version = this.option.getReplicaGroup().getVersion();
@@ -241,7 +251,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             }
             // join ballot
             if (!ballotBox.recoverBallot(toId, caughtUpLogIndex)) {
-                throw new PacificaException(PacificaErrorCode.CONF_CLUSTER, "Failed to join ballot.");
+                throw new PacificaException(PacificaErrorCode.INTERNAL, "Failed to join ballot.");
             }
             this.type = SenderType.Secondary;
             onCaughtUp.setCaughtUpLogIndex(caughtUpLogIndex);
@@ -249,6 +259,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             return true;
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(onCaughtUp, Finished.failure(throwable));
+            LOGGER.error("{} failed to do caught up.", this, throwable);
         } finally {
             commitLock.unlock();
         }
@@ -515,7 +526,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
      * @param isHeartbeat    true if heartbeat request
      * @return true if success
      */
-    private boolean fillCommonRequest(final RpcRequest.AppendEntriesRequest.Builder requestBuilder, long prevLogIndex, final boolean isHeartbeat) {
+    boolean fillCommonRequest(final RpcRequest.AppendEntriesRequest.Builder requestBuilder, long prevLogIndex, final boolean isHeartbeat) {
         if (prevLogIndex < 0) {
             return false;
         }
@@ -605,7 +616,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
 
     boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, @Nullable RpcRequest.AppendEntriesResponse response) {
         if (!finished.isOk()) {
-            LOGGER.warn("The Sender={} receive failure for request={}. Wait and try to send again", this, RpcUtil.toLogInfo(request), finished.error());
+            LOGGER.warn("The Sender={} receive failure for request={}. Wait and try to send again", this, RpcLogUtil.toLogInfo(request), finished.error());
             this.blockUntilTimeout();
             return false;
         }
@@ -614,7 +625,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             // failure
             // 1: receive a larger term
             if (response.getTerm() > request.getTerm()) {
-                LOGGER.error("The Sender={} receive failure response={} for request={}.  ", this, RpcUtil.toLogInfo(response), RpcUtil.toLogInfo(request));
+                LOGGER.error("The Sender={} receive failure response={} for request={}.  ", this, RpcLogUtil.toLogInfo(response), RpcLogUtil.toLogInfo(request));
                 this.shutdownAndCheckTerm(response.getTerm());
                 return false;
             }
@@ -630,7 +641,14 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 }
             }
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The Sender={} receive failure response={} for request={}. The probe will continue forward ", this, RpcUtil.toLogInfo(response), RpcUtil.toLogInfo(request));
+                LOGGER.debug("The Sender={} receive failure response={} for request={}. The probe will continue forward ",
+                        this, RpcLogUtil.toLogInfo(response), RpcLogUtil.toLogInfo(request));
+            }
+            if (response.hasCommitPoint() && response.getCommitPoint() > this.nextLogIndex) {
+                //TODO That's not going to happen,
+                // but we're still going to log it, because I'm not confident.
+                LOGGER.error("The Sender={} receive failure response={} for request={}. commit_point={} of target greater than next_log_index={}",
+                        this, RpcLogUtil.toLogInfo(response), RpcLogUtil.toLogInfo(request), response.getCommitPoint(), this.nextLogIndex);
             }
             this.sendProbeRequest();
             return false;
@@ -648,31 +666,40 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             notifyOnCaughtUp(lastLogIndex);
         }
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The Sender={} receive success response={} for request={}.", this, RpcUtil.toLogInfo(response), RpcUtil.toLogInfo(request));
+            LOGGER.debug("The Sender={} receive success response={} for request={}.", this, RpcLogUtil.toLogInfo(response), RpcLogUtil.toLogInfo(request));
         }
         return true;
     }
 
-    private boolean handleInstallSnapshotResponse(final RpcRequest.InstallSnapshotRequest request, Finished finished, RpcRequest.InstallSnapshotResponse response) {
+    boolean handleInstallSnapshotResponse(final RpcRequest.InstallSnapshotRequest request, Finished finished, RpcRequest.InstallSnapshotResponse response) {
         try {
             if (!finished.isOk()) {
-                LOGGER.warn("InstallSnapshotRequest({}). Receive response but error, we will block until timeout.", RpcLogUtil.toLogString(request), finished.error());
+                LOGGER.warn("{} InstallSnapshotRequest({}). but An exception has occurred, we will block until timeout.",
+                        this, RpcLogUtil.toLogInfo(request), finished.error());
                 blockUntilTimeout();
                 return false;
             }
+            assert response != null;
             if (!response.getSuccess()) {
-                LOGGER.warn("InstallSnapshotRequest({}). Receive response but failure, we will block until timeout.", RpcLogUtil.toLogString(request));
+                // term mismatch
+                if (response.getTerm() > request.getTerm()) {
+                    LOGGER.error("{} InstallSnapshotRequest({}). Receive Failed Response({}), we will shutdown and check term",
+                            this, RpcLogUtil.toLogInfo(request), RpcLogUtil.toLogInfo(response));
+                    this.shutdownAndCheckTerm(response.getTerm());
+                    return false;
+                }
+                LOGGER.warn("{} InstallSnapshotRequest({}). Receive Failed Response({}), we will block until timeout.",
+                        this, RpcLogUtil.toLogInfo(request), RpcLogUtil.toLogInfo(response));
                 blockUntilTimeout();
                 return false;
             }
             //success
             this.nextLogIndex = request.getSnapshotLogIndex() + 1;
-            LOGGER.info("InstallSnapshotRequest({}), Receive success response.", RpcLogUtil.toLogString(request));
+            LOGGER.info("InstallSnapshotRequest({}), Receive success response.", RpcLogUtil.toLogInfo(request));
             return true;
         } finally {
             releaseSnapshotReader();
         }
-
     }
 
 
@@ -770,6 +797,12 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             this.timeoutFuture = option.getSenderScheduler().schedule(() -> {
                 this.run(Finished.failure(new PacificaException(PacificaErrorCode.TIMEOUT, String.format("%s caught up time out.", toId))));
             }, timeout, timeUnit);
+        }
+
+        @Override
+        public void setCaughtUpLogIndex(long logIndex) {
+            wrapper.setCaughtUpLogIndex(logIndex);
+            super.setCaughtUpLogIndex(logIndex);
         }
 
         @Override

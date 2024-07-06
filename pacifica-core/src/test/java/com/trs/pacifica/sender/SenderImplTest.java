@@ -40,6 +40,7 @@ import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import com.trs.pacifica.util.timer.HashedWheelTimer;
 import com.trs.pacifica.util.timer.Timer;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,15 +48,20 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SenderImplTest {
 
-    static final long startLogIndex = 1001;
-    static final long endLogIndex = 1005;
-    static final long term = 1L;
-    static final long version = 1L;
+    static final long test_startLogIndex = 1001;
+    static final long test_endLogIndex = 1005;
+    static final long test_term = 1L;
+    static final long test_version = 1L;
+    static final long test_commitPoint = 1002L;
 
     private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
 
@@ -109,9 +115,12 @@ public class SenderImplTest {
         this.sender = Mockito.spy(this.sender);
         this.sender.init(option);
 
+        mockStateMachineCaller();
+        mockBallotBox();
+        mockConfigurationClient();
         mockReplicaGroup();
         mockAppendEntriesRequest();
-        mockLogEntries(startLogIndex, endLogIndex, 1);
+        mockLogEntries(test_startLogIndex, test_endLogIndex, 1);
     }
 
     @AfterEach
@@ -120,9 +129,23 @@ public class SenderImplTest {
     }
 
 
+    private void mockConfigurationClient() {
+        Mockito.doReturn(true).when(this.configurationClient).addSecondary(Mockito.anyLong(), Mockito.any());
+    }
+    private void mockBallotBox() {
+        Lock lock = new ReentrantLock();
+        Mockito.doReturn(lock).when(this.ballotBox).getCommitLock();
+        Mockito.doReturn(test_commitPoint).when(this.ballotBox).getLastCommittedLogIndex();
+        Mockito.doReturn(true).when(this.ballotBox).ballotBy(Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
+        Mockito.doReturn(true).when(this.ballotBox).recoverBallot(Mockito.any(), Mockito.anyLong());
+    }
+
+    private void mockStateMachineCaller() {
+        Mockito.doReturn(test_commitPoint).when(this.stateMachineCaller).getLastAppliedLogIndex();
+    }
     private void mockReplicaGroup() {
-        Mockito.doReturn(term).when(this.replicaGroup).getPrimaryTerm();
-        Mockito.doReturn(version).when(this.replicaGroup).getVersion();
+        Mockito.doReturn(test_term).when(this.replicaGroup).getPrimaryTerm();
+        Mockito.doReturn(test_version).when(this.replicaGroup).getVersion();
         Mockito.doReturn("test_group").when(this.replicaGroup).getGroupName();
         Mockito.doReturn(fromId).when(this.replicaGroup).getPrimary();
     }
@@ -202,15 +225,17 @@ public class SenderImplTest {
         for (int i = 0; i < logEntryCount; i++) {
             requestBuilder.addLogMeta(RpcCommon.LogEntryMeta.newBuilder().build());
         }
+        long lastLogIndex = test_endLogIndex + logEntryCount;
         RpcRequest.AppendEntriesResponse.Builder responseBuilder = mockAppendEntriesResponseBuilder();
         responseBuilder.setSuccess(true);
-        responseBuilder.setLastLogIndex(endLogIndex + logEntryCount);
+        responseBuilder.setLastLogIndex(lastLogIndex);
         Assertions.assertTrue(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
-        Mockito.verify(this.ballotBox).ballotBy(this.toId, endLogIndex + 1, endLogIndex + logEntryCount);
+        Mockito.verify(this.ballotBox).ballotBy(this.toId, test_endLogIndex + 1, lastLogIndex);
+        Mockito.verify(this.sender).notifyOnCaughtUp(lastLogIndex);
     }
 
     @Test
-    public void testSecondaryHandleAppendLogEntryResponseFailure() throws PacificaException {
+    public void testSecondaryHandleAppendLogEntryResponseError() throws PacificaException {
         Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
         Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
         this.sender.setType(SenderType.Secondary);
@@ -220,14 +245,257 @@ public class SenderImplTest {
         for (int i = 0; i < logEntryCount; i++) {
             requestBuilder.addLogMeta(RpcCommon.LogEntryMeta.newBuilder().build());
         }
-        Assertions.assertTrue(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.failure(new RuntimeException("test error")), null));
-
+        Assertions.assertFalse(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.failure(new RuntimeException("test error")), null));
         // assert block and wait timeout
         Mockito.verify(this.sender).blockUntilTimeout();
+    }
 
+    @Test
+    public void testSecondaryHandleAppendLogEntryResponseFailureTermMismatch() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
+        int logEntryCount = 3;
+        for (int i = 0; i < logEntryCount; i++) {
+            requestBuilder.addLogMeta(RpcCommon.LogEntryMeta.newBuilder().build());
+        }
+        RpcRequest.AppendEntriesResponse.Builder responseBuilder = mockAppendEntriesResponseBuilder();
+        responseBuilder.setSuccess(false);
+        responseBuilder.setTerm(2L);
+        Assertions.assertFalse(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
+        Mockito.verify(this.replica).onReceiveHigherTerm(2L);
+    }
+
+    @Test
+    public void testSecondaryHandleAppendLogEntryResponseFailureLogMismatch1() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
+        requestBuilder.setPrevLogIndex(test_endLogIndex);
+        requestBuilder.setPrevLogTerm(1L);
+        long lastLogIndex = test_endLogIndex - 2;
+        RpcRequest.AppendEntriesResponse.Builder responseBuilder = mockAppendEntriesResponseBuilder();
+        responseBuilder.setSuccess(false);
+        responseBuilder.setLastLogIndex(lastLogIndex); // less than endLogIndex
+        Assertions.assertFalse(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
+        Assertions.assertEquals(lastLogIndex + 1, this.sender.getNextLogIndex());
+        Mockito.verify(this.sender, Mockito.times(2)).sendProbeRequest();
+    }
+
+    @Test
+    public void testSecondaryHandleAppendLogEntryResponseFailureLogMismatch2() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
+        requestBuilder.setPrevLogIndex(test_endLogIndex);
+        requestBuilder.setPrevLogTerm(1L);
+        long lastLogIndex = test_endLogIndex + 2;
+        RpcRequest.AppendEntriesResponse.Builder responseBuilder = mockAppendEntriesResponseBuilder();
+        responseBuilder.setSuccess(false);
+        responseBuilder.setLastLogIndex(lastLogIndex); // less than endLogIndex
+        Assertions.assertFalse(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
+        Assertions.assertEquals(test_endLogIndex, this.sender.getNextLogIndex());
+        Mockito.verify(this.sender, Mockito.times(2)).sendProbeRequest();
+        Assertions.assertFalse(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
+        Assertions.assertEquals(test_endLogIndex - 1, this.sender.getNextLogIndex());
+        Mockito.verify(this.sender, Mockito.times(3)).sendProbeRequest();
 
     }
 
+    @Test
+    public void testSecondaryHandleInstallSnapshotResponseSuccess() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        long snapshotLogIndex = 1000;
+        RpcRequest.InstallSnapshotRequest request = RpcRequest.InstallSnapshotRequest.newBuilder()
+                .setTerm(1L)//
+                .setVersion(1L)//
+                .setSnapshotLogIndex(snapshotLogIndex)//
+                .setSnapshotLogTerm(1L)//
+                .build();
+        RpcRequest.InstallSnapshotResponse response = RpcRequest.InstallSnapshotResponse.newBuilder()
+                .setSuccess(true)//
+                .setTerm(1L)//
+                .setVersion(1L)//
+                .build();
+        Assertions.assertTrue(this.sender.handleInstallSnapshotResponse(request, Finished.success(), response));
+        Assertions.assertEquals(snapshotLogIndex + 1, this.sender.getNextLogIndex());
+    }
+
+
+    @Test
+    public void testSecondaryHandleInstallSnapshotResponseError() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        RpcRequest.InstallSnapshotRequest request = RpcRequest.InstallSnapshotRequest.newBuilder()
+                .build();
+        Assertions.assertFalse(this.sender.handleInstallSnapshotResponse(request, Finished.failure(new RuntimeException("test error")), null));
+        Mockito.verify(this.sender).blockUntilTimeout();
+    }
+
+    @Test
+    public void testSecondaryHandleInstallSnapshotResponseFailureTermMismatch() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        long snapshotLogIndex = 1000;
+        RpcRequest.InstallSnapshotRequest request = RpcRequest.InstallSnapshotRequest.newBuilder()
+                .setTerm(1L)//
+                .setVersion(1L)//
+                .setSnapshotLogIndex(snapshotLogIndex)//
+                .setSnapshotLogTerm(1L)//
+                .build();
+        RpcRequest.InstallSnapshotResponse response = RpcRequest.InstallSnapshotResponse.newBuilder()
+                .setSuccess(false)//
+                .setTerm(2L)//
+                .setVersion(1L)//
+                .build();
+        Assertions.assertFalse(this.sender.handleInstallSnapshotResponse(request, Finished.success(), response));
+        Mockito.verify(this.replica).onReceiveHigherTerm(2L);
+    }
+
+    @Test
+    public void testSecondaryHandleInstallSnapshotResponseFailure() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        long snapshotLogIndex = 1000;
+        RpcRequest.InstallSnapshotRequest request = RpcRequest.InstallSnapshotRequest.newBuilder()
+                .setTerm(1L)//
+                .setVersion(1L)//
+                .setSnapshotLogIndex(snapshotLogIndex)//
+                .setSnapshotLogTerm(1L)//
+                .build();
+        RpcRequest.InstallSnapshotResponse response = RpcRequest.InstallSnapshotResponse.newBuilder()
+                .setSuccess(false)//
+                .setTerm(1L)//
+                .setVersion(1L)//
+                .build();
+        Assertions.assertFalse(this.sender.handleInstallSnapshotResponse(request, Finished.success(), response));
+        Mockito.verify(this.sender).blockUntilTimeout();
+    }
+
+
+    @Test
+    public void testFillCommonRequest() {
+        RpcRequest.AppendEntriesRequest.Builder builder = RpcRequest.AppendEntriesRequest.newBuilder();
+        long prevLogIndex = -1L;
+        Assertions.assertFalse(this.sender.fillCommonRequest(builder, prevLogIndex, false));
+        prevLogIndex = test_startLogIndex - 1;
+        builder = RpcRequest.AppendEntriesRequest.newBuilder();
+        mockLogEntries(test_startLogIndex, test_endLogIndex, 1);
+        Mockito.doReturn(0L).when(this.logManager).getLogTermAt(prevLogIndex);
+        Assertions.assertFalse(this.sender.fillCommonRequest(builder, prevLogIndex, false));
+        builder = RpcRequest.AppendEntriesRequest.newBuilder();
+        Assertions.assertTrue(this.sender.fillCommonRequest(builder, prevLogIndex, true));
+        Assertions.assertEquals(0L, builder.getPrevLogIndex());
+        Assertions.assertEquals(0L, builder.getPrevLogTerm());
+
+        prevLogIndex = test_startLogIndex;
+        Assertions.assertTrue(this.sender.fillCommonRequest(builder, prevLogIndex, false));
+        Assertions.assertEquals(prevLogIndex, builder.getPrevLogIndex());
+        Assertions.assertEquals(1L, builder.getPrevLogTerm());
+        Assertions.assertEquals(test_commitPoint, builder.getCommitPoint());
+        Assertions.assertEquals(test_term, builder.getTerm());
+        Assertions.assertEquals(test_version, builder.getVersion());
+
+        prevLogIndex = test_startLogIndex;
+        Assertions.assertTrue(this.sender.fillCommonRequest(builder, prevLogIndex, true));
+        Assertions.assertEquals(prevLogIndex, builder.getPrevLogIndex());
+        Assertions.assertEquals(1L, builder.getPrevLogTerm());
+        Assertions.assertEquals(test_commitPoint, builder.getCommitPoint());
+        Assertions.assertEquals(test_term, builder.getTerm());
+        Assertions.assertEquals(test_version, builder.getVersion());
+
+    }
+
+
+    @Test
+    public void testWaitCaughtUpTimeout() throws PacificaException, InterruptedException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.startup();
+        final AtomicReference<Finished> ref = new AtomicReference<>(null);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Sender.OnCaughtUp onCaughtUp = new Sender.OnCaughtUp() {
+            @Override
+            public void run(Finished finished) {
+                ref.set(finished);
+                countDownLatch.countDown();
+            }
+        };
+        int timeoutMs = 1000;
+        long start = System.currentTimeMillis();
+        Assertions.assertTrue(this.sender.waitCaughtUp(onCaughtUp, timeoutMs));
+        Assertions.assertNotNull(this.sender.getOnCaughtUp());
+        countDownLatch.await();
+        long end = System.currentTimeMillis();
+        Assertions.assertFalse(ref.get().isOk());
+        Assertions.assertTrue((end - start) >= timeoutMs);
+        Assertions.assertFalse(this.sender.waitCaughtUp(onCaughtUp, timeoutMs));
+    }
+
+    @Test
+    public void testWaitCaughtUpSuccess() throws PacificaException, InterruptedException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.startup();
+        final AtomicReference<Finished> ref = new AtomicReference<>(null);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Sender.OnCaughtUp onCaughtUp = new Sender.OnCaughtUp() {
+            @Override
+            public void run(Finished finished) {
+                ref.set(finished);
+                countDownLatch.countDown();
+            }
+        };
+        int timeoutMs = 1000;
+        long start = System.currentTimeMillis();
+        Assertions.assertTrue(this.sender.waitCaughtUp(onCaughtUp, timeoutMs));
+        Assertions.assertNotNull(this.sender.getOnCaughtUp());
+        countDownLatch.await();
+        long end = System.currentTimeMillis();
+        Assertions.assertTrue((end - start) >= timeoutMs);
+        Assertions.assertFalse(this.sender.waitCaughtUp(onCaughtUp, timeoutMs));
+    }
+
+
+    @Test
+    public void testNotifyOnCaughtUp() throws PacificaException, InterruptedException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.startup();
+        final AtomicReference<Finished> ref = new AtomicReference<>(null);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Sender.OnCaughtUp onCaughtUp = new Sender.OnCaughtUp() {
+            @Override
+            public void run(Finished finished) {
+                ref.set(finished);
+                countDownLatch.countDown();
+            }
+        };
+        int timeoutMs = 1000;
+        Assertions.assertTrue(this.sender.waitCaughtUp(onCaughtUp, timeoutMs));
+        long lastLogIndex = 1004;
+        this.sender.notifyOnCaughtUp(lastLogIndex);
+        countDownLatch.await();
+        Assertions.assertTrue(ref.get().isOk());
+        Assertions.assertEquals(SenderType.Secondary, this.sender.getType());
+        Assertions.assertEquals(lastLogIndex, onCaughtUp.getCaughtUpLogIndex());
+
+    }
 
 
 
@@ -236,20 +504,20 @@ public class SenderImplTest {
         return RpcRequest.AppendEntriesRequest.newBuilder()//
                 .setPrimaryId(RpcUtil.protoReplicaId(this.fromId))//
                 .setTargetId(RpcUtil.protoReplicaId(this.toId))//
-                .setTerm(term)//
-                .setVersion(version)//
+                .setTerm(test_term)//
+                .setVersion(test_version)//
                 .setCommitPoint(1003)//
-                .setPrevLogTerm(term)//
-                .setPrevLogIndex(endLogIndex);
+                .setPrevLogTerm(test_term)//
+                .setPrevLogIndex(test_endLogIndex);
     }
 
     RpcRequest.AppendEntriesResponse.Builder mockAppendEntriesResponseBuilder() {
         return RpcRequest.AppendEntriesResponse.newBuilder()//
-                .setTerm(term)//
-                .setVersion(version)//
+                .setTerm(test_term)//
+                .setVersion(test_version)//
                 .setSuccess(true)//
                 .setCommitPoint(1003)//
-                .setLastLogIndex(endLogIndex);
+                .setLastLogIndex(test_endLogIndex);
     }
 
 }

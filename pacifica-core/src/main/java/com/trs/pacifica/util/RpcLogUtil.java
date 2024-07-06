@@ -25,17 +25,48 @@ public class RpcLogUtil {
 
     }
 
-    public static String toLogString(final RpcCommon.ReplicaId replicaId) {
+    public static String toLogInfo(final RpcCommon.ReplicaId replicaId) {
         return replicaId.getGroupName() + "_" + replicaId.getNodeId();
     }
 
-    public static String toLogString(final RpcRequest.InstallSnapshotRequest request) {
+    public static String toLogInfo(final RpcRequest.InstallSnapshotRequest request) {
         StringBuilder logInfo = new StringBuilder();
-        logInfo.append("primary_id=").append(toLogString(request.getPrimaryId())).append(",");
-        logInfo.append("target_id=").append(toLogString(request.getTargetId())).append(",");
+        logInfo.append("primary_id=").append(toLogInfo(request.getPrimaryId())).append(",");
+        logInfo.append("target_id=").append(toLogInfo(request.getTargetId())).append(",");
         logInfo.append("snapshot_log_index=").append(request.getSnapshotLogIndex()).append(",");
         logInfo.append("snapshot_log_term=").append(request.getSnapshotLogTerm()).append(",");
         logInfo.append("reader_id=").append(request.getReaderId()).append(",");
         return logInfo.toString();
+    }
+
+    public static String toLogInfo(final RpcRequest.InstallSnapshotResponse response) {
+        StringBuilder logInfo = new StringBuilder();
+        logInfo.append("success=").append(response.getSuccess()).append(",");
+        logInfo.append("term=").append(response.getTerm()).append(",");
+        logInfo.append("version=").append(response.getVersion());
+        return logInfo.toString();
+    }
+
+    public static String toLogInfo(RpcRequest.AppendEntriesRequest request) {
+        StringBuilder infoBuilder = new StringBuilder("AppendEntriesRequest[");
+        infoBuilder.append("primary_id=").append(RpcUtil.toReplicaId(request.getPrimaryId())).append(",");
+        infoBuilder.append("target_id=").append(RpcUtil.toReplicaId(request.getTargetId())).append(",");
+        infoBuilder.append("prev_log_index=").append(request.getPrevLogIndex()).append(",");
+        infoBuilder.append("prev_log_term=").append(request.getPrevLogTerm()).append(",");
+        infoBuilder.append("commit_point=").append(request.getCommitPoint()).append(",");
+        infoBuilder.append("term=").append(request.getTerm()).append(",");
+        infoBuilder.append("version=").append(request.getVersion()).append(",");
+        infoBuilder.append("log_entry_count=").append(request.getLogMetaCount());
+        return infoBuilder.append("]").toString();
+    }
+
+    public static String toLogInfo(RpcRequest.AppendEntriesResponse response) {
+        StringBuilder infoBuilder = new StringBuilder("AppendEntriesResponse[");
+        infoBuilder.append("success=").append(response.getSuccess()).append(",");
+        infoBuilder.append("term=").append(response.getTerm()).append(",");
+        infoBuilder.append("version=").append(response.getVersion()).append(",");
+        infoBuilder.append("commit_point=").append(response.getCommitPoint()).append(",");
+        infoBuilder.append("last_log_index=").append(response.getLastLogIndex());
+        return infoBuilder.append("]").toString();
     }
 }
