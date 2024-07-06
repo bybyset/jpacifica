@@ -32,9 +32,11 @@ import com.trs.pacifica.model.LogEntry;
 import com.trs.pacifica.model.LogId;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.proto.RpcCommon;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
+import com.trs.pacifica.util.RpcUtil;
 import com.trs.pacifica.util.thread.ThreadUtil;
 import com.trs.pacifica.util.timer.HashedWheelTimer;
 import com.trs.pacifica.util.timer.Timer;
@@ -49,6 +51,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SenderImplTest {
+
+    static final long startLogIndex = 1001;
+    static final long endLogIndex = 1005;
+    static final long term = 1L;
+    static final long version = 1L;
 
     private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
 
@@ -70,6 +77,7 @@ public class SenderImplTest {
     private LogManagerImpl logManager;
     private SnapshotStorage snapshotStorage;
     private SingleThreadExecutor singleThreadExecutor = new DefaultSingleThreadExecutor(scheduledExecutorService);
+
 
     @BeforeEach
     public void setup() throws PacificaException {
@@ -98,12 +106,12 @@ public class SenderImplTest {
         option.setSenderExecutor(singleThreadExecutor);
         option.setSenderScheduler(scheduledExecutorService);
         this.sender = new SenderImpl(fromId, toId, SenderType.Candidate);
+        this.sender = Mockito.spy(this.sender);
         this.sender.init(option);
 
         mockReplicaGroup();
         mockAppendEntriesRequest();
-        mockLogEntries(1001, 1005, 1);
-        this.sender.startup();
+        mockLogEntries(startLogIndex, endLogIndex, 1);
     }
 
     @AfterEach
@@ -113,8 +121,8 @@ public class SenderImplTest {
 
 
     private void mockReplicaGroup() {
-        Mockito.doReturn(1L).when(this.replicaGroup).getPrimaryTerm();
-        Mockito.doReturn(1L).when(this.replicaGroup).getVersion();
+        Mockito.doReturn(term).when(this.replicaGroup).getPrimaryTerm();
+        Mockito.doReturn(version).when(this.replicaGroup).getVersion();
         Mockito.doReturn("test_group").when(this.replicaGroup).getGroupName();
         Mockito.doReturn(fromId).when(this.replicaGroup).getPrimary();
     }
@@ -122,6 +130,7 @@ public class SenderImplTest {
     private void mockLogEntries(long firstLogIndex, long endLogIndex, long term) {
         Mockito.doReturn(new LogId(firstLogIndex, term)).when(this.logManager).getFirstLogId();
         Mockito.doReturn(new LogId(endLogIndex, term)).when(this.logManager).getLastLogId();
+        Mockito.doReturn(endLogIndex).when(this.logManager).getLastLogIndex();
         long logIndex = firstLogIndex;
         for (; logIndex <= endLogIndex; logIndex++) {
             Mockito.doReturn(term).when(this.logManager).getLogTermAt(logIndex);
@@ -168,16 +177,79 @@ public class SenderImplTest {
 
     @Test
     public void testStartup() throws PacificaException {
+        this.sender.startup();
         Assertions.assertTrue(this.sender.isStarted());
 
     }
 
     @Test
-    public void testDoSendProbeRequest() {
-        this.sender.doSendProbeRequest();
+    public void testDoSendProbeRequest() throws PacificaException {
+        this.sender.startup();
+        this.sender.sendProbeRequest();
         Mockito.verify(this.pacificaClient).appendLogEntries(Mockito.any(), Mockito.any());
 
     }
 
+
+    @Test
+    public void testSecondaryHandleAppendLogEntryResponseSuccess() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
+        int logEntryCount = 3;
+        for (int i = 0; i < logEntryCount; i++) {
+            requestBuilder.addLogMeta(RpcCommon.LogEntryMeta.newBuilder().build());
+        }
+        RpcRequest.AppendEntriesResponse.Builder responseBuilder = mockAppendEntriesResponseBuilder();
+        responseBuilder.setSuccess(true);
+        responseBuilder.setLastLogIndex(endLogIndex + logEntryCount);
+        Assertions.assertTrue(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
+        Mockito.verify(this.ballotBox).ballotBy(this.toId, endLogIndex + 1, endLogIndex + logEntryCount);
+    }
+
+    @Test
+    public void testSecondaryHandleAppendLogEntryResponseFailure() throws PacificaException {
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).startHeartbeatTimer();
+        Mockito.doAnswer(invocation -> {return null;}).when(this.sender).sendProbeRequest();
+        this.sender.setType(SenderType.Secondary);
+        this.sender.startup();
+        RpcRequest.AppendEntriesRequest.Builder requestBuilder = mockAppendEntriesRequestBuilder();
+        int logEntryCount = 3;
+        for (int i = 0; i < logEntryCount; i++) {
+            requestBuilder.addLogMeta(RpcCommon.LogEntryMeta.newBuilder().build());
+        }
+        Assertions.assertTrue(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.failure(new RuntimeException("test error")), null));
+
+        // assert block and wait timeout
+        Mockito.verify(this.sender).blockUntilTimeout();
+
+
+    }
+
+
+
+
+
+    RpcRequest.AppendEntriesRequest.Builder mockAppendEntriesRequestBuilder() {
+        return RpcRequest.AppendEntriesRequest.newBuilder()//
+                .setPrimaryId(RpcUtil.protoReplicaId(this.fromId))//
+                .setTargetId(RpcUtil.protoReplicaId(this.toId))//
+                .setTerm(term)//
+                .setVersion(version)//
+                .setCommitPoint(1003)//
+                .setPrevLogTerm(term)//
+                .setPrevLogIndex(endLogIndex);
+    }
+
+    RpcRequest.AppendEntriesResponse.Builder mockAppendEntriesResponseBuilder() {
+        return RpcRequest.AppendEntriesResponse.newBuilder()//
+                .setTerm(term)//
+                .setVersion(version)//
+                .setSuccess(true)//
+                .setCommitPoint(1003)//
+                .setLastLogIndex(endLogIndex);
+    }
 
 }

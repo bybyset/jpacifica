@@ -17,9 +17,11 @@
 
 package com.trs.pacifica.async.thread;
 
+import com.trs.pacifica.spi.SPI;
 import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.SystemPropertyUtil;
 
+@SPI
 public class DefaultExecutorGroupFactory implements ExecutorGroupFactory {
 
     static final int _DEFAULT_THREADS_NUM = SystemPropertyUtil.getInt("pacifica.executor.group.thread.num", Math.max(16, SystemConstants.CPUS + 1));

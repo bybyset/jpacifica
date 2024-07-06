@@ -41,6 +41,11 @@ public class LinkedQueueSingleThreadExecutorGroup implements ExecutorGroup {
 
     private final BlockingQueue<SingleThreadExecutor> singleThreadExecutors = new LinkedBlockingQueue<>();
 
+
+    public LinkedQueueSingleThreadExecutorGroup(Executor executor) {
+        this(executor, RejectedExecutionHandler.REJECT);
+    }
+
     public LinkedQueueSingleThreadExecutorGroup(Executor executor, RejectedExecutionHandler rejectedExecutionHandler) {
         this.executor = executor;
         this.rejectedExecutionHandler = rejectedExecutionHandler;
@@ -73,9 +78,18 @@ public class LinkedQueueSingleThreadExecutorGroup implements ExecutorGroup {
 
     @Override
     public SingleThreadExecutor chooseExecutor() {
-        LinkedQueueSingleThreadExecutor singleThreadExecutor = new LinkedQueueSingleThreadExecutor(this.executor, rejectedExecutionHandler);
-        singleThreadExecutors.offer(singleThreadExecutor);
-        return singleThreadExecutor;
+        if (!isShutdown()) {
+            LinkedQueueSingleThreadExecutor singleThreadExecutor = new LinkedQueueSingleThreadExecutor(this.executor, rejectedExecutionHandler);
+            SingleThreadExecutorFilter singleThreadExecutorFilter = new SingleThreadExecutorFilter(singleThreadExecutor) {
+                @Override
+                protected void onShutdown() {
+                    LinkedQueueSingleThreadExecutorGroup.this.singleThreadExecutors.remove(this);
+                }
+            };
+            singleThreadExecutors.offer(singleThreadExecutorFilter);
+            return singleThreadExecutorFilter;
+        }
+        return null;
     }
 
     @Override

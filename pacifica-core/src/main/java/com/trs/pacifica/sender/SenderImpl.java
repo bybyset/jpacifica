@@ -118,10 +118,10 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     public synchronized void startup() throws PacificaException {
         if (this.state == State.SHUTDOWN) {
             this.version.incrementAndGet();
-            this.nextLogIndex = this.option.getLogManager().getLastLogId().getIndex() + 1;
+            this.nextLogIndex = this.option.getLogManager().getLastLogIndex() + 1;
             this.updateLastResponseTime();
             this.state = State.STARTED;
-            this.heartbeatTimer.start();
+            this.startHeartbeatTimer();
             this.sendProbeRequest();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("{} is start up", this);
@@ -212,6 +212,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
     }
 
+
     private void notifyOnCaughtUp(final long lastLogIndex) {
         doNotifyOnCaughtUp(Finished.success(), lastLogIndex);
     }
@@ -262,6 +263,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         if (!isStarted()) {
             throw new AlreadyClosedException("");
         }
+    }
+
+    @OnlyForTest
+    void setType(SenderType senderType) {
+        this.type = senderType;
     }
 
     private void changeState(State newState) {
@@ -339,7 +345,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     }
 
 
-    void doSendProbeRequest() {
+    private void doSendProbeRequest() {
         changeState(State.PROBE);
         sendEmptyLogEntries(false);
     }
@@ -399,8 +405,11 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         sendEmptyLogEntries(true);
     }
 
+    void startHeartbeatTimer() {
+        this.heartbeatTimer.start();
+    }
 
-    private void sendProbeRequest() {
+    void sendProbeRequest() {
         this.executor.execute(() -> {
             try {
                 doSendProbeRequest();
@@ -594,7 +603,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         }
     }
 
-    private boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, @Nullable RpcRequest.AppendEntriesResponse response) {
+    boolean handleAppendLogEntryResponse(final RpcRequest.AppendEntriesRequest request, final Finished finished, @Nullable RpcRequest.AppendEntriesResponse response) {
         if (!finished.isOk()) {
             LOGGER.warn("The Sender={} receive failure for request={}. Wait and try to send again", this, RpcUtil.toLogInfo(request), finished.error());
             this.blockUntilTimeout();
@@ -694,13 +703,16 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
     /**
      * block until timeout will continue.
      */
-    private void blockUntilTimeout() {
+    void blockUntilTimeout() {
         ensureStarted();
         if (this.blockTimer != null) {
             LOGGER.warn("{} repeat block.", this.fromId.getGroupName());
             return;
         }
         final int delayMs = this.option.getHeartbeatTimeoutMs();
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("{} Some error has occurred and we block for {} milliseconds until timeout",  this, delayMs);
+        }
         this.blockTimer = this.option.getSenderScheduler().schedule(() -> {
             handleBlockTimeout();
         }, delayMs, TimeUnit.MILLISECONDS);

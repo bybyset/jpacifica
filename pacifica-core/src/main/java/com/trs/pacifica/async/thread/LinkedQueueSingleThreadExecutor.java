@@ -28,7 +28,6 @@ public class LinkedQueueSingleThreadExecutor implements SingleThreadExecutor {
 
     private static final long DEFAULT_SHUTDOWN_TIMEOUT_MS = 15 * 1000;
 
-
     static final int STATE_STARTED = 0;
     static final int STATE_SHUTDOWN = 1;
     static final int STATE_TERMINATED = 2;
@@ -113,6 +112,11 @@ public class LinkedQueueSingleThreadExecutor implements SingleThreadExecutor {
 
     protected final void reject(final Runnable task) {
         this.rejectedExecutionHandler.rejected(task, this);
+    }
+
+    @Override
+    public boolean needShutdown() {
+        return true;
     }
 
     class Task implements Runnable {

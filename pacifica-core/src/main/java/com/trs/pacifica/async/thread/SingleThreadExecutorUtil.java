@@ -17,29 +17,15 @@
 
 package com.trs.pacifica.async.thread;
 
-import com.trs.pacifica.spi.SPI;
-import com.trs.pacifica.util.SystemConstants;
-import com.trs.pacifica.util.SystemPropertyUtil;
+public class SingleThreadExecutorUtil {
 
-@SPI
-public class MpscExecutorGroupFactory implements ExecutorGroupFactory{
-
-    static final int DEFAULT_THREADS_NUM = SystemPropertyUtil.getInt("pacifica.executor.group.thread.num", Math.max(16, SystemConstants.CPUS + 1));
-
-    private final int nThreads;
-
-    public MpscExecutorGroupFactory() {
-        this(DEFAULT_THREADS_NUM);
+    private SingleThreadExecutorUtil() {
     }
 
-    public MpscExecutorGroupFactory(int nThreads) {
-        this.nThreads = nThreads;
+    public static void shutdownIfNeed(SingleThreadExecutor singleThreadExecutor) {
+        if (singleThreadExecutor != null && singleThreadExecutor.needShutdown()) {
+            singleThreadExecutor.shutdownGracefully();
+        }
     }
-
-    @Override
-    public ExecutorGroup newExecutorGroup() {
-        return new MpscSingleThreadExecutorGroup(nThreads);
-    }
-
 
 }

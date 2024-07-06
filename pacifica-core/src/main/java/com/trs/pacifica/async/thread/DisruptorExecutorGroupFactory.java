@@ -17,6 +17,9 @@
 
 package com.trs.pacifica.async.thread;
 
+import com.trs.pacifica.spi.SPI;
+
+@SPI
 public class DisruptorExecutorGroupFactory implements ExecutorGroupFactory {
     @Override
     public ExecutorGroup newExecutorGroup() {

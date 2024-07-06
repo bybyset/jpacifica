@@ -17,29 +17,41 @@
 
 package com.trs.pacifica.async.thread;
 
-import com.trs.pacifica.spi.SPI;
-import com.trs.pacifica.util.SystemConstants;
-import com.trs.pacifica.util.SystemPropertyUtil;
+import java.util.concurrent.TimeUnit;
 
-@SPI
-public class MpscExecutorGroupFactory implements ExecutorGroupFactory{
+public class SingleThreadExecutorFilter implements SingleThreadExecutor {
 
-    static final int DEFAULT_THREADS_NUM = SystemPropertyUtil.getInt("pacifica.executor.group.thread.num", Math.max(16, SystemConstants.CPUS + 1));
+    protected final SingleThreadExecutor singleThreadExecutor;
 
-    private final int nThreads;
-
-    public MpscExecutorGroupFactory() {
-        this(DEFAULT_THREADS_NUM);
-    }
-
-    public MpscExecutorGroupFactory(int nThreads) {
-        this.nThreads = nThreads;
+    public SingleThreadExecutorFilter(SingleThreadExecutor singleThreadExecutor) {
+        this.singleThreadExecutor = singleThreadExecutor;
     }
 
     @Override
-    public ExecutorGroup newExecutorGroup() {
-        return new MpscSingleThreadExecutorGroup(nThreads);
+    public boolean shutdownGracefully() {
+        if (singleThreadExecutor.shutdownGracefully()) {
+            onShutdown();
+            return true;
+        }
+        return false;
     }
 
+    @Override
+    public boolean shutdownGracefully(long timeout, TimeUnit unit) {
+        if (singleThreadExecutor.shutdownGracefully(timeout, unit)) {
+            onShutdown();
+            return true;
+        }
+        return false;
 
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        singleThreadExecutor.execute(command);
+    }
+
+    protected void onShutdown() {
+
+    }
 }

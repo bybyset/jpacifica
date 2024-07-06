@@ -38,4 +38,13 @@ public interface SingleThreadExecutor extends Executor {
      * @return true if success to shutdown
      */
     boolean shutdownGracefully(final long timeout, final TimeUnit unit);
+
+
+    /**
+     * Whether this executor should also be shutdown when the replica shutdown
+     * @return true if need to shutdown
+     */
+    default boolean needShutdown() {
+        return false;
+    }
 }

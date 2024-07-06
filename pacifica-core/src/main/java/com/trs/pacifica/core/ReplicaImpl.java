@@ -23,6 +23,7 @@ import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.FinishedImpl;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
+import com.trs.pacifica.async.thread.SingleThreadExecutorUtil;
 import com.trs.pacifica.error.NotSupportedException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
@@ -293,7 +294,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             this.stateMachineCaller.shutdown();
             this.logManager.shutdown();
             this.snapshotManager.shutdown();
-
+            SingleThreadExecutorUtil.shutdownIfNeed(this.applyExecutor);
         } finally {
             this.writeLock.unlock();
         }

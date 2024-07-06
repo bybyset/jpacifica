@@ -17,29 +17,34 @@
 
 package com.trs.pacifica.async.thread;
 
-import com.trs.pacifica.spi.SPI;
+import com.trs.pacifica.util.NamedThreadFactory;
 import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.SystemPropertyUtil;
 
-@SPI
-public class MpscExecutorGroupFactory implements ExecutorGroupFactory{
+import java.util.concurrent.*;
+
+public class LinkedQueueExecutorGroupFactory implements ExecutorGroupFactory {
 
     static final int DEFAULT_THREADS_NUM = SystemPropertyUtil.getInt("pacifica.executor.group.thread.num", Math.max(16, SystemConstants.CPUS + 1));
+    static final String DEFAULT_THREAD_NAME = "default-pacifica-single-thread-";
 
-    private final int nThreads;
+    static final Executor GLOABL_EXECUTOR;
 
-    public MpscExecutorGroupFactory() {
-        this(DEFAULT_THREADS_NUM);
+    static {
+        final int nThreads = DEFAULT_THREADS_NUM;
+        final ThreadFactory threadFactory = new NamedThreadFactory(DEFAULT_THREAD_NAME, true);
+        GLOABL_EXECUTOR = new ThreadPoolExecutor(nThreads,
+                nThreads,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                threadFactory
+        );
+
     }
 
-    public MpscExecutorGroupFactory(int nThreads) {
-        this.nThreads = nThreads;
-    }
 
     @Override
     public ExecutorGroup newExecutorGroup() {
-        return new MpscSingleThreadExecutorGroup(nThreads);
+        return new LinkedQueueSingleThreadExecutorGroup(GLOABL_EXECUTOR);
     }
-
-
 }
