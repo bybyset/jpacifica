@@ -15,13 +15,20 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.config.jraft;
 
-public class CounterServer {
+import com.alipay.sofa.jraft.Closure;
 
-
-
-
+public abstract class MetaReplicaClosure<R> implements Closure {
 
 
+    private R result;
+
+    public R getResult() {
+        return result;
+    }
+
+    public void setResult(R result) {
+        this.result = result;
+    }
 }

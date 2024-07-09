@@ -15,10 +15,21 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.config.jraft;
 
-public class CounterServer {
+import com.trs.pacifica.example.counter.MetaReplicaRpc;
+import com.trs.pacifica.model.ReplicaId;
 
+public interface MetaReplicaService {
+
+
+    void addSecondary(ReplicaId replicaId, final long version, final MetaReplicaClosure<Boolean> closure);
+
+
+    void removeSecondary(ReplicaId replicaId, final long version, final MetaReplicaClosure<Boolean> closure);
+
+
+    void changePrimary(ReplicaId replicaId, final long version, final MetaReplicaClosure<Boolean> closure);
 
 
 

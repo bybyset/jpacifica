@@ -15,13 +15,21 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.config.jraft.rpc;
 
-public class CounterServer {
+import com.alipay.sofa.jraft.rpc.RpcContext;
+import com.alipay.sofa.jraft.rpc.RpcProcessor;
+
+public class ChangePrimaryProcessor implements RpcProcessor<Object> {
 
 
+    @Override
+    public void handleRequest(RpcContext rpcCtx, Object request) {
 
+    }
 
-
-
+    @Override
+    public String interest() {
+        return null;
+    }
 }

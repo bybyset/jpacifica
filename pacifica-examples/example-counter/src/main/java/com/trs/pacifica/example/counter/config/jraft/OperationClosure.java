@@ -15,13 +15,25 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.config.jraft;
 
-public class CounterServer {
+public abstract class OperationClosure<R> extends MetaReplicaClosure<R> {
 
-
-
-
+    private MetaReplicaOperation operation = null;
 
 
+    protected OperationClosure(MetaReplicaOperation operation) {
+        this.operation = operation;
+    }
+
+    protected OperationClosure() {
+    }
+
+    public MetaReplicaOperation getOperation() {
+        return operation;
+    }
+
+    public void setOperation(MetaReplicaOperation operation) {
+        this.operation = operation;
+    }
 }

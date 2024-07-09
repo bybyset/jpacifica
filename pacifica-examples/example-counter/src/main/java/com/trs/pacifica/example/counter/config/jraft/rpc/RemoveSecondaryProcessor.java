@@ -15,13 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.config.jraft.rpc;
 
-public class CounterServer {
-
-
-
-
-
-
+public class RemoveSecondaryProcessor {
 }
