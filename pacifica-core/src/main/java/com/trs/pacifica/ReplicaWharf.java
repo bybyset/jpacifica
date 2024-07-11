@@ -18,13 +18,11 @@
 package com.trs.pacifica;
 
 import com.trs.pacifica.async.thread.ExecutorGroup;
-import com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder;
 import com.trs.pacifica.core.ReplicaImpl;
 import com.trs.pacifica.core.ReplicaOption;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.fs.FileServiceFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
-import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.client.RpcClient;
@@ -339,6 +337,7 @@ public class ReplicaWharf {
             if (this.pacificaServiceFactory != null) {
                 this.replicaOption.setPacificaServiceFactory(pacificaServiceFactory);
             }
+
             replicaImpl.init(replicaOption);
 
             return new ReplicaWharf(replicaImpl,//

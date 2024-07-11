@@ -5,6 +5,11 @@ package jpacifica;
 option java_package = "com.trs.pacifica.example.counter";
 option java_outer_classname = "MetaReplicaRpc";
 
+message ErrorResponse {
+  optional int32 code = 1;
+  optional string msg = 2;
+}
+
 message AddSecondaryRequest {
   optional string group_name = 1;
   optional string node_id = 2;
@@ -13,6 +18,30 @@ message AddSecondaryRequest {
 
 message AddSecondaryResponse {
   optional bool success = 1;
+  optional ErrorResponse error = 2;
+}
+
+message RemoveSecondaryRequest {
+  optional string group_name = 1;
+  optional string node_id = 2;
+  optional int64 version = 3;
+}
+
+message RemoveSecondaryResponse {
+  optional bool success = 1;
+  optional ErrorResponse error = 2;
+}
+
+
+message ChangePrimaryRequest {
+  optional string group_name = 1;
+  optional string node_id = 2;
+  optional int64 version = 3;
+}
+
+message ChangePrimaryResponse {
+  optional bool success = 1;
+  optional ErrorResponse error = 2;
 }
 
 

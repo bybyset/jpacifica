@@ -17,9 +17,18 @@
 
 package com.trs.pacifica.example.counter;
 
+import com.trs.pacifica.rpc.JPacificaRpcServerFactory;
+import com.trs.pacifica.rpc.RpcServer;
+import com.trs.pacifica.rpc.client.RpcClient;
+
 public class CounterServerBootstrap {
 
+
+
     public static void main(String[] args) {
+
+        RpcClient rpcClient = JPacificaRpcServerFactory.createPacificaRpcClient();
+        RpcServer rpcServer = JPacificaRpcServerFactory.createPacificaRpcServer(null);
 
     }
 }

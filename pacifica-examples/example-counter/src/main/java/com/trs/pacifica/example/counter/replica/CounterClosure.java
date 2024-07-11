@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.example.counter.replica;
 
-import com.trs.pacifica.model.ReplicaId;
-import com.trs.pacifica.proto.RpcCommon;
-import com.trs.pacifica.rpc.ReplicaService;
+import com.trs.pacifica.async.Callback;
 
-public interface ReplicaManager {
+public abstract class CounterClosure<R> implements Callback {
 
-    public ReplicaService getReplica(final ReplicaId replicaId);
+    private R result;
 
+    public R getResult() {
+        return result;
+    }
 
-
+    public void setResult(R result) {
+        this.result = result;
+    }
 }

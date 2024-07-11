@@ -175,7 +175,7 @@ public class StateMachineCallerImplTest {
     }
 
     @Test
-    public void testOnSnapshotSave() throws InterruptedException, IOException {
+    public void testOnSnapshotSave() throws InterruptedException, IOException, PacificaException {
         StateMachineCaller.SnapshotSaveCallback callback = Mockito.mock(StateMachineCaller.SnapshotSaveCallback.class);
         SnapshotWriter snapshotWriter = Mockito.mock(SnapshotWriter.class);
         LogId snapshotLogId = new LogId(4, 1);

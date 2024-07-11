@@ -15,23 +15,24 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.replica;
 
-import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
-import com.trs.pacifica.example.counter.config.jraft.MasterServer;
+public abstract class OperationClosure<R> extends CounterClosure<R> {
 
-public class CounterServer {
+    private CounterOperation operation = null;
 
+    protected OperationClosure(CounterOperation operation) {
+        this.operation = operation;
+    }
 
+    protected OperationClosure() {
+    }
 
-    private MasterServer masterServer;
+    public CounterOperation getOperation() {
+        return operation;
+    }
 
-    private CounterReplicaConfigClient replicaConfigClient;
-
-
-
-
-
-
-
+    public void setOperation(CounterOperation operation) {
+        this.operation = operation;
+    }
 }

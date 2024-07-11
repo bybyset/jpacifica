@@ -26,6 +26,7 @@ import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
 import com.alipay.sofa.jraft.rpc.RpcServer;
 import com.trs.pacifica.example.counter.config.jraft.fsm.ReplicaFsm;
 import com.trs.pacifica.example.counter.config.jraft.rpc.AddSecondaryProcessor;
+import com.trs.pacifica.example.counter.config.jraft.rpc.RemoveSecondaryProcessor;
 
 import java.io.File;
 
@@ -51,7 +52,8 @@ public class MasterServer {
         MetaReplicaService metaReplicaService = new MetaReplicaServiceImpl(this);
         final RpcServer rpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
         rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
-
+        rpcServer.registerProcessor(new RemoveSecondaryProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
 
         this.replicaFsm = new ReplicaFsm();
         options.setInitialConf(configuration);

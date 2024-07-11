@@ -17,12 +17,7 @@
 
 package com.trs.pacifica.rpc;
 
-import com.trs.pacifica.ReplicaManager;
-import com.trs.pacifica.rpc.internal.*;
-import com.trs.pacifica.rpc.node.Endpoint;
 import com.trs.pacifica.util.SystemPropertyUtil;
-
-import java.util.Objects;
 
 public interface RpcServer {
 
@@ -31,23 +26,5 @@ public interface RpcServer {
             "jpacifica.grpc.max.inbound.message.size.bytes", DEFAULT_RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE);
 
     void registerRpcHandler(final RpcHandler<?, ?> rpcHandler);
-
-
-    public static RpcServer createPacificaRpcServer(final Endpoint endpoint, final ReplicaManager replicaManager) {
-        final RpcServer rpcServer = RpcFactoryHolder.getInstance().createRpcServer(endpoint);
-        addPacificaRequestHandlers(rpcServer, replicaManager);
-        return rpcServer;
-    }
-
-    public static void addPacificaRequestHandlers(final RpcServer rpcServer, final ReplicaManager replicaManager) {
-        Objects.requireNonNull(rpcServer, "rpcServer");
-        Objects.requireNonNull(replicaManager, "replicaManager");
-        rpcServer.registerRpcHandler(new AppendEntriesRequestHandler(replicaManager));
-        rpcServer.registerRpcHandler(new ReplicaRecoverRequestHandler(replicaManager));
-        rpcServer.registerRpcHandler(new InstallSnapshotRequestHandler(replicaManager));
-        rpcServer.registerRpcHandler(new GetFileRequestHandler(replicaManager));
-        rpcServer.registerRpcHandler(new PingReplicaRequestHandler(replicaManager));
-    }
-
 
 }

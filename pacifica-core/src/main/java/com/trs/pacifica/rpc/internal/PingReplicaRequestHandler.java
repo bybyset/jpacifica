@@ -17,17 +17,17 @@
 
 package com.trs.pacifica.rpc.internal;
 
-import com.trs.pacifica.ReplicaManager;
+import com.trs.pacifica.rpc.service.ReplicaServiceManager;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
-import com.trs.pacifica.rpc.ReplicaService;
+import com.trs.pacifica.rpc.service.ReplicaService;
 import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.util.RpcUtil;
 
 public class PingReplicaRequestHandler extends InternalRpcRequestHandler<RpcRequest.PingReplicaRequest, RpcRequest.PingReplicaResponse> {
 
-    public PingReplicaRequestHandler(ReplicaManager replicaManager) {
+    public PingReplicaRequestHandler(ReplicaServiceManager replicaManager) {
         super(replicaManager, RpcRequest.PingReplicaResponse.getDefaultInstance());
     }
 

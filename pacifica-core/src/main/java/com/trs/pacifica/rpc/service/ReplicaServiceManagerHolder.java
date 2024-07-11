@@ -15,23 +15,31 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.rpc.service;
 
-import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
-import com.trs.pacifica.example.counter.config.jraft.MasterServer;
+import com.trs.pacifica.spi.JPacificaServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class CounterServer {
+public class ReplicaServiceManagerHolder {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReplicaServiceManagerHolder.class);
 
+    private static final ReplicaServiceManager REPLICA_SERVICE_MANAGER;
 
-    private MasterServer masterServer;
+    static {
+        REPLICA_SERVICE_MANAGER = JPacificaServiceLoader//
+                .load(ReplicaServiceManager.class)//
+                .first();
+        LOGGER.info("use RpcFactory={}", REPLICA_SERVICE_MANAGER.getClass().getName());
+    }
 
-    private CounterReplicaConfigClient replicaConfigClient;
+    private ReplicaServiceManagerHolder() {
+    }
 
-
-
-
-
+    public static ReplicaServiceManager getInstance() {
+        return REPLICA_SERVICE_MANAGER;
+    }
 
 
 }

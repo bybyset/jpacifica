@@ -18,18 +18,19 @@
 package com.trs.pacifica.core.fsm;
 
 import com.trs.pacifica.StateMachine;
+import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
 
 public abstract class StateMachineAdapter implements StateMachine {
 
     @Override
-    public void onSnapshotLoad(final SnapshotReader snapshotReader) {
+    public void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException {
         return ;
     }
 
     @Override
-    public void onSnapshotSave(final SnapshotWriter snapshotWriter) {
+    public void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException  {
         return ;
     }
 

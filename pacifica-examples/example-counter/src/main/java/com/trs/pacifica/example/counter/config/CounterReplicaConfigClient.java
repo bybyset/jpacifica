@@ -18,6 +18,7 @@
 package com.trs.pacifica.example.counter.config;
 
 import com.alipay.sofa.jraft.RouteTable;
+import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.error.RemotingException;
@@ -71,18 +72,48 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
 
     @Override
     public boolean removeSecondary(long version, ReplicaId replicaId) {
+        MetaReplicaRpc.RemoveSecondaryRequest request = MetaReplicaRpc.RemoveSecondaryRequest.newBuilder()
+                .setGroupName(replicaId.getGroupName())//
+                .setNodeId(replicaId.getNodeId())//
+                .setVersion(version)//
+                .build();
+        try {
+            MetaReplicaRpc.RemoveSecondaryResponse response = (MetaReplicaRpc.RemoveSecondaryResponse) sendRequest(request);
+            return response.getSuccess();
+        } catch (Throwable e) {
+            LOGGER.error("failed to add secondary", e);
+        }
         return false;
     }
 
     @Override
     public boolean changePrimary(long version, ReplicaId replicaId) {
+        MetaReplicaRpc.ChangePrimaryRequest request = MetaReplicaRpc.ChangePrimaryRequest.newBuilder()
+                .setGroupName(replicaId.getGroupName())//
+                .setNodeId(replicaId.getNodeId())//
+                .setVersion(version)//
+                .build();
+        try {
+            MetaReplicaRpc.ChangePrimaryResponse response = (MetaReplicaRpc.ChangePrimaryResponse) sendRequest(request);
+            return response.getSuccess();
+        } catch (Throwable e) {
+            LOGGER.error("failed to add secondary", e);
+        }
         return false;
     }
 
-
     private Object sendRequest(Object request) throws RemotingException, InterruptedException {
+       return sendRequest(request, 50000);
+    }
+
+    private Object sendRequest(Object request, long timeoutMs) throws RemotingException, InterruptedException {
         PeerId leader = getLeader();
-        return this.cliClientService.getRpcClient().invokeSync(leader.getEndpoint(), request, timeoutMs);
+        Object response = this.cliClientService.getRpcClient().invokeSync(leader.getEndpoint(), request, timeoutMs);
+        if (response instanceof MetaReplicaRpc.ErrorResponse) {
+            MetaReplicaRpc.ErrorResponse errorResponse = (MetaReplicaRpc.ErrorResponse) response;
+            throw new RemotingException(String.format("remoting exception, code:[%d], msg:[%s]", errorResponse.getCode(), errorResponse.getMsg()));
+        }
+        return response;
     }
 
     PeerId getLeader() {

@@ -15,52 +15,46 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter.config.jraft.rpc;
+package com.trs.pacifica.example.counter.rpc;
 
-import com.alipay.sofa.jraft.Status;
-import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.google.protobuf.Message;
-import com.trs.pacifica.example.counter.MetaReplicaRpc;
-import com.trs.pacifica.example.counter.config.jraft.MetaReplicaClosure;
+import com.trs.pacifica.async.Finished;
+import com.trs.pacifica.example.counter.replica.CounterClosure;
+import com.trs.pacifica.rpc.RpcContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-public abstract class RpcMetaReplicaClosure<R> extends MetaReplicaClosure<R> {
+public abstract class RpcCounterClosure<R, Res extends Message> extends CounterClosure<R> {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(RpcMetaReplicaClosure.class);
-    private static final AtomicIntegerFieldUpdater<RpcMetaReplicaClosure> STATE_UPDATER = AtomicIntegerFieldUpdater
-            .newUpdater(RpcMetaReplicaClosure.class, "state");
+    static final Logger LOGGER = LoggerFactory.getLogger(RpcCounterClosure.class);
+    private static final AtomicIntegerFieldUpdater<RpcCounterClosure> STATE_UPDATER = AtomicIntegerFieldUpdater
+            .newUpdater(RpcCounterClosure.class, "state");
 
     private static final int PENDING = 0;
     private static final int RESPOND = 1;
-    private final RpcContext rpcCtx;
+    private final RpcContext<Res> rpcCtx;
 
     private volatile int state = PENDING;
 
-    public RpcMetaReplicaClosure(RpcContext rpcCtx) {
+    public RpcCounterClosure(RpcContext<Res> rpcCtx) {
         this.rpcCtx = rpcCtx;
     }
 
     @Override
-    public void run(Status status) {
-        Message response = null;
-        if (status.isOk()) {
+    public void run(Finished finished) {
+        Res response = null;
+        if (finished.isOk()) {
             response = buildRpcResponse(getResult());
         } else {
-            response = MetaReplicaRpc.ErrorResponse.newBuilder()//
-                    .setCode(status.getCode())//
-                    .setMsg(status.getErrorMsg())//
-                    .build();
         }
         sendResponse(response);
     }
 
-    public abstract Message buildRpcResponse(R result);
+    public abstract Res buildRpcResponse(R result);
 
-
-    public void sendResponse(Message msg) {
+    public void sendResponse(Res msg) {
         if (!STATE_UPDATER.compareAndSet(this, PENDING, RESPOND)) {
             LOGGER.warn(String.format("A response: %s sent repeatedly!", msg));
             return;

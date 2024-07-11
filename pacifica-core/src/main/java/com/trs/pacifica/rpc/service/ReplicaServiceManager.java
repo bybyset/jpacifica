@@ -15,32 +15,42 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc;
+package com.trs.pacifica.rpc.service;
 
-import com.trs.pacifica.rpc.client.RpcClient;
-import com.trs.pacifica.rpc.node.Endpoint;
+import com.trs.pacifica.model.ReplicaId;
 
 /**
- * Rpc Factory for pacifica
+ * For manage ReplicaService, to see {@link ReplicaService}
  */
-public interface RpcFactory {
+public interface ReplicaServiceManager {
+
+    /**
+     * register ReplicaService
+     *
+     * @param replicaId
+     * @param replicaService
+     */
+    void registerReplicaService(final ReplicaId replicaId, final ReplicaService replicaService);
 
 
     /**
-     * create Rpc Server and bound address
+     * Get the ReplicaService for the specified replicaId
+     * Rpc request between replicas is directed to the
+     * specified implementation of ReplicaService by its replicaId
      *
-     * @param endpoint address
-     * @return
+     * @param replicaId
+     * @return null if not found
      */
-    RpcServer createRpcServer(final Endpoint endpoint);
+    ReplicaService getReplicaService(final ReplicaId replicaId);
 
 
     /**
-     * create Rpc Client for pacifica
+     * unregister ReplicaService
      *
-     * @return
+     * @param replicaId
+     * @return null if not found
      */
-    RpcClient createRpcClient();
+    ReplicaService unregisterReplicaService(final ReplicaId replicaId);
 
 
 }

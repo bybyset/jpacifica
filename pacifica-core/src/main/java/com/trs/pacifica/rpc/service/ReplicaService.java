@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.rpc;
+package com.trs.pacifica.rpc.service;
 
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.proto.RpcRequest.AppendEntriesResponse;
@@ -26,6 +26,7 @@ import com.trs.pacifica.proto.RpcRequest.InstallSnapshotRequest;
 import com.trs.pacifica.proto.RpcRequest.InstallSnapshotResponse;
 import com.trs.pacifica.proto.RpcRequest.GetFileRequest;
 import com.trs.pacifica.proto.RpcRequest.GetFileResponse;
+import com.trs.pacifica.rpc.RpcRequestFinished;
 
 /**
  *

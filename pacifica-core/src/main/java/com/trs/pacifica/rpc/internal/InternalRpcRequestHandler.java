@@ -18,19 +18,19 @@
 package com.trs.pacifica.rpc.internal;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.ReplicaManager;
+import com.trs.pacifica.rpc.service.ReplicaServiceManager;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.model.ReplicaId;
-import com.trs.pacifica.rpc.ReplicaService;
+import com.trs.pacifica.rpc.service.ReplicaService;
 import com.trs.pacifica.rpc.RpcRequestHandler;
 import com.trs.pacifica.rpc.RpcRequestFinished;
 
 public abstract class InternalRpcRequestHandler<Req extends Message, Rep extends Message> extends RpcRequestHandler<Req, Rep> {
 
-    private final ReplicaManager replicaManager;
+    private final ReplicaServiceManager replicaManager;
 
-    protected InternalRpcRequestHandler(ReplicaManager replicaManager, Rep defaultMessage) {
+    protected InternalRpcRequestHandler(ReplicaServiceManager replicaManager, Rep defaultMessage) {
         super(defaultMessage);
         this.replicaManager = replicaManager;
     }
@@ -41,7 +41,7 @@ public abstract class InternalRpcRequestHandler<Req extends Message, Rep extends
         if (replicaId == null) {
             throw new PacificaException(PacificaErrorCode.INTERNAL, "can not parse replica id");
         }
-        final ReplicaService replicaService = replicaManager.getReplica(replicaId);
+        final ReplicaService replicaService = replicaManager.getReplicaService(replicaId);
         if (replicaService == null) {
             throw new PacificaException(PacificaErrorCode.INTERNAL, String.format("can not found replica service, replica_id=%s", replicaId));
         }

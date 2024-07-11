@@ -17,5 +17,46 @@
 
 package com.trs.pacifica.example.counter.config.jraft.rpc;
 
-public class RemoveSecondaryProcessor {
+import com.alipay.sofa.jraft.Status;
+import com.alipay.sofa.jraft.error.RaftError;
+import com.alipay.sofa.jraft.rpc.RpcContext;
+import com.alipay.sofa.jraft.rpc.RpcProcessor;
+import com.google.protobuf.Message;
+import com.trs.pacifica.example.counter.MetaReplicaRpc;
+import com.trs.pacifica.example.counter.config.jraft.MetaReplicaService;
+import com.trs.pacifica.model.ReplicaId;
+
+import java.util.Objects;
+
+public class RemoveSecondaryProcessor implements RpcProcessor<MetaReplicaRpc.RemoveSecondaryRequest> {
+
+    private final MetaReplicaService metaReplicaService;
+
+    public RemoveSecondaryProcessor(MetaReplicaService metaReplicaService) {
+        this.metaReplicaService = metaReplicaService;
+    }
+
+    @Override
+    public void handleRequest(RpcContext rpcCtx, MetaReplicaRpc.RemoveSecondaryRequest request) {
+        RpcMetaReplicaClosure<Boolean> closure = new RpcMetaReplicaClosure<>(rpcCtx) {
+            @Override
+            public Message buildRpcResponse(Boolean result) {
+                return MetaReplicaRpc.RemoveSecondaryResponse.newBuilder().setSuccess(result).build();
+            }
+        };
+        try {
+            final String groupName = Objects.requireNonNull(request.getGroupName(), "groupName");
+            final String nodeId = Objects.requireNonNull(request.getNodeId(), "nodeId");
+            final long version = Objects.requireNonNull(request.getVersion(), "version");
+            final ReplicaId secondary = new ReplicaId(groupName, nodeId);
+            this.metaReplicaService.removeSecondary(secondary, version, closure);
+        } catch (Throwable e) {
+            closure.run(new Status(RaftError.EREQUEST, e.getMessage()));
+        }
+    }
+
+    @Override
+    public String interest() {
+        return MetaReplicaRpc.RemoveSecondaryRequest.class.getName();
+    }
 }

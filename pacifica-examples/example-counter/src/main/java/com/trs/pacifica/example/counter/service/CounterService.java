@@ -15,23 +15,17 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.example.counter.service;
 
-import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
-import com.trs.pacifica.example.counter.config.jraft.MasterServer;
+import com.trs.pacifica.example.counter.replica.CounterClosure;
+import com.trs.pacifica.model.ReplicaId;
 
-public class CounterServer {
+public interface CounterService {
 
-
-
-    private MasterServer masterServer;
-
-    private CounterReplicaConfigClient replicaConfigClient;
-
-
-
-
-
+    /**
+     * Add delta to counter then get value
+     */
+    void incrementAndGet(final ReplicaId replicaId, final long delta, CounterClosure<Long> done);
 
 
 }
