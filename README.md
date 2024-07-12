@@ -49,7 +49,7 @@ Compilation requires JDK 8 or higher.
 To see [how-to-use](./docs/how-to-use.md)
 
 ### About PacificA
-To see ![《PacificA: Replication in Log-Based Distributed Storage Systems》](./docs/PacificA.pdf)
+To see [《PacificA: Replication in Log-Based Distributed Storage Systems》](./docs/PacificA.pdf)
 
 
 ## Contribution
