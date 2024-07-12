@@ -17,29 +17,21 @@
 
 package com.trs.pacifica.rpc.node;
 
-import com.trs.pacifica.spi.JPacificaServiceLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class EndpointFactoryHolder {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFactoryHolder.class);
-
-    private static final EndpointFactory ENDPOINT_FACTORY;
-
-    static {
-        ENDPOINT_FACTORY = JPacificaServiceLoader//
-                .load(EndpointFactory.class)//
-                .first();
-        LOGGER.info("use EndpointFactory={}", ENDPOINT_FACTORY.getClass().getName());
-    }
+public interface EndpointManager {
 
 
-    private EndpointFactoryHolder() {
-    }
+    /**
+     * get Endpoint of special node id
+     * @param nodeId
+     * @return rpc address of node id
+     */
+    Endpoint getEndpoint(final String nodeId);
 
+    /**
+     * register Endpoint
+     * @param nodeId
+     * @param endpoint
+     */
+    void registerEndpoint(String nodeId, Endpoint endpoint);
 
-    public static final EndpointFactory getInstance() {
-        return ENDPOINT_FACTORY;
-    }
 }

@@ -26,7 +26,7 @@ import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.client.RpcClient;
-import com.trs.pacifica.rpc.node.EndpointFactory;
+import com.trs.pacifica.rpc.node.EndpointManager;
 import com.trs.pacifica.util.timer.TimerFactory;
 
 import java.util.concurrent.Executor;
@@ -38,13 +38,13 @@ public class ReplicaWharf {
 
     private final RpcClient rpcClient;
     private final RpcServer rpcServer;
-    private final EndpointFactory endpointFactory;
+    private final EndpointManager endpointFactory;
     private final ConfigurationClient configurationClient;
     private final StateMachine stateMachine;
     private final ReplicaImpl replicaImpl;
     private final ReplicaOption replicaOption;
 
-    public ReplicaWharf(ReplicaImpl replicaImpl, ReplicaOption replicaOption, RpcClient rpcClient, RpcServer rpcServer, EndpointFactory endpointFactory, ConfigurationClient configurationClient, StateMachine stateMachine) {
+    public ReplicaWharf(ReplicaImpl replicaImpl, ReplicaOption replicaOption, RpcClient rpcClient, RpcServer rpcServer, EndpointManager endpointFactory, ConfigurationClient configurationClient, StateMachine stateMachine) {
         this.rpcClient = rpcClient;
         this.rpcServer = rpcServer;
         this.endpointFactory = endpointFactory;
@@ -62,7 +62,7 @@ public class ReplicaWharf {
         return rpcServer;
     }
 
-    public EndpointFactory getEndpointFactory() {
+    public EndpointManager getEndpointFactory() {
         return endpointFactory;
     }
 
@@ -100,7 +100,7 @@ public class ReplicaWharf {
         private final ReplicaOption replicaOption = new ReplicaOption();
         private RpcClient rpcClient = null;
         private RpcServer rpcServer = null;
-        private EndpointFactory endpointFactory = null;
+        private EndpointManager endpointFactory = null;
         private ConfigurationClient configurationClient = null;
         private StateMachine stateMachine = null;
 
@@ -158,7 +158,7 @@ public class ReplicaWharf {
             return this;
         }
 
-        public Builder endpointFactory(EndpointFactory endpointFactory) {
+        public Builder endpointFactory(EndpointManager endpointFactory) {
             this.endpointFactory = endpointFactory;
             return this;
         }

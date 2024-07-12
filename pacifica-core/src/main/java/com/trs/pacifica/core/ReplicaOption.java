@@ -27,8 +27,8 @@ import com.trs.pacifica.fs.FileServiceFactoryHolder;
 import com.trs.pacifica.log.codec.LogEntryCodecFactory;
 import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;
-import com.trs.pacifica.rpc.node.EndpointFactory;
-import com.trs.pacifica.rpc.node.EndpointFactoryHolder;
+import com.trs.pacifica.rpc.node.EndpointManager;
+import com.trs.pacifica.rpc.node.EndpointManagerHolder;
 import com.trs.pacifica.util.timer.TimerFactory;
 import com.trs.pacifica.util.timer.TimerFactoryHolder;
 
@@ -123,7 +123,7 @@ public class ReplicaOption {
 
     private StateMachine stateMachine;
 
-    private EndpointFactory endpointFactory = EndpointFactoryHolder.getInstance();
+    private EndpointManager endpointFactory = EndpointManagerHolder.getInstance();
 
     private RpcClient rpcClient;
 
@@ -285,11 +285,11 @@ public class ReplicaOption {
         this.snapshotLogIndexMargin = snapshotLogIndexMargin;
     }
 
-    public EndpointFactory getEndpointFactory() {
+    public EndpointManager getEndpointFactory() {
         return endpointFactory;
     }
 
-    public void setEndpointFactory(EndpointFactory endpointFactory) {
+    public void setEndpointFactory(EndpointManager endpointFactory) {
         this.endpointFactory = endpointFactory;
     }
 

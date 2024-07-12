@@ -38,7 +38,7 @@ import com.trs.pacifica.rpc.RpcRequestFinished;
 import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.client.impl.DefaultPacificaClient;
-import com.trs.pacifica.rpc.node.EndpointFactory;
+import com.trs.pacifica.rpc.node.EndpointManager;
 import com.trs.pacifica.sender.BaseOnCaughtUp;
 import com.trs.pacifica.sender.SenderGroupImpl;
 import com.trs.pacifica.sender.SenderType;
@@ -86,7 +86,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     private ConfigurationClient configurationClient;
 
     private RpcClient rpcClient;
-    private EndpointFactory endpointFactory;
+    private EndpointManager endpointManager;
     private PacificaClient pacificaClient;
 
 
@@ -191,7 +191,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private void initPacificaClient(ReplicaOption option) throws PacificaException {
         this.rpcClient = Objects.requireNonNull(option.getRpcClient(), "rpcClient");
-        this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.endpointFactory);
+        this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.endpointManager);
     }
 
     private void initRepeatedTimers(ReplicaOption option) {
@@ -240,7 +240,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.replicaGroup = new CacheReplicaGroup(() -> {
                     return this.configurationClient.getReplicaGroup(this.replicaId.getGroupName());
                 });
-                this.endpointFactory = Objects.requireNonNull(option.getEndpointFactory(), "nodeManager");
+                this.endpointManager = Objects.requireNonNull(option.getEndpointFactory(), "nodeManager");
                 final FileServiceFactory fileServiceFactory = Objects.requireNonNull(option.getFileServiceFactory());
                 this.fileService = Objects.requireNonNull(fileServiceFactory.newFileService());
                 this.logManager = new LogManagerImpl(this);

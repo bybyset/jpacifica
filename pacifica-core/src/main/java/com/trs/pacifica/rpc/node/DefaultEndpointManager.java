@@ -17,14 +17,25 @@
 
 package com.trs.pacifica.rpc.node;
 
-public interface EndpointFactory {
+import com.trs.pacifica.spi.SPI;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-    /**
-     * get Endpoint of special node id
-     * @param nodeId
-     * @return rpc address of node id
-     */
-    Endpoint getEndpoint(final String nodeId);
+@SPI
+public class DefaultEndpointManager implements EndpointManager {
+
+    private final Map<String, Endpoint> nodeIdToEndpointMap = new ConcurrentHashMap<>();
+
+    @Override
+    public Endpoint getEndpoint(String nodeId) {
+        return nodeIdToEndpointMap.get(nodeId);
+    }
+
+    @Override
+    public void registerEndpoint(String nodeId, Endpoint endpoint) {
+        this.nodeIdToEndpointMap.put(nodeId, endpoint);
+    }
+
 
 }
