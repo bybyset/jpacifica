@@ -15,9 +15,32 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica;
+package com.trs.pacifica.core;
 
-public interface PacificaServiceFactory extends LogStorageFactory, SnapshotStorageFactory{
+import com.trs.pacifica.LogStorageFactory;
+import com.trs.pacifica.spi.JPacificaServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class LogStorageFactoryHolder {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogStorageFactoryHolder.class);
+
+    private static final LogStorageFactory LOG_STORAGE_FACTORY;
+
+    static {
+        LOG_STORAGE_FACTORY = JPacificaServiceLoader//
+                .load(LogStorageFactory.class)//
+                .first();
+        LOGGER.info("use LogStorageFactory={}", LOG_STORAGE_FACTORY.getClass().getName());
+    }
 
 
+    public static final LogStorageFactory getInstance() {
+        return LOG_STORAGE_FACTORY;
+    }
+
+    private LogStorageFactoryHolder() {
+
+    }
 }

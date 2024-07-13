@@ -126,13 +126,13 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
     private void initLogManager(ReplicaOption option) throws PacificaException {
         final ExecutorGroup logExecutorGroup = Objects.requireNonNull(option.getLogManagerExecutorGroup(), "LogManagerExecutorGroup");
-        final PacificaServiceFactory pacificaServiceFactory = Objects.requireNonNull(option.getPacificaServiceFactory(), "pacificaServiceFactory");
+        final LogStorageFactory logStorageFactory = Objects.requireNonNull(option.getLogStorageFactory(), "logStorageFactory");
         final String logStoragePath = Objects.requireNonNull(option.getLogStoragePath(), "logStoragePath");
         final LogManagerImpl.Option logManagerOption = new LogManagerImpl.Option();
         final LogEntryCodecFactory logEntryCodecFactory = Objects.requireNonNull(option.getLogEntryCodecFactory(), "logEntryCodecFactory");
         logManagerOption.setReplicaOption(option);
         logManagerOption.setLogStoragePath(logStoragePath);
-        logManagerOption.setLogStorageFactory(pacificaServiceFactory);
+        logManagerOption.setLogStorageFactory(logStorageFactory);
         logManagerOption.setLogManagerExecutor(logExecutorGroup.chooseExecutor());
         logManagerOption.setStateMachineCaller(this.stateMachineCaller);
         logManagerOption.setLogEntryCodecFactory(logEntryCodecFactory);
@@ -143,7 +143,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         final SnapshotManagerImpl.Option snapshotManagerOption = new SnapshotManagerImpl.Option();
         snapshotManagerOption.setReplicaOption(option);
         snapshotManagerOption.setStoragePath(option.getSnapshotStoragePath());
-        snapshotManagerOption.setSnapshotStorageFactory(option.getPacificaServiceFactory());
+        snapshotManagerOption.setSnapshotStorageFactory(option.getSnapshotStorageFactory());
         snapshotManagerOption.setStateMachineCaller(this.stateMachineCaller);
         snapshotManagerOption.setLogManager(this.logManager);
         snapshotManagerOption.setPacificaClient(this.pacificaClient);

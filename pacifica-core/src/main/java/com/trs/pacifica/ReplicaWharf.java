@@ -141,7 +141,9 @@ public class ReplicaWharf {
 
         private TimerFactory timerFactory = null;
 
-        private PacificaServiceFactory pacificaServiceFactory = null;
+        private LogStorageFactory logStorageFactory = null;
+
+        private SnapshotStorageFactory snapshotStorageFactory = null;
 
 
         private Builder(ReplicaId replicaId) {
@@ -258,8 +260,13 @@ public class ReplicaWharf {
             return this;
         }
 
-        public Builder pacificaServiceFactory(PacificaServiceFactory pacificaServiceFactory) {
-            this.pacificaServiceFactory = pacificaServiceFactory;
+        public Builder logStorageFactory(LogStorageFactory logStorageFactory) {
+            this.logStorageFactory = logStorageFactory;
+            return this;
+        }
+
+        public Builder snapshotStorageFactory(SnapshotStorageFactory snapshotStorageFactory) {
+            this.snapshotStorageFactory = snapshotStorageFactory;
             return this;
         }
 
@@ -334,8 +341,11 @@ public class ReplicaWharf {
             if (this.timerFactory != null) {
                 this.replicaOption.setTimerFactory(timerFactory);
             }
-            if (this.pacificaServiceFactory != null) {
-                this.replicaOption.setPacificaServiceFactory(pacificaServiceFactory);
+            if (this.logStorageFactory != null) {
+                this.replicaOption.setLogStorageFactory(logStorageFactory);
+            }
+            if (this.snapshotStorageFactory != null) {
+                this.replicaOption.setSnapshotStorageFactory(snapshotStorageFactory);
             }
 
             replicaImpl.init(replicaOption);

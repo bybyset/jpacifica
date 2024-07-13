@@ -15,25 +15,22 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.core;
+package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
-import com.trs.pacifica.PacificaServiceFactory;
-import com.trs.pacifica.SnapshotStorage;
+import com.trs.pacifica.LogStorageFactory;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
-import com.trs.pacifica.log.FsLogStorage;
 import com.trs.pacifica.log.codec.LogEntryDecoder;
 import com.trs.pacifica.log.codec.LogEntryEncoder;
-import com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage;
 import com.trs.pacifica.spi.SPI;
 
 import java.io.IOException;
 
 @SPI
-public class DefaultPacificaServiceFactory implements PacificaServiceFactory {
+public class FsLogStorageFactory implements LogStorageFactory {
     @Override
-    public LogStorage newLogStorage(final String path, final LogEntryEncoder logEntryEncoder, final LogEntryDecoder logEntryDecoder) throws PacificaException {
+    public LogStorage newLogStorage(String path, LogEntryEncoder logEntryEncoder, LogEntryDecoder logEntryDecoder) throws PacificaException {
         try {
             return new FsLogStorage(path, logEntryEncoder, logEntryDecoder);
         } catch (IOException e) {
@@ -41,14 +38,4 @@ public class DefaultPacificaServiceFactory implements PacificaServiceFactory {
         }
     }
 
-    @Override
-    public SnapshotStorage newSnapshotStorage(final String path) throws PacificaException {
-        try {
-            DefaultSnapshotStorage snapshotStorage = new DefaultSnapshotStorage(path);
-            snapshotStorage.load();
-            return snapshotStorage;
-        } catch (IOException e) {
-            throw new PacificaException(PacificaErrorCode.IO, String.format("failed to new SnapshotStorage, error_msg=%s", e.getMessage()), e);
-        }
-    }
 }

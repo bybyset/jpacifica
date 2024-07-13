@@ -18,7 +18,8 @@
 package com.trs.pacifica.core;
 
 import com.trs.pacifica.ConfigurationClient;
-import com.trs.pacifica.PacificaServiceFactory;
+import com.trs.pacifica.LogStorageFactory;
+import com.trs.pacifica.SnapshotStorageFactory;
 import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.async.thread.ExecutorGroup;
 import com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder;
@@ -94,8 +95,8 @@ public class ReplicaOption {
      * path of the snapshot storage
      */
     private String snapshotStoragePath;
-
-    private PacificaServiceFactory pacificaServiceFactory = new DefaultPacificaServiceFactory();
+    private LogStorageFactory logStorageFactory = LogStorageFactoryHolder.getInstance();
+    private SnapshotStorageFactory snapshotStorageFactory = SnapshotStorageFactoryHolder.getInstance();
 
     private ConfigurationClient configurationClient;
 
@@ -180,12 +181,20 @@ public class ReplicaOption {
         this.configurationClient = configurationClient;
     }
 
-    public PacificaServiceFactory getPacificaServiceFactory() {
-        return pacificaServiceFactory;
+    public LogStorageFactory getLogStorageFactory() {
+        return logStorageFactory;
     }
 
-    public void setPacificaServiceFactory(PacificaServiceFactory pacificaServiceFactory) {
-        this.pacificaServiceFactory = pacificaServiceFactory;
+    public void setLogStorageFactory(LogStorageFactory logStorageFactory) {
+        this.logStorageFactory = logStorageFactory;
+    }
+
+    public SnapshotStorageFactory getSnapshotStorageFactory() {
+        return snapshotStorageFactory;
+    }
+
+    public void setSnapshotStorageFactory(SnapshotStorageFactory snapshotStorageFactory) {
+        this.snapshotStorageFactory = snapshotStorageFactory;
     }
 
     public String getLogStoragePath() {
