@@ -17,43 +17,44 @@
 
 package com.trs.pacifica.rpc.client;
 
-import com.google.protobuf.Message;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcRequestFinished;
+import com.trs.pacifica.util.SystemPropertyUtil;
+
+import java.util.concurrent.Future;
 
 public interface PacificaClient extends ReplicaClient {
 
-
-    static final int DEFAULT_TIMEOUT_MS = 60 * 1000;
+    public static final int DEFAULT_TIMEOUT_MS = SystemPropertyUtil.getInt("pacifica.client.rpc.client.timeout.ms", 60 * 1000);
 
     /**
      * @param request
      * @param callback
      * @return
      */
-    default Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback) {
+    default Future<RpcRequest.AppendEntriesResponse> appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback) {
         return appendLogEntries(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
-    Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback, int timeoutMs);
+    Future<RpcRequest.AppendEntriesResponse> appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback, int timeoutMs);
 
 
-    default Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback) {
+    default Future<RpcRequest.InstallSnapshotResponse> installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback) {
         return installSnapshot(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
-    Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs);
+    Future<RpcRequest.InstallSnapshotResponse> installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs);
 
-    Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs);
+    Future<RpcRequest.ReplicaRecoverResponse> recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs);
 
-    default Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback) {
+    default Future<RpcRequest.ReplicaRecoverResponse> recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback) {
         return recoverReplica(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
-    Message getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback, final long timeoutMs);
+    Future<RpcRequest.GetFileResponse> getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback, final int timeoutMs);
 
 
-    default Message getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback) {
+    default Future<RpcRequest.GetFileResponse> getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback) {
         return getFile(request, callback, DEFAULT_TIMEOUT_MS);
     }
 

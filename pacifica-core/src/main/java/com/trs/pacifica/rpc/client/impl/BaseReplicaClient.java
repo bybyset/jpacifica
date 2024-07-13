@@ -89,7 +89,7 @@ public abstract class BaseReplicaClient implements ReplicaClient {
      * @return
      * @throws NotFoundEndpointException
      */
-    private Endpoint getEndpointOrThrow(final ReplicaId targetReplicaId) throws NotFoundEndpointException {
+    protected Endpoint getEndpointOrThrow(final ReplicaId targetReplicaId) throws NotFoundEndpointException {
         Objects.requireNonNull(targetReplicaId, "targetReplicaId");
         final Endpoint endpoint = getEndpoint(targetReplicaId);
         if (endpoint == null) {
@@ -100,8 +100,8 @@ public abstract class BaseReplicaClient implements ReplicaClient {
 
 
     @Override
-    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor) {
-        final FutureImpl<Message> future = new FutureImpl<>();
+    public <T extends Message> Future<T> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor) {
+        final FutureImpl<T> future = new FutureImpl<>();
         try {
             this.rpcClient.invokeAsync(endpoint, request, new InvokeCallback() {
                 @Override

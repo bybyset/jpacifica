@@ -80,7 +80,7 @@ public class DownloadSessionTest {
             callback.setRpcResponse(response);
             callback.run(Finished.success());
             return null;
-        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyLong());
+        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyInt());
     }
 
 
@@ -109,7 +109,7 @@ public class DownloadSessionTest {
             RpcRequestFinished<RpcRequest.GetFileResponse> callback = invocation.getArgument(1, RpcRequestFinished.class);
             callback.run(Finished.failure(new RuntimeException("test failure")));
             return null;
-        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyLong());
+        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyInt());
     }
 
     @Test

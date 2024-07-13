@@ -59,6 +59,10 @@ public interface ReplicaClient {
      * @return
      * @param <T>
      */
-    public <T extends Message> Future<Message> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor);
+    <T extends Message> Future<T> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor);
+
+    default <T extends Message> Future<T> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs) {
+        return sendRequest(endpoint, request, callback, timeoutMs, null);
+    }
 
 }

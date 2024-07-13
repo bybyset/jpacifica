@@ -17,7 +17,6 @@
 
 package com.trs.pacifica.rpc.client.impl;
 
-import com.google.protobuf.Message;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.proto.RpcRequest;
 import com.trs.pacifica.rpc.RpcRequestFinished;
@@ -25,9 +24,13 @@ import com.trs.pacifica.rpc.client.PacificaClient;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.Endpoint;
 import com.trs.pacifica.rpc.node.EndpointManager;
+import com.trs.pacifica.util.RpcUtil;
+
+import java.util.Objects;
+import java.util.concurrent.Future;
 
 /**
- *
+ * default impl PacificaClient
  */
 public class DefaultPacificaClient extends BaseReplicaClient implements PacificaClient {
 
@@ -39,28 +42,40 @@ public class DefaultPacificaClient extends BaseReplicaClient implements Pacifica
     }
 
     @Override
-    public Message appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback, int timeoutMs) {
-        return null;
+    public Future<RpcRequest.AppendEntriesResponse> appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback, int timeoutMs) {
+        Objects.requireNonNull(request, "request");
+        ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
+        final Endpoint endpoint = getEndpointOrThrow(targetId);
+        return this.sendRequest(endpoint, request, callback, timeoutMs);
     }
 
     @Override
-    public Message installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs) {
-        return null;
+    public Future<RpcRequest.InstallSnapshotResponse> installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs) {
+        Objects.requireNonNull(request, "request");
+        ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
+        final Endpoint endpoint = getEndpointOrThrow(targetId);
+        return this.sendRequest(endpoint, request, callback, timeoutMs);
     }
 
     @Override
-    public Message recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs) {
-        return null;
+    public Future<RpcRequest.ReplicaRecoverResponse> recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs) {
+        Objects.requireNonNull(request, "request");
+        ReplicaId targetId = RpcUtil.toReplicaId(request.getPrimaryId());
+        final Endpoint endpoint = getEndpointOrThrow(targetId);
+        return this.sendRequest(endpoint, request, callback, timeoutMs);
     }
 
     @Override
-    public Message getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback, long timeoutMs) {
-        return null;
+    public Future<RpcRequest.GetFileResponse> getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback, int timeoutMs) {
+        Objects.requireNonNull(request, "request");
+        ReplicaId targetId = RpcUtil.toReplicaId(request.getTargetId());
+        final Endpoint endpoint = getEndpointOrThrow(targetId);
+        return this.sendRequest(endpoint, request, callback, timeoutMs);
     }
 
     @Override
     protected Endpoint getEndpoint(ReplicaId targetReplicaId) {
         final String nodeId = targetReplicaId.getNodeId();
-        return  endpointManager.getEndpoint(nodeId);
+        return endpointManager.getEndpoint(nodeId);
     }
 }

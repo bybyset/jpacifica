@@ -126,7 +126,7 @@ public class SnapshotManagerImplTest extends BaseStorageTest {
             callback.setRpcResponse(response);
             ThreadUtil.runCallback(callback, Finished.success());
             return null;
-        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyLong());
+        }).when(this.pacificaClient).getFile(Mockito.any(), Mockito.any(), Mockito.anyInt());
 
     }
 
