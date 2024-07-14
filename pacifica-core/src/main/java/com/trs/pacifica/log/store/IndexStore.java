@@ -31,7 +31,7 @@ public class IndexStore extends AbstractStore {
 
     static final String _FILE_SUFFIX = ".i";
 
-    public static final String _DEFAULT_INDEX_DIR_NAME = "log_index";
+    public static final String _DEFAULT_INDEX_DIR_NAME = "_log_index";
     public static final int _DEFAULT_INDEX_ENTRY_COUNT_PER_FILE = 1000;
 
     public IndexStore(Path dir, int indexEntryCountPerFile) throws IOException {
