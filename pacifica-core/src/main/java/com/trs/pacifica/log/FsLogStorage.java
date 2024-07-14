@@ -349,7 +349,7 @@ public class FsLogStorage implements LogStorage {
         if (!this.segmentStore.waitForFlush(exceptedLogPosition, 5)) {
             return false;
         }
-        if (!this.indexStore.waitForFlush(exceptedLogPosition, 5)) {
+        if (!this.indexStore.waitForFlush(exceptedIndexPosition, 5)) {
             return false;
         }
         return true;
