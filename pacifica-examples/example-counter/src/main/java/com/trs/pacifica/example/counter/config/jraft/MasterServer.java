@@ -25,14 +25,13 @@ import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
 import com.alipay.sofa.jraft.rpc.RpcServer;
 import com.trs.pacifica.example.counter.config.jraft.fsm.ReplicaFsm;
-import com.trs.pacifica.example.counter.config.jraft.rpc.AddSecondaryProcessor;
-import com.trs.pacifica.example.counter.config.jraft.rpc.RemoveSecondaryProcessor;
+import com.trs.pacifica.example.counter.config.jraft.rpc.*;
 
 import java.io.File;
 
 public class MasterServer {
 
-    public static final String MASTER_GROUP_ID = "master";
+    public static final String DEFAULT_GROUP_ID = "master";
 
     public static final String LOG_DIR_NAME = "wal";
     public static final String SNAPSHOT_DIR_NAME = "snapshot";
@@ -44,25 +43,29 @@ public class MasterServer {
     private ReplicaFsm replicaFsm;
 
 
-    public MasterServer(String dataPath, PeerId serverId, Configuration configuration, NodeOptions options) {
+    public MasterServer(String dataPath, PeerId serverId, Configuration configuration, String groupId, NodeOptions options) {
         if (options == null) {
             options = new NodeOptions();
         }
-
         MetaReplicaService metaReplicaService = new MetaReplicaServiceImpl(this);
         final RpcServer rpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
         rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
         rpcServer.registerProcessor(new RemoveSecondaryProcessor(metaReplicaService));
-        rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
-
+        rpcServer.registerProcessor(new ChangePrimaryProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new GetReplicaGroupProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new AddReplicaProcessor(metaReplicaService));
         this.replicaFsm = new ReplicaFsm();
         options.setInitialConf(configuration);
         options.setFsm(replicaFsm);
         options.setLogUri(dataPath + File.separator + LOG_DIR_NAME);
         options.setSnapshotUri(dataPath + File.separator + SNAPSHOT_DIR_NAME);
         options.setRaftMetaUri(dataPath + File.separator + RAFT_META_DIR_NAME);
-        this.raftGroupService = new RaftGroupService(MASTER_GROUP_ID, serverId, options, rpcServer);
+        this.raftGroupService = new RaftGroupService(groupId, serverId, options, rpcServer);
         this.node = raftGroupService.start();
+    }
+
+    public MasterServer(String dataPath, PeerId serverId, Configuration configuration) {
+        this(dataPath, serverId, configuration, DEFAULT_GROUP_ID, new NodeOptions());
     }
 
     public RaftGroupService getRaftGroupService() {
@@ -77,6 +80,8 @@ public class MasterServer {
         return replicaFsm;
     }
 
-    public void start() {
+    public void shutdown() {
+        this.getRaftGroupService().shutdown();
     }
+
 }

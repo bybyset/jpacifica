@@ -15,21 +15,12 @@
  * limitations under the License.
  */
 
-package com.trs.pacifica.example.counter;
+package com.trs.pacifica.rpc.impl.grpc;
 
-import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
-import com.trs.pacifica.example.counter.config.jraft.MasterServer;
-
-public class CounterServer {
+public class MarshallerHelper {
 
 
-
-    private MasterServer masterServer;
-
-    private CounterReplicaConfigClient replicaConfigClient;
-
-
-
+    private MarshallerHelper(){}
 
 
 

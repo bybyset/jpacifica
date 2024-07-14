@@ -189,11 +189,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         this.stateMachineCaller.init(fsmOption);
     }
 
-    private void initPacificaClient(ReplicaOption option) throws PacificaException {
-        this.rpcClient = Objects.requireNonNull(option.getRpcClient(), "rpcClient");
-        this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.endpointManager);
-    }
-
     private void initRepeatedTimers(ReplicaOption option) {
         this.gracePeriodTimer = new RepeatedTimer("Grace_Period_Timer_" + this.replicaId.getGroupName(), option.getGracePeriodTimeoutMs(),
                 Objects.requireNonNull(option.getTimerFactory().newTimer())) {
@@ -240,7 +235,9 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.replicaGroup = new CacheReplicaGroup(() -> {
                     return this.configurationClient.getReplicaGroup(this.replicaId.getGroupName());
                 });
+                this.rpcClient = Objects.requireNonNull(option.getRpcClient(), "rpcClient");
                 this.endpointManager = Objects.requireNonNull(option.getEndpointFactory(), "nodeManager");
+                this.pacificaClient = new DefaultPacificaClient(this.rpcClient, this.endpointManager);
                 final FileServiceFactory fileServiceFactory = Objects.requireNonNull(option.getFileServiceFactory());
                 this.fileService = Objects.requireNonNull(fileServiceFactory.newFileService());
                 this.logManager = new LogManagerImpl(this);
@@ -248,7 +245,6 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
                 this.stateMachineCaller = new StateMachineCallerImpl(this);
                 this.senderGroup = new SenderGroupImpl(this, this.pacificaClient);
                 this.ballotBox = new BallotBoxImpl(this);
-                initPacificaClient(option);
                 initApplyExecutor(option);
                 initLogManager(option);
                 initStateMachineCall(option);

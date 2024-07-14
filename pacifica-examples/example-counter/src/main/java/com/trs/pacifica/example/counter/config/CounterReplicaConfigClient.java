@@ -18,19 +18,23 @@
 package com.trs.pacifica.example.counter.config;
 
 import com.alipay.sofa.jraft.RouteTable;
-import com.alipay.sofa.jraft.Status;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.error.RemotingException;
+import com.alipay.sofa.jraft.option.CliOptions;
 import com.alipay.sofa.jraft.option.RpcOptions;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import com.trs.pacifica.ConfigurationClient;
 import com.trs.pacifica.example.counter.MetaReplicaRpc;
 import com.trs.pacifica.example.counter.config.jraft.MasterServer;
 import com.trs.pacifica.model.ReplicaGroup;
+import com.trs.pacifica.model.ReplicaGroupImpl;
 import com.trs.pacifica.model.ReplicaId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CounterReplicaConfigClient implements ConfigurationClient {
 
@@ -41,16 +45,35 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
     public CounterReplicaConfigClient(final String groupId, final Configuration conf) {
         this.groupId = groupId;
         RouteTable.getInstance().updateConfiguration(groupId, conf);
-        RpcOptions rpcOptions = new RpcOptions();
+        CliOptions rpcOptions = new CliOptions();
+        rpcOptions.setMaxRetry(1);
+        rpcOptions.setTimeoutMs(60 * 1000);
         cliClientService.init(rpcOptions);
     }
 
     public CounterReplicaConfigClient(final Configuration conf) {
-        this(MasterServer.MASTER_GROUP_ID, conf);
+        this(MasterServer.DEFAULT_GROUP_ID, conf);
     }
 
     @Override
     public ReplicaGroup getReplicaGroup(String groupName) {
+        MetaReplicaRpc.GetReplicaGroupRequest request = MetaReplicaRpc.GetReplicaGroupRequest.newBuilder()//
+                .setGroupName(groupName)//
+                .build();
+
+        try {
+            MetaReplicaRpc.GetReplicaGroupResponse response = (MetaReplicaRpc.GetReplicaGroupResponse) sendRequest(request);
+            final long version = response.getVersion();
+            final long term = response.getTerm();
+            final ReplicaId primary = new ReplicaId(groupName, response.getPrimary());
+            List<ReplicaId> secondary = new ArrayList<>();
+            for (String secondaryNodeId : response.getSecondaryList()) {
+                secondary.add(new ReplicaId(groupName, secondaryNodeId));
+            }
+            return new ReplicaGroupImpl(groupName, version, term, primary, secondary);
+        } catch (Throwable e) {
+            LOGGER.error("failed to get ReplicaGroup", e);
+        }
         return null;
     }
 
@@ -102,8 +125,22 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
         return false;
     }
 
+    public boolean addReplica(ReplicaId replicaId) {
+        MetaReplicaRpc.AddReplicaRequest request = MetaReplicaRpc.AddReplicaRequest.newBuilder()//
+                .setGroupName(replicaId.getGroupName())//
+                .setNodeId(replicaId.getNodeId())//
+                .build();
+        try {
+            MetaReplicaRpc.AddReplicaResponse response = (MetaReplicaRpc.AddReplicaResponse) sendRequest(request);
+            return response.getSuccess();
+        } catch (Throwable e) {
+            LOGGER.error("failed to add replica", e);
+        }
+        return false;
+    }
+
     private Object sendRequest(Object request) throws RemotingException, InterruptedException {
-       return sendRequest(request, 50000);
+        return sendRequest(request, 50000);
     }
 
     private Object sendRequest(Object request, long timeoutMs) throws RemotingException, InterruptedException {

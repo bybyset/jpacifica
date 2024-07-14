@@ -27,7 +27,7 @@ dependencies {
 
     implementation "com.google.protobuf:protobuf-java:$protobuf_version"
     implementation "io.grpc:grpc-core:$grpc_version"
-    implementation "io.grpc:grpc-netty:$grpc_version"
+    implementation "io.grpc:grpc-netty-shaded:$grpc_version"
     implementation "io.grpc:grpc-api:$grpc_version"
     implementation "io.grpc:grpc-services:$grpc_version"
     implementation "io.grpc:grpc-util:$grpc_version"

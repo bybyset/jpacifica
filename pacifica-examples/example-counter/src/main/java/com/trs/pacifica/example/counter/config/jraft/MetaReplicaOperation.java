@@ -29,6 +29,7 @@ public class MetaReplicaOperation {
     public static final int OP_TYPE_ADD_SECONDARY = 1;
     public static final int OP_TYPE_REMOVE_SECONDARY = 2;
     public static final int OP_TYPE_CHANGE_PRIMARY = 3;
+    public static final int OP_TYPE_ADD_REPLICA = 4;
 
 
     private final int type;
@@ -73,6 +74,10 @@ public class MetaReplicaOperation {
 
     public static MetaReplicaOperation changePrimaryOperation(final ReplicaId replicaId, final long version) {
         return buildOperation(OP_TYPE_CHANGE_PRIMARY, replicaId, version);
+    }
+
+    public static MetaReplicaOperation addReplicaOperation(final ReplicaId replicaId) {
+        return buildOperation(OP_TYPE_ADD_REPLICA, replicaId, 0);
     }
 
     public static MetaReplicaOperation buildOperation(int type, final ReplicaId replicaId, long version) {

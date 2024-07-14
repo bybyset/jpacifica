@@ -18,6 +18,7 @@
 package com.trs.pacifica.example.counter.config.jraft;
 
 import com.trs.pacifica.example.counter.MetaReplicaRpc;
+import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 
 public interface MetaReplicaService {
@@ -32,7 +33,9 @@ public interface MetaReplicaService {
     void changePrimary(ReplicaId replicaId, final long version, final MetaReplicaClosure<Boolean> closure);
 
 
+    void getReplicaGroup(String groupName, final MetaReplicaClosure<ReplicaGroup> closure);
 
 
+    void addReplica(ReplicaId replicaId, final MetaReplicaClosure<Boolean> closure);
 
 }

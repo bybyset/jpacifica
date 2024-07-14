@@ -18,7 +18,6 @@
 package com.trs.pacifica.rpc.impl.grpc;
 
 import com.google.protobuf.Message;
-import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.rpc.ExecutorRpcHandler;
@@ -27,7 +26,7 @@ import com.trs.pacifica.rpc.RpcHandler;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.node.Endpoint;
 import io.grpc.*;
-import io.grpc.netty.NettyServerBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.ServerCalls;
 import io.grpc.stub.StreamObserver;
 import io.grpc.util.MutableHandlerRegistry;
@@ -37,13 +36,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class GrpcServer implements RpcServer, LifeCycle<Void> {
+public class GrpcServer implements RpcServer{
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpcServer.class);
 
     protected final Endpoint endpoint;
@@ -52,8 +49,6 @@ public class GrpcServer implements RpcServer, LifeCycle<Void> {
 
     private final List<ServerInterceptor> serverInterceptors = new CopyOnWriteArrayList<>();
     private final MutableHandlerRegistry mutableHandlerRegistry = new MutableHandlerRegistry();
-
-    private final Map<String, Message> parserClasses = new ConcurrentHashMap<>();
 
     private final MarshallerManager requestMarshallerManager;
 
@@ -70,7 +65,7 @@ public class GrpcServer implements RpcServer, LifeCycle<Void> {
 
 
     @Override
-    public synchronized void init(Void option) throws PacificaException {
+    public synchronized void init(Object option) throws PacificaException {
         this.registerDefaultInterceptor();
         this.addInterceptor(this.serverInterceptors);
     }
@@ -116,6 +111,7 @@ public class GrpcServer implements RpcServer, LifeCycle<Void> {
     public void registerRpcHandler(RpcHandler rpcHandler) {
         final String requestClzName = rpcHandler.interest();
         Objects.requireNonNull(requestClzName, "rpcHandler.interest()");
+
         final ExecutorRpcHandler executorRpcHandler = ExecutorRpcHandler.wrap(rpcHandler);
         //method
         final MethodDescriptor<Message, Message> method = MethodDescriptor //
@@ -179,6 +175,14 @@ public class GrpcServer implements RpcServer, LifeCycle<Void> {
 
     protected void addInterceptor(List<ServerInterceptor> interceptorContainer) {
 
+    }
+
+    public void extendMarshaller(Message request, Message response) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(response, "response");
+        final String requestClzName = request.getClass().getName();
+        this.requestMarshallerManager.registerMarshaller(requestClzName, request);
+        this.responseMarshallerManager.registerMarshaller(requestClzName, response);
     }
 
 

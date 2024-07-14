@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.example.counter.service;
 
+import com.trs.pacifica.Replica;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.example.counter.replica.CounterClosure;
 import com.trs.pacifica.example.counter.replica.CounterOperation;
@@ -24,27 +25,28 @@ import com.trs.pacifica.example.counter.replica.CounterReplica;
 import com.trs.pacifica.example.counter.replica.OperationClosure;
 import com.trs.pacifica.model.Operation;
 import com.trs.pacifica.model.ReplicaId;
+import com.trs.pacifica.rpc.service.ReplicaService;
+import com.trs.pacifica.rpc.service.ReplicaServiceManagerHolder;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
 public class CounterServiceImpl implements CounterService {
 
-    private final CounterReplica counterReplica;
-
-
-    public CounterServiceImpl(CounterReplica counterReplica) {
-        this.counterReplica = counterReplica;
-    }
-
     @Override
     public void incrementAndGet(final ReplicaId replicaId, long delta, CounterClosure<Long> done) {
         CounterOperation counterOperation = CounterOperation.createIncrement(delta);
-        doApplyOperation(counterOperation, done);
+        Replica replica = getReplica(replicaId);
+        doApplyOperation(replica, counterOperation, done);
+    }
+
+    protected Replica getReplica(ReplicaId replicaId) {
+        ReplicaService replicaService = ReplicaServiceManagerHolder.getInstance().getReplicaService(replicaId);
+        return (Replica) replicaService;
     }
 
 
-    private void doApplyOperation(CounterOperation counterOperation, CounterClosure counterClosure) {
+    private void doApplyOperation(Replica replica, CounterOperation counterOperation, CounterClosure counterClosure) {
         OperationClosure operationClosure = new OperationClosure() {
             @Override
             public void run(Finished finished) {
@@ -54,14 +56,14 @@ public class CounterServiceImpl implements CounterService {
                 counterClosure.run(finished);
             }
         };
-        doApplyOperation(counterOperation, operationClosure);
+        doApplyOperation(replica, counterOperation, operationClosure);
     }
 
-    private void doApplyOperation(CounterOperation counterOperation, OperationClosure operationClosure) {
+    private void doApplyOperation(Replica replica, CounterOperation counterOperation, OperationClosure operationClosure) {
         Objects.requireNonNull(counterOperation, "operation");
         Operation operation = new Operation();
         operation.setLogData(ByteBuffer.wrap(CounterOperation.toBytes(counterOperation)));
         operation.setOnFinish(operationClosure);
-        this.counterReplica.getReplica().apply(operation);
+        replica.apply(operation);
     }
 }

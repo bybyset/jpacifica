@@ -26,6 +26,7 @@ import com.alipay.sofa.jraft.storage.snapshot.SnapshotReader;
 import com.alipay.sofa.jraft.storage.snapshot.SnapshotWriter;
 import com.trs.pacifica.example.counter.config.jraft.MetaReplicaOperation;
 import com.trs.pacifica.example.counter.config.jraft.OperationClosure;
+import com.trs.pacifica.model.ReplicaGroupImpl;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.util.BitUtil;
 import org.apache.commons.io.FileUtils;
@@ -126,9 +127,26 @@ public class ReplicaFsm extends StateMachineAdapter {
         return false;
     }
 
+    public boolean addReplica(String groupName, String nodeId) {
+        MetaReplicaGroup metaReplicaGroup =  this.replicas.get(groupName);
+        if (metaReplicaGroup == null) {
+            metaReplicaGroup = new MetaReplicaGroup(groupName, nodeId);
+        } else {
+            metaReplicaGroup.addReplica(nodeId);
+        }
+        return true;
+    }
 
-    public MetaReplicaGroup getReplicaGroup(final String groupName) {
-        return this.replicas.get(groupName);
+    public ReplicaGroupImpl getReplicaGroup(final String groupName) {
+        MetaReplicaGroup metaReplicaGroup =  this.replicas.get(groupName);
+        if (metaReplicaGroup != null) {
+            final long version = metaReplicaGroup.getVersion();
+            final long term = metaReplicaGroup.getTerm();
+            final ReplicaId primary = metaReplicaGroup.getPrimary();
+            final List<ReplicaId> secondary = metaReplicaGroup.listSecondary();
+            return new ReplicaGroupImpl(groupName, version, term, primary, secondary);
+        }
+        return null;
     }
 
     private Object doReplayOperation(MetaReplicaOperation operation) {
@@ -151,6 +169,10 @@ public class ReplicaFsm extends StateMachineAdapter {
 
             case MetaReplicaOperation.OP_TYPE_CHANGE_PRIMARY: {
                 result = changePrimary(groupName, nodeId, version);
+                break;
+            }
+            case MetaReplicaOperation.OP_TYPE_ADD_REPLICA: {
+                result = addReplica(groupName, nodeId);
                 break;
             }
         }

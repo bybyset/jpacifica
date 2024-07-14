@@ -24,4 +24,6 @@ public interface MarshallerManager {
 
     MethodDescriptor.Marshaller<Message> getMarshaller(final String requestClzName);
 
+    void registerMarshaller(final String requestClzName, Message message);
+
 }

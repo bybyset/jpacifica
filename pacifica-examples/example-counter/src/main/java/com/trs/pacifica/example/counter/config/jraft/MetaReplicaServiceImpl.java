@@ -17,9 +17,11 @@
 
 package com.trs.pacifica.example.counter.config.jraft;
 
-import com.alipay.sofa.jraft.Closure;
 import com.alipay.sofa.jraft.Status;
+import com.alipay.sofa.jraft.closure.ReadIndexClosure;
 import com.alipay.sofa.jraft.entity.Task;
+import com.alipay.sofa.jraft.util.BytesUtil;
+import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 
 import java.nio.ByteBuffer;
@@ -49,6 +51,33 @@ public class MetaReplicaServiceImpl implements MetaReplicaService{
     public void changePrimary(ReplicaId replicaId, long version, MetaReplicaClosure<Boolean> closure) {
         MetaReplicaOperation operation = MetaReplicaOperation.changePrimaryOperation(replicaId, version);
         doApplyOperation(operation, closure);
+    }
+
+    @Override
+    public void getReplicaGroup(String groupName, MetaReplicaClosure<ReplicaGroup> closure) {
+
+        this.masterServer.getNode().readIndex(BytesUtil.EMPTY_BYTES, new ReadIndexClosure() {
+            @Override
+            public void run(Status status, long index, byte[] reqCtx) {
+                if(status.isOk()){
+                    closure.setResult(readReplicaGroup(groupName));
+                    closure.run(Status.OK());
+                    return;
+                }
+                closure.run(status);
+
+            }
+        });
+    }
+
+    @Override
+    public void addReplica(ReplicaId replicaId, MetaReplicaClosure<Boolean> closure) {
+        MetaReplicaOperation operation = MetaReplicaOperation.addReplicaOperation(replicaId);
+        doApplyOperation(operation, closure);
+    }
+
+    private ReplicaGroup readReplicaGroup(String groupName) {
+        return this.masterServer.getReplicaFsm().getReplicaGroup(groupName);
     }
 
     private <T> void doApplyOperation(final MetaReplicaOperation operation, MetaReplicaClosure<T> closure) {

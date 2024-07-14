@@ -45,3 +45,25 @@ message ChangePrimaryResponse {
 }
 
 
+message GetReplicaGroupRequest {
+  optional string group_name = 1;
+}
+
+message GetReplicaGroupResponse {
+  optional string group_name = 1;
+  optional string primary = 2;
+  repeated string secondary = 3;
+  optional int64 version = 4;
+  optional int64 term = 5;
+  optional ErrorResponse error = 6;
+}
+
+message AddReplicaRequest {
+  optional string group_name = 1;
+  optional string node_id = 2;
+}
+
+message AddReplicaResponse {
+  optional bool success = 1;
+  optional ErrorResponse error = 2;
+}

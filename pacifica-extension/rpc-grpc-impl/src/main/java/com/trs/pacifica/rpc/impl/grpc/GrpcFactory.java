@@ -41,20 +41,38 @@ public class GrpcFactory implements RpcFactory {
         @Override
         public MethodDescriptor.Marshaller<Message> getMarshaller(String requestClzName) {
             final ReqRepMessage m = messageContainer.get(requestClzName);
-            if (m != null) {
+            if (m != null && m.requestMessage != null) {
                 return ProtoUtils.marshaller(m.requestMessage);
             }
             return null;
+        }
+
+        @Override
+        public void registerMarshaller(String requestClzName, Message message) {
+            Objects.requireNonNull(requestClzName, "requestClzName");
+            Objects.requireNonNull(message, "message");
+            ReqRepMessage reqRepMessage = messageContainer.computeIfAbsent(requestClzName, (key) -> {
+                return new ReqRepMessage();
+            });
+            reqRepMessage.setRequestMessage(message);
         }
     };
     private final MarshallerManager responseMarshallerManager = new MarshallerManager() {
         @Override
         public MethodDescriptor.Marshaller<Message> getMarshaller(String requestClzName) {
             final ReqRepMessage m = messageContainer.get(requestClzName);
-            if (m != null) {
+            if (m != null && m.responseMessage != null) {
                 return ProtoUtils.marshaller(m.responseMessage);
             }
             return null;
+        }
+
+        @Override
+        public void registerMarshaller(String requestClzName, Message message) {
+            Objects.requireNonNull(requestClzName, "requestClzName");
+            Objects.requireNonNull(message, "message");
+            ReqRepMessage reqRepMessage = messageContainer.putIfAbsent(requestClzName, new ReqRepMessage());
+            reqRepMessage.setResponseMessage(message);
         }
     };
 
@@ -80,7 +98,7 @@ public class GrpcFactory implements RpcFactory {
     }
 
 
-    private void register(Message request, Message response) {
+    public void register(Message request, Message response) {
         final String requestClzName = request.getClass().getName();
         this.messageContainer.put(requestClzName, new ReqRepMessage(request, response));
     }
@@ -90,16 +108,36 @@ public class GrpcFactory implements RpcFactory {
         this.register(RpcRequest.ReplicaRecoverRequest.getDefaultInstance(), RpcRequest.ReplicaRecoverResponse.getDefaultInstance());
         this.register(RpcRequest.InstallSnapshotRequest.getDefaultInstance(), RpcRequest.InstallSnapshotResponse.getDefaultInstance());
         this.register(RpcRequest.GetFileRequest.getDefaultInstance(), RpcRequest.GetFileResponse.getDefaultInstance());
+        this.register(RpcRequest.PingReplicaRequest.getDefaultInstance(), RpcRequest.PingReplicaResponse.getDefaultInstance());
     }
 
 
     static class ReqRepMessage {
-        private final Message requestMessage;
+        private Message requestMessage;
 
-        private final Message responseMessage;
+        private Message responseMessage;
 
         ReqRepMessage(Message requestMessage, Message responseMessage) {
             this.requestMessage = requestMessage;
+            this.responseMessage = responseMessage;
+        }
+
+        ReqRepMessage() {
+        }
+
+        public Message getRequestMessage() {
+            return requestMessage;
+        }
+
+        public void setRequestMessage(Message requestMessage) {
+            this.requestMessage = requestMessage;
+        }
+
+        public Message getResponseMessage() {
+            return responseMessage;
+        }
+
+        public void setResponseMessage(Message responseMessage) {
             this.responseMessage = responseMessage;
         }
     }

@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.example.counter.config.jraft.fsm;
 
+import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.util.BitUtil;
 import org.apache.commons.lang.ArrayUtils;
 
@@ -46,8 +47,11 @@ public class MetaReplicaGroup {
     private volatile long term = 0L;
 
 
-    public MetaReplicaGroup(String groupName) {
+    public MetaReplicaGroup(String groupName, String primaryNodeId) {
         this.groupName = groupName;
+        MetaReplica metaReplica = new MetaReplica(primaryNodeId, MetaReplica.STATE_PRIMARY);
+        this.allReplica.put(primaryNodeId, metaReplica);
+        this.primary = metaReplica;
     }
 
     public MetaReplicaGroup(String groupName, long version, long term, Collection<MetaReplica> replicas) {
@@ -123,6 +127,34 @@ public class MetaReplicaGroup {
         return false;
     }
 
+    public boolean addReplica(final String nodeId) {
+        MetaReplica metaReplica = this.allReplica.get(nodeId);
+        if (metaReplica == null) {
+            metaReplica = new MetaReplica(nodeId, MetaReplica.STATE_CANDIDATE);
+            this.allReplica.put(nodeId, metaReplica);
+        }
+        return true;
+    }
+
+    public long getVersion() {
+        return this.version;
+    }
+
+    public long getTerm() {
+        return this.term;
+    }
+
+    public ReplicaId getPrimary() {
+        return new ReplicaId(groupName, this.primary.getNodeId());
+    }
+
+    public List<ReplicaId> listSecondary() {
+        List<ReplicaId> secondaryList = new ArrayList<>();
+        for (MetaReplica secondary : secondaries.values()) {
+            secondaryList.add(new ReplicaId(groupName, secondary.getNodeId()));
+        }
+        return secondaryList;
+    }
 
     static MetaReplicaGroup fromBytes(byte[] bytes) {
         int offset = 0;
