@@ -62,6 +62,7 @@ public class CounterServiceImpl implements CounterService {
                 counterClosure.run(finished);
             }
         };
+        operationClosure.setOperation(counterOperation);
         doApplyOperation(replica, counterOperation, operationClosure);
     }
 

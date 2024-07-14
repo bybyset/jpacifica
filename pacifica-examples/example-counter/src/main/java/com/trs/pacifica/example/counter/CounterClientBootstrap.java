@@ -75,7 +75,7 @@ public class CounterClientBootstrap {
     }
 
 
-    private static long incrementAndGet(RpcClient rpcClient, Endpoint primary, String groupName, final long delta) throws PacificaException {
+    static long incrementAndGet(RpcClient rpcClient, Endpoint primary, String groupName, final long delta) throws PacificaException {
 
         CounterRpc.IncrementAndGetRequest request = CounterRpc.IncrementAndGetRequest.newBuilder()//
                 .setDelta(delta)//

@@ -31,6 +31,7 @@ import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.JPacificaRpcServerFactory;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.client.RpcClient;
+import com.trs.pacifica.rpc.impl.grpc.GrpcClient;
 import com.trs.pacifica.rpc.impl.grpc.GrpcServer;
 import com.trs.pacifica.rpc.node.Endpoint;
 import com.trs.pacifica.rpc.node.EndpointManager;
@@ -96,7 +97,9 @@ public class CounterServerBootstrap {
             registerNodeId(EndpointManagerHolder.getInstance(), replicaInitConfStr);
 
             Endpoint endpoint = new Endpoint(serverId.getIp(), serverId.getPort());
-            RpcClient rpcClient = JPacificaRpcServerFactory.createPacificaRpcClient();
+            GrpcClient rpcClient = (GrpcClient) JPacificaRpcServerFactory.createPacificaRpcClient();
+            rpcClient.init(new GrpcClient.Option());
+            rpcClient.startup();
             RpcServer rpcServer = JPacificaRpcServerFactory.createPacificaRpcServer(endpoint);
             CounterService counterService = new CounterServiceImpl(nodeId);
             startRpcServer(rpcServer, counterService);
@@ -110,6 +113,8 @@ public class CounterServerBootstrap {
             //join
             for (;;) {
 
+                long value = CounterClientBootstrap.incrementAndGet(rpcClient, new Endpoint("127.0.0.1", 9091), COUNTER_GROUP_NAME, 3);
+                System.out.println(value);
             }
         } catch (Throwable e) {
             e.printStackTrace();

@@ -155,10 +155,11 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
     }
 
     PeerId getLeader() throws InterruptedException, TimeoutException {
-        if (!RouteTable.getInstance().refreshLeader(cliClientService, groupId, 1000).isOk()) {
-            throw new IllegalStateException("Refresh leader failed");
-        }
-        final PeerId leader = RouteTable.getInstance().selectLeader(groupId);
-        return leader;
+//        if (!RouteTable.getInstance().refreshLeader(cliClientService, groupId, 1000).isOk()) {
+//            throw new IllegalStateException("Refresh leader failed");
+//        }
+//        final PeerId leader = RouteTable.getInstance().selectLeader(groupId);
+//        return leader;
+        return new PeerId("127.0.0.1", 8081);
     }
 }
