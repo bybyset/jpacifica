@@ -294,6 +294,14 @@ public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
         return this.responseMarshallerManager.getMarshaller(requestClzName);
     }
 
+    public void extendMarshaller(Message request, Message response) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(response, "response");
+        final String requestClzName = request.getClass().getName();
+        this.requestMarshallerManager.registerMarshaller(requestClzName, request);
+        this.responseMarshallerManager.registerMarshaller(requestClzName, response);
+    }
+
     public static class Option {
 
         public static final int DEFAULT_MAX_INBOUND_MESSAGE_SIZE = 32 * 1024 * 1024;

@@ -717,23 +717,6 @@ public final class CounterRpc {
         getGroupNameBytes();
 
     /**
-     * <code>optional string node_id = 2;</code>
-     * @return Whether the nodeId field is set.
-     */
-    boolean hasNodeId();
-    /**
-     * <code>optional string node_id = 2;</code>
-     * @return The nodeId.
-     */
-    java.lang.String getNodeId();
-    /**
-     * <code>optional string node_id = 2;</code>
-     * @return The bytes for nodeId.
-     */
-    com.google.protobuf.ByteString
-        getNodeIdBytes();
-
-    /**
      * <code>optional int64 delta = 3;</code>
      * @return Whether the delta field is set.
      */
@@ -758,7 +741,6 @@ public final class CounterRpc {
     }
     private IncrementAndGetRequest() {
       groupName_ = "";
-      nodeId_ = "";
     }
 
     @java.lang.Override
@@ -829,53 +811,6 @@ public final class CounterRpc {
       }
     }
 
-    public static final int NODE_ID_FIELD_NUMBER = 2;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object nodeId_ = "";
-    /**
-     * <code>optional string node_id = 2;</code>
-     * @return Whether the nodeId field is set.
-     */
-    @java.lang.Override
-    public boolean hasNodeId() {
-      return ((bitField0_ & 0x00000002) != 0);
-    }
-    /**
-     * <code>optional string node_id = 2;</code>
-     * @return The nodeId.
-     */
-    @java.lang.Override
-    public java.lang.String getNodeId() {
-      java.lang.Object ref = nodeId_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        nodeId_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>optional string node_id = 2;</code>
-     * @return The bytes for nodeId.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getNodeIdBytes() {
-      java.lang.Object ref = nodeId_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        nodeId_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
     public static final int DELTA_FIELD_NUMBER = 3;
     private long delta_ = 0L;
     /**
@@ -884,7 +819,7 @@ public final class CounterRpc {
      */
     @java.lang.Override
     public boolean hasDelta() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      * <code>optional int64 delta = 3;</code>
@@ -913,9 +848,6 @@ public final class CounterRpc {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, groupName_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nodeId_);
-      }
-      if (((bitField0_ & 0x00000004) != 0)) {
         output.writeInt64(3, delta_);
       }
       getUnknownFields().writeTo(output);
@@ -931,9 +863,6 @@ public final class CounterRpc {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, groupName_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nodeId_);
-      }
-      if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, delta_);
       }
@@ -957,11 +886,6 @@ public final class CounterRpc {
         if (!getGroupName()
             .equals(other.getGroupName())) return false;
       }
-      if (hasNodeId() != other.hasNodeId()) return false;
-      if (hasNodeId()) {
-        if (!getNodeId()
-            .equals(other.getNodeId())) return false;
-      }
       if (hasDelta() != other.hasDelta()) return false;
       if (hasDelta()) {
         if (getDelta()
@@ -981,10 +905,6 @@ public final class CounterRpc {
       if (hasGroupName()) {
         hash = (37 * hash) + GROUP_NAME_FIELD_NUMBER;
         hash = (53 * hash) + getGroupName().hashCode();
-      }
-      if (hasNodeId()) {
-        hash = (37 * hash) + NODE_ID_FIELD_NUMBER;
-        hash = (53 * hash) + getNodeId().hashCode();
       }
       if (hasDelta()) {
         hash = (37 * hash) + DELTA_FIELD_NUMBER;
@@ -1123,7 +1043,6 @@ public final class CounterRpc {
         super.clear();
         bitField0_ = 0;
         groupName_ = "";
-        nodeId_ = "";
         delta_ = 0L;
         return this;
       }
@@ -1164,12 +1083,8 @@ public final class CounterRpc {
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.nodeId_ = nodeId_;
-          to_bitField0_ |= 0x00000002;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
           result.delta_ = delta_;
-          to_bitField0_ |= 0x00000004;
+          to_bitField0_ |= 0x00000002;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -1223,11 +1138,6 @@ public final class CounterRpc {
           bitField0_ |= 0x00000001;
           onChanged();
         }
-        if (other.hasNodeId()) {
-          nodeId_ = other.nodeId_;
-          bitField0_ |= 0x00000002;
-          onChanged();
-        }
         if (other.hasDelta()) {
           setDelta(other.getDelta());
         }
@@ -1262,14 +1172,9 @@ public final class CounterRpc {
                 bitField0_ |= 0x00000001;
                 break;
               } // case 10
-              case 18: {
-                nodeId_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
               case 24: {
                 delta_ = input.readInt64();
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000002;
                 break;
               } // case 24
               default: {
@@ -1368,85 +1273,6 @@ public final class CounterRpc {
         return this;
       }
 
-      private java.lang.Object nodeId_ = "";
-      /**
-       * <code>optional string node_id = 2;</code>
-       * @return Whether the nodeId field is set.
-       */
-      public boolean hasNodeId() {
-        return ((bitField0_ & 0x00000002) != 0);
-      }
-      /**
-       * <code>optional string node_id = 2;</code>
-       * @return The nodeId.
-       */
-      public java.lang.String getNodeId() {
-        java.lang.Object ref = nodeId_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          nodeId_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string node_id = 2;</code>
-       * @return The bytes for nodeId.
-       */
-      public com.google.protobuf.ByteString
-          getNodeIdBytes() {
-        java.lang.Object ref = nodeId_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          nodeId_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string node_id = 2;</code>
-       * @param value The nodeId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setNodeId(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        nodeId_ = value;
-        bitField0_ |= 0x00000002;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string node_id = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearNodeId() {
-        nodeId_ = getDefaultInstance().getNodeId();
-        bitField0_ = (bitField0_ & ~0x00000002);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string node_id = 2;</code>
-       * @param value The bytes for nodeId to set.
-       * @return This builder for chaining.
-       */
-      public Builder setNodeIdBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        nodeId_ = value;
-        bitField0_ |= 0x00000002;
-        onChanged();
-        return this;
-      }
-
       private long delta_ ;
       /**
        * <code>optional int64 delta = 3;</code>
@@ -1454,7 +1280,7 @@ public final class CounterRpc {
        */
       @java.lang.Override
       public boolean hasDelta() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        * <code>optional int64 delta = 3;</code>
@@ -1472,7 +1298,7 @@ public final class CounterRpc {
       public Builder setDelta(long value) {
 
         delta_ = value;
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1481,7 +1307,7 @@ public final class CounterRpc {
        * @return This builder for chaining.
        */
       public Builder clearDelta() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         delta_ = 0L;
         onChanged();
         return this;
@@ -2288,14 +2114,13 @@ public final class CounterRpc {
     java.lang.String[] descriptorData = {
       "\n\016_counter.proto\"E\n\rErrorResponse\022\021\n\004cod" +
       "e\030\001 \001(\005H\000\210\001\001\022\020\n\003msg\030\002 \001(\tH\001\210\001\001B\007\n\005_codeB" +
-      "\006\n\004_msg\"\200\001\n\026IncrementAndGetRequest\022\027\n\ngr" +
-      "oup_name\030\001 \001(\tH\000\210\001\001\022\024\n\007node_id\030\002 \001(\tH\001\210\001" +
-      "\001\022\022\n\005delta\030\003 \001(\003H\002\210\001\001B\r\n\013_group_nameB\n\n\010" +
-      "_node_idB\010\n\006_delta\"e\n\027IncrementAndGetRes" +
-      "ponse\022\022\n\005value\030\001 \001(\003H\000\210\001\001\022\"\n\005error\030\002 \001(\013" +
-      "2\016.ErrorResponseH\001\210\001\001B\010\n\006_valueB\010\n\006_erro" +
-      "rB.\n com.trs.pacifica.example.counterB\nC" +
-      "ounterRpcb\006proto3"
+      "\006\n\004_msg\"^\n\026IncrementAndGetRequest\022\027\n\ngro" +
+      "up_name\030\001 \001(\tH\000\210\001\001\022\022\n\005delta\030\003 \001(\003H\001\210\001\001B\r" +
+      "\n\013_group_nameB\010\n\006_delta\"e\n\027IncrementAndG" +
+      "etResponse\022\022\n\005value\030\001 \001(\003H\000\210\001\001\022\"\n\005error\030" +
+      "\002 \001(\0132\016.ErrorResponseH\001\210\001\001B\010\n\006_valueB\010\n\006" +
+      "_errorB.\n com.trs.pacifica.example.count" +
+      "erB\nCounterRpcb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -2312,7 +2137,7 @@ public final class CounterRpc {
     internal_static_IncrementAndGetRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_IncrementAndGetRequest_descriptor,
-        new java.lang.String[] { "GroupName", "NodeId", "Delta", });
+        new java.lang.String[] { "GroupName", "Delta", });
     internal_static_IncrementAndGetResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_IncrementAndGetResponse_fieldAccessorTable = new

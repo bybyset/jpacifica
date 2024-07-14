@@ -33,10 +33,16 @@ import java.util.Objects;
 
 public class CounterServiceImpl implements CounterService {
 
+    private final String nodeId;
+
+    public CounterServiceImpl(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
     @Override
-    public void incrementAndGet(final ReplicaId replicaId, long delta, CounterClosure<Long> done) {
+    public void incrementAndGet(final String groupName, long delta, CounterClosure<Long> done) {
         CounterOperation counterOperation = CounterOperation.createIncrement(delta);
-        Replica replica = getReplica(replicaId);
+        Replica replica = getReplica(new ReplicaId(groupName, nodeId));
         doApplyOperation(replica, counterOperation, done);
     }
 

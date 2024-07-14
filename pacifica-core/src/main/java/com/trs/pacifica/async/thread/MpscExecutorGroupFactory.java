@@ -22,7 +22,7 @@ import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.SystemPropertyUtil;
 
 @SPI
-public class MpscExecutorGroupFactory implements ExecutorGroupFactory{
+public class MpscExecutorGroupFactory implements ExecutorGroupFactory {
 
     static final int DEFAULT_THREADS_NUM = SystemPropertyUtil.getInt("pacifica.executor.group.thread.num", Math.max(16, SystemConstants.CPUS + 1));
 
@@ -38,7 +38,7 @@ public class MpscExecutorGroupFactory implements ExecutorGroupFactory{
 
     @Override
     public ExecutorGroup newExecutorGroup() {
-        return new MpscSingleThreadExecutorGroup(nThreads);
+        return MpscSingleThreadExecutorGroup.newThreadExecutorGroup(nThreads);
     }
 
 

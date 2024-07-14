@@ -25,7 +25,7 @@ public interface CounterService {
     /**
      * Add delta to counter then get value
      */
-    void incrementAndGet(final ReplicaId replicaId, final long delta, CounterClosure<Long> done);
+    void incrementAndGet(final String groupName, final long delta, CounterClosure<Long> done);
 
 
 }

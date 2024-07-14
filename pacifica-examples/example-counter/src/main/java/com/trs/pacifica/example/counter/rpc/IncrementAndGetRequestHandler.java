@@ -39,7 +39,6 @@ public class IncrementAndGetRequestHandler implements RpcHandler<CounterRpc.Incr
     public void handleRequest(RpcContext<CounterRpc.IncrementAndGetResponse> rpcContext, CounterRpc.IncrementAndGetRequest request) {
         final long delta = request.getDelta();
         final String groupName = request.getGroupName();
-        final String nodeId = request.getNodeId();
         CounterClosure<Long> done = new RpcCounterClosure<Long, CounterRpc.IncrementAndGetResponse>(rpcContext) {
             @Override
             public CounterRpc.IncrementAndGetResponse buildRpcResponse(Long result) {
@@ -48,7 +47,7 @@ public class IncrementAndGetRequestHandler implements RpcHandler<CounterRpc.Incr
                         .build();
             }
         };
-        this.counterService.incrementAndGet(new ReplicaId(groupName, nodeId), delta, done);
+        this.counterService.incrementAndGet(groupName, delta, done);
     }
 
     @Override

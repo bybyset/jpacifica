@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 public class CounterReplicaConfigClient implements ConfigurationClient {
 
@@ -139,11 +140,11 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
         return false;
     }
 
-    private Object sendRequest(Object request) throws RemotingException, InterruptedException {
+    private Object sendRequest(Object request) throws RemotingException, InterruptedException, TimeoutException {
         return sendRequest(request, 50000);
     }
 
-    private Object sendRequest(Object request, long timeoutMs) throws RemotingException, InterruptedException {
+    private Object sendRequest(Object request, long timeoutMs) throws RemotingException, InterruptedException, TimeoutException {
         PeerId leader = getLeader();
         Object response = this.cliClientService.getRpcClient().invokeSync(leader.getEndpoint(), request, timeoutMs);
         if (response instanceof MetaReplicaRpc.ErrorResponse) {
@@ -153,7 +154,10 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
         return response;
     }
 
-    PeerId getLeader() {
+    PeerId getLeader() throws InterruptedException, TimeoutException {
+        if (!RouteTable.getInstance().refreshLeader(cliClientService, groupId, 1000).isOk()) {
+            throw new IllegalStateException("Refresh leader failed");
+        }
         final PeerId leader = RouteTable.getInstance().selectLeader(groupId);
         return leader;
     }

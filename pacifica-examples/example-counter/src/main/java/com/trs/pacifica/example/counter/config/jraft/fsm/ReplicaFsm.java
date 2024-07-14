@@ -131,6 +131,7 @@ public class ReplicaFsm extends StateMachineAdapter {
         MetaReplicaGroup metaReplicaGroup =  this.replicas.get(groupName);
         if (metaReplicaGroup == null) {
             metaReplicaGroup = new MetaReplicaGroup(groupName, nodeId);
+            this.replicas.put(groupName, metaReplicaGroup);
         } else {
             metaReplicaGroup.addReplica(nodeId);
         }

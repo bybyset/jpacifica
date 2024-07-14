@@ -59,6 +59,8 @@ public class MpscSingleThreadExecutor implements SingleThreadExecutor {
 
     public MpscSingleThreadExecutor(int maxPendingTasks, ThreadFactory threadFactory,
                                     RejectedExecutionHandler rejectedExecutionHandler) {
+        Objects.requireNonNull(threadFactory, "threadFactory");
+        Objects.requireNonNull(rejectedExecutionHandler, "rejectedExecutionHandler");
         this.taskQueue = newTaskQueue(maxPendingTasks);
         this.executor = new ThreadPerTaskExecutor(threadFactory);
         this.rejectedExecutionHandler = rejectedExecutionHandler;

@@ -98,7 +98,7 @@ public class CounterServerBootstrap {
             Endpoint endpoint = new Endpoint(serverId.getIp(), serverId.getPort());
             RpcClient rpcClient = JPacificaRpcServerFactory.createPacificaRpcClient();
             RpcServer rpcServer = JPacificaRpcServerFactory.createPacificaRpcServer(endpoint);
-            CounterService counterService = new CounterServiceImpl();
+            CounterService counterService = new CounterServiceImpl(nodeId);
             startRpcServer(rpcServer, counterService);
 
             ReplicaId replicaId = new ReplicaId(COUNTER_GROUP_NAME, nodeId);

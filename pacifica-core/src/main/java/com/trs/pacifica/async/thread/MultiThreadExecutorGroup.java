@@ -21,13 +21,12 @@ import com.trs.pacifica.async.thread.chooser.DefaultExecutorChooserFactory;
 import com.trs.pacifica.async.thread.chooser.ExecutorChooser;
 import com.trs.pacifica.async.thread.chooser.ExecutorChooserFactory;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public abstract class MultiThreadExecutorGroup implements ExecutorGroup {
+
+    static final ExecutorChooserFactory DEFAULT_EXECUTOR_CHOOSER_FACTORY = new DefaultExecutorChooserFactory();
 
     protected final SingleThreadExecutor[] children;
 
@@ -36,46 +35,29 @@ public abstract class MultiThreadExecutorGroup implements ExecutorGroup {
     protected final Set<SingleThreadExecutor> readOnlyChildren;
 
 
-    protected MultiThreadExecutorGroup(int nThreads, ExecutorChooserFactory executorChooserFactory) {
-        if (nThreads <= 0) {
-            throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
-        }
-        this.children = new SingleThreadExecutor[nThreads];
-        for (int i = 0; i < nThreads; i ++) {
-            boolean success = false;
-            try {
-                children[i] = newChild();
-                success = true;
-            } catch (Exception e) {
-                throw new IllegalStateException("failed to create a child SingleThreadExecutor", e);
-            } finally {
-                if (!success) {
-                    for (int j = 0; j < i; j ++) {
-                        children[j].shutdownGracefully();
-                    }
-                }
+    protected MultiThreadExecutorGroup(SingleThreadExecutor[] children, ExecutorChooserFactory executorChooserFactory) {
+        this.children = Objects.requireNonNull(children, "children");
+        int childrenNum = 0;
+        for (; childrenNum < children.length; childrenNum++) {
+            if (children[childrenNum] == null) {
+                throw new IllegalArgumentException(String.format("the child thread is null at index=%d", childrenNum));
             }
-
+        }
+        if (childrenNum < 1) {
+            throw new IllegalArgumentException("The number of child thread is at least 1");
         }
         if (executorChooserFactory == null) {
-            this.executorChooser = new DefaultExecutorChooserFactory().newChooser(this.children);
+            this.executorChooser = DEFAULT_EXECUTOR_CHOOSER_FACTORY.newChooser(this.children);
         } else {
             this.executorChooser = executorChooserFactory.newChooser(this.children);
         }
         this.readOnlyChildren = toUnmodifiableSet(this.children);
-
     }
 
     @Override
     public SingleThreadExecutor chooseExecutor() {
         return this.executorChooser.chooseExecutor();
     }
-
-    /**
-     * Create a new SingleThreadExecutor which will later then accessible via the {@link #chooseExecutor()}  method. This method will be
-     * called for each thread that will serve this {@link MultiThreadExecutorGroup}.
-     */
-    protected abstract SingleThreadExecutor newChild() throws Exception;
 
     @Override
     public boolean shutdownGracefully() {

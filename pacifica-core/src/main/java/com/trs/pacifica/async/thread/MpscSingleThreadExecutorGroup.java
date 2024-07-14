@@ -17,10 +17,12 @@
 
 package com.trs.pacifica.async.thread;
 
+import com.trs.pacifica.async.thread.chooser.ExecutorChooser;
 import com.trs.pacifica.async.thread.chooser.ExecutorChooserFactory;
 import com.trs.pacifica.util.NamedThreadFactory;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 public class MpscSingleThreadExecutorGroup extends MultiThreadExecutorGroup {
@@ -28,46 +30,55 @@ public class MpscSingleThreadExecutorGroup extends MultiThreadExecutorGroup {
     public static final String _DEFAULT_THREAD_NAME = "default-pacifica-single-thread-";
 
     public static final int _DEFAULT_MAX_PENDING_TASKS_PER_THREAD = Integer.MAX_VALUE;
-    private final ThreadFactory threadFactory;
 
-    private final int maxPendingTasksPerThread;
-
-    private final RejectedExecutionHandler rejectedExecutionHandler;
-
-    public MpscSingleThreadExecutorGroup(int nThreads) {
-        this(nThreads, _DEFAULT_MAX_PENDING_TASKS_PER_THREAD, null, null, null);
+    public MpscSingleThreadExecutorGroup(SingleThreadExecutor[] children, ExecutorChooserFactory executorChooserFactory) {
+        super(children, executorChooserFactory);
     }
 
-    public MpscSingleThreadExecutorGroup(int nThreads, ExecutorChooserFactory executorChooserFactory) {
-        this(nThreads, _DEFAULT_MAX_PENDING_TASKS_PER_THREAD, executorChooserFactory, null, null);
+    public MpscSingleThreadExecutorGroup(SingleThreadExecutor[] children) {
+        super(children, null);
     }
 
-    public MpscSingleThreadExecutorGroup(int nThreads, int maxPendingTasksPerThread, ExecutorChooserFactory executorChooserFactory) {
-        this(nThreads, maxPendingTasksPerThread, executorChooserFactory, null, null);
-    }
-
-    public MpscSingleThreadExecutorGroup(int nThreads, int maxPendingTasksPerThread, ExecutorChooserFactory executorChooserFactory, ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
-        super(nThreads, executorChooserFactory);
-        if (maxPendingTasksPerThread <= 0) {
-            throw new IllegalArgumentException("maxPendingTasksPerThread must be greater than 0.");
-        }
-        this.maxPendingTasksPerThread = maxPendingTasksPerThread;
-        if (threadFactory == null) {
-            this.threadFactory = new NamedThreadFactory(_DEFAULT_THREAD_NAME);
-        } else {
-            this.threadFactory = threadFactory;
-        }
-        if (rejectedExecutionHandler == null) {
-            this.rejectedExecutionHandler = RejectedExecutionHandler.REJECT;
-        } else {
-            this.rejectedExecutionHandler = rejectedExecutionHandler;
-        }
-    }
-
-    @Override
-    protected SingleThreadExecutor newChild() throws Exception {
+    private static MpscSingleThreadExecutor newChild(int maxPendingTasksPerThread, ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler) {
         return new MpscSingleThreadExecutor(maxPendingTasksPerThread, threadFactory, rejectedExecutionHandler);
     }
 
+    static MpscSingleThreadExecutorGroup newThreadExecutorGroup(int nThreads) {
+        return newThreadExecutorGroup(nThreads, null, _DEFAULT_MAX_PENDING_TASKS_PER_THREAD, null, null);
+    }
+
+    static MpscSingleThreadExecutorGroup newThreadExecutorGroup(int nThreads, ThreadFactory threadFactory, int maxPendingTasksPerThread,
+                                                  RejectedExecutionHandler rejectedExecutionHandler, ExecutorChooserFactory executorChooserFactory) {
+        if (nThreads <= 0) {
+            throw new IllegalStateException("The number of threads is at least 1");
+        }
+        if (threadFactory == null) {
+            threadFactory = new NamedThreadFactory(_DEFAULT_THREAD_NAME);
+        }
+        if (rejectedExecutionHandler == null) {
+            rejectedExecutionHandler = RejectedExecutionHandler.REJECT;
+        }
+        if (maxPendingTasksPerThread <= 0) {
+            maxPendingTasksPerThread = _DEFAULT_MAX_PENDING_TASKS_PER_THREAD;
+        }
+
+        SingleThreadExecutor[] children = new SingleThreadExecutor[nThreads];
+        for (int i = 0; i < nThreads; i ++) {
+            boolean success = false;
+            try {
+                children[i] = newChild(maxPendingTasksPerThread, threadFactory, rejectedExecutionHandler);
+                success = true;
+            } catch (Exception e) {
+                throw new IllegalStateException("failed to create a child SingleThreadExecutor", e);
+            } finally {
+                if (!success) {
+                    for (int j = 0; j < i; j ++) {
+                        children[j].shutdownGracefully();
+                    }
+                }
+            }
+        }
+        return new MpscSingleThreadExecutorGroup(children, executorChooserFactory);
+    }
 
 }
