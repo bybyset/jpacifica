@@ -42,6 +42,9 @@ subprojects {
     dependencies {
         implementation "org.slf4j:slf4j-api:$slf4j_version"
         implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+        implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+        implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version"
+
 
         testImplementation "org.junit.jupiter:junit-jupiter:$jupiter_version"
         testImplementation "org.junit.jupiter:junit-jupiter-api:$jupiter_version"

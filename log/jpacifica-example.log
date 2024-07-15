@@ -1,0 +1,101 @@
+2024-07-15 21:00:45 [main] INFO  JRaftServiceLoader:275 - SPI service [com.alipay.sofa.jraft.JRaftServiceFactory - com.alipay.sofa.jraft.core.DefaultJRaftServiceFactory] loading.
+2024-07-15 21:00:45 [main] INFO  JRaftServiceLoader:275 - SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-15 21:00:45 [main] INFO  log:30 - Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-15 21:00:45 [main] ERROR log:43 - Sofa-Middleware-Log SLF4J Error: Build ILoggerFactory error! Default app logger will be used.
+2024-07-15 21:00:46 [main] INFO  JRaftServiceLoader:275 - SPI service [com.alipay.sofa.jraft.util.timer.RaftTimerFactory - com.alipay.sofa.jraft.util.timer.DefaultRaftTimerFactory] loading.
+2024-07-15 21:00:46 [main] INFO  NodeImpl:556 - The number of active nodes increment to 1.
+2024-07-15 21:00:46 [main] INFO  FSMCallerImpl:215 - Starts FSMCaller successfully.
+2024-07-15 21:00:46 [main] WARN  LocalSnapshotStorage:336 - No data for snapshot reader D:\tmp\jpacifica\test1\master\snapshot.
+2024-07-15 21:00:46 [main] INFO  NodeImpl:725 - Node <master/127.0.0.1:8081> target priority value has changed from: 0, to: -1.
+2024-07-15 21:00:46 [main] WARN  log:250 - [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-15 21:00:46 [main] WARN  log:167 - Switch on reconnect manager
+2024-07-15 21:00:46 [main] INFO  NodeImpl:1091 - Node <master/127.0.0.1:8081> init, term=1, lastLogId=LogId [index=2, term=1], conf=127.0.0.1:8081, oldConf=.
+2024-07-15 21:00:46 [main] INFO  NodeImpl:1134 - Node <master/127.0.0.1:8081> start vote and grant vote self, term=1.
+2024-07-15 21:00:46 [main] WARN  Utils:424 - Unable to fsync directory D:\tmp\jpacifica\test1\master\raft_meta on windows.
+2024-07-15 21:00:46 [main] INFO  LocalRaftMetaStorage:132 - Save raft meta, path=D:\tmp\jpacifica\test1\master\raft_meta, term=2, votedFor=127.0.0.1:8081, cost time=21 ms
+2024-07-15 21:00:46 [main] INFO  NodeImpl:1231 - Node <master/127.0.0.1:8081> become leader of group, term=2, conf=127.0.0.1:8081, oldConf=.
+2024-07-15 21:00:46 [main] INFO  Recyclers:52 - -Djraft.recyclers.maxCapacityPerThread: 4096.
+2024-07-15 21:00:46 [main] WARN  log:1067 - [server side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-15 21:00:46 [main] WARN  log:95 - Prepare to start server on port 8081 
+2024-07-15 21:00:46 [JRaft-FSMCaller-Disruptor-0] INFO  StateMachineAdapter:62 - onLeaderStart: term=2.
+2024-07-15 21:00:46 [main] WARN  log:97 - Server started on port 8081
+2024-07-15 21:00:46 [main] INFO  RaftGroupService:136 - Start the RaftGroupService successfully.
+2024-07-15 21:00:46 [main] WARN  log:250 - [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-15 21:00:46 [main] WARN  log:167 - Switch on reconnect manager
+2024-07-15 21:00:46 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-15 21:00:46 [main] INFO  EndpointManagerHolder:34 - use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-15 21:00:46 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-15 21:00:46 [main] INFO  RpcFactoryHolder:33 - use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-15 21:00:46 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.rpc.service.ReplicaServiceManager - com.trs.pacifica.rpc.service.DefaultReplicaServiceManager] loading.
+2024-07-15 21:00:46 [main] INFO  ReplicaServiceManagerHolder:34 - use RpcFactory=com.trs.pacifica.rpc.service.DefaultReplicaServiceManager
+2024-07-15 21:00:47 [main] INFO  GrpcServer:80 - the rpc server is ServerImpl , port=9091
+2024-07-15 21:00:47 [bolt-netty-client-worker-3-thread-1] INFO  log:294 - Connection channel registered: UNKNOWN-ADDR
+2024-07-15 21:00:47 [bolt-netty-client-worker-3-thread-1] INFO  log:81 - Try connect to 127.0.0.1:8081
+2024-07-15 21:00:47 [bolt-netty-client-worker-3-thread-1] INFO  log:292 - Connection channel active: 127.0.0.1:8081
+2024-07-15 21:00:47 [bolt-netty-client-worker-3-thread-1] INFO  log:176 - trigger user event, local[127.0.0.1:57918], remote[127.0.0.1:8081], event: CONNECT
+2024-07-15 21:00:47 [Rpc-netty-server-worker-1-thread-1] INFO  log:176 - trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:57918], event: CONNECT
+2024-07-15 21:00:47 [Rpc-netty-server-worker-1-thread-1] INFO  log:292 - Connection channel registered: 127.0.0.1:57918
+2024-07-15 21:00:47 [Rpc-netty-server-worker-1-thread-1] INFO  log:292 - Connection channel active: 127.0.0.1:57918
+2024-07-15 21:00:47 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.LogStorageFactory - com.trs.pacifica.log.FsLogStorageFactory] loading.
+2024-07-15 21:00:47 [main] INFO  LogStorageFactoryHolder:35 - use LogStorageFactory=com.trs.pacifica.log.FsLogStorageFactory
+2024-07-15 21:00:47 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.SnapshotStorageFactory - com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory] loading.
+2024-07-15 21:00:47 [main] INFO  LogStorageFactoryHolder:34 - use SnapshotStorageFactory=com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory
+2024-07-15 21:00:47 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.async.thread.ExecutorGroupFactory - com.trs.pacifica.async.thread.DefaultExecutorGroupFactory] loading.
+2024-07-15 21:00:47 [main] INFO  ReplicaExecutorGroupHolder:35 - use ExecutorGroupFactory=com.trs.pacifica.async.thread.DefaultExecutorGroupFactory
+2024-07-15 21:00:47 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.log.codec.LogEntryCodecFactory - com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory] loading.
+2024-07-15 21:00:47 [main] INFO  RpcFactoryHolder:35 - use LogEntryCodecFactory=com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory
+2024-07-15 21:00:47 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.util.timer.TimerFactory - com.trs.pacifica.util.timer.GlobalTimerFactory] loading.
+2024-07-15 21:00:47 [main] INFO  JPacificaServiceLoader:261 - SPI service [com.trs.pacifica.fs.FileServiceFactory - com.trs.pacifica.fs.GlobalFileServiceFactory] loading.
+2024-07-15 21:00:47 [pacifica-callback-thread-0] INFO  SnapshotManagerImpl:310 - example_counter_node-01 success to load snapshot, snapshot_log_id=LogId [index=21, term=0]
+2024-07-15 21:00:47 [main] INFO  ReplicaImpl:607 - The state of the replica=example_counter changes from Shutdown to Primary.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.JRaftServiceFactory - com.alipay.sofa.jraft.core.DefaultJRaftServiceFactory] loading.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-15 21:05:27 [main] ERROR com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J Error: Build ILoggerFactory error! Default app logger will be used.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.util.timer.RaftTimerFactory - com.alipay.sofa.jraft.util.timer.DefaultRaftTimerFactory] loading.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: The number of active nodes increment to 1.
+2024-07-15 21:05:27 [JRaft-Group-Default-Executor-0] INFO  com.alipay.sofa.jraft.storage.impl.RocksDBLogStorage: Truncated prefix logs in data path: D:\tmp\jpacifica\test1\master\wal from log index 0 to 1, cost 0 ms.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.core.FSMCallerImpl: Starts FSMCaller successfully.
+2024-07-15 21:05:27 [main] WARN  com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotStorage: No data for snapshot reader D:\tmp\jpacifica\test1\master\snapshot.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> target priority value has changed from: 0, to: -1.
+2024-07-15 21:05:27 [main] WARN  com.alipay.sofa.common.log: [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-15 21:05:27 [main] WARN  com.alipay.sofa.common.log: Switch on reconnect manager
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> init, term=2, lastLogId=LogId [index=4, term=2], conf=127.0.0.1:8081, oldConf=.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> start vote and grant vote self, term=2.
+2024-07-15 21:05:27 [main] WARN  com.alipay.sofa.jraft.util.Utils: Unable to fsync directory D:\tmp\jpacifica\test1\master\raft_meta on windows.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.storage.impl.LocalRaftMetaStorage: Save raft meta, path=D:\tmp\jpacifica\test1\master\raft_meta, term=3, votedFor=127.0.0.1:8081, cost time=12 ms
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> become leader of group, term=3, conf=127.0.0.1:8081, oldConf=.
+2024-07-15 21:05:27 [main] INFO  com.alipay.sofa.jraft.util.Recyclers: -Djraft.recyclers.maxCapacityPerThread: 4096.
+2024-07-15 21:05:28 [main] WARN  com.alipay.sofa.common.log: [server side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-15 21:05:28 [main] WARN  com.alipay.sofa.common.log: Prepare to start server on port 8081 
+2024-07-15 21:05:28 [JRaft-FSMCaller-Disruptor-0] INFO  com.alipay.sofa.jraft.core.StateMachineAdapter: onLeaderStart: term=3.
+2024-07-15 21:05:28 [main] WARN  com.alipay.sofa.common.log: Server started on port 8081
+2024-07-15 21:05:28 [main] INFO  com.alipay.sofa.jraft.RaftGroupService: Start the RaftGroupService successfully.
+2024-07-15 21:05:28 [main] WARN  com.alipay.sofa.common.log: [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-15 21:05:28 [main] WARN  com.alipay.sofa.common.log: Switch on reconnect manager
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.service.ReplicaServiceManager - com.trs.pacifica.rpc.service.DefaultReplicaServiceManager] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.rpc.service.ReplicaServiceManagerHolder: use RpcFactory=com.trs.pacifica.rpc.service.DefaultReplicaServiceManager
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcServer: the rpc server is ServerImpl , port=9091
+2024-07-15 21:05:28 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: Connection channel registered: UNKNOWN-ADDR
+2024-07-15 21:05:28 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: Try connect to 127.0.0.1:8081
+2024-07-15 21:05:28 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:8081
+2024-07-15 21:05:28 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:58383], remote[127.0.0.1:8081], event: CONNECT
+2024-07-15 21:05:28 [Rpc-netty-server-worker-1-thread-1] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:58383], event: CONNECT
+2024-07-15 21:05:28 [Rpc-netty-server-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel registered: 127.0.0.1:58383
+2024-07-15 21:05:28 [Rpc-netty-server-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:58383
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.LogStorageFactory - com.trs.pacifica.log.FsLogStorageFactory] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use LogStorageFactory=com.trs.pacifica.log.FsLogStorageFactory
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.SnapshotStorageFactory - com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use SnapshotStorageFactory=com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.async.thread.ExecutorGroupFactory - com.trs.pacifica.async.thread.DefaultExecutorGroupFactory] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder: use ExecutorGroupFactory=com.trs.pacifica.async.thread.DefaultExecutorGroupFactory
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.log.codec.LogEntryCodecFactory - com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use LogEntryCodecFactory=com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.util.timer.TimerFactory - com.trs.pacifica.util.timer.GlobalTimerFactory] loading.
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.fs.FileServiceFactory - com.trs.pacifica.fs.GlobalFileServiceFactory] loading.
+2024-07-15 21:05:28 [pacifica-callback-thread-0] INFO  com.trs.pacifica.core.SnapshotManagerImpl: example_counter_node-01 success to load snapshot, snapshot_log_id=LogId [index=21, term=0]
+2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.core.ReplicaImpl: The state of the replica=example_counter changes from Shutdown to Primary.

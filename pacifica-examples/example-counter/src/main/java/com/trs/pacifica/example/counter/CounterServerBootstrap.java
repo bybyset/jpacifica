@@ -19,7 +19,6 @@ package com.trs.pacifica.example.counter;
 
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
-import com.alipay.sofa.jraft.option.NodeOptions;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
 import com.trs.pacifica.example.counter.config.jraft.MasterServer;
@@ -30,7 +29,6 @@ import com.trs.pacifica.example.counter.service.CounterServiceImpl;
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.rpc.JPacificaRpcServerFactory;
 import com.trs.pacifica.rpc.RpcServer;
-import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.impl.grpc.GrpcClient;
 import com.trs.pacifica.rpc.impl.grpc.GrpcServer;
 import com.trs.pacifica.rpc.node.Endpoint;
@@ -39,10 +37,14 @@ import com.trs.pacifica.rpc.node.EndpointManagerHolder;
 import com.trs.pacifica.rpc.service.ReplicaServiceManagerHolder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
 public class CounterServerBootstrap {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CounterServerBootstrap.class);
 
     public static final String MASTER_DATA_DIR_NAME = "master";
 
@@ -59,6 +61,7 @@ public class CounterServerBootstrap {
                     .println("Example: java com.trs.pacifica.example.counter.CounterServerBootstrap /tmp/server1 127.0.0.1:8081 127.0.0.1:8081,127.0.0.1:8082,127.0.0.1:8083 node01 127.0.0.1:9091 node01:127.0.0.1:9091,node02:127.0.0.1:9092,node03:127.0.0.1:9093");
             System.exit(1);
         }
+        LOGGER.debug("start counter example.");
         MasterServer masterServer = null;
         try {
             final String dataPath = args[0];
@@ -95,7 +98,6 @@ public class CounterServerBootstrap {
 
             // 模拟节点注册发现, 你需要实现自己的注册发现逻辑
             registerNodeId(EndpointManagerHolder.getInstance(), replicaInitConfStr);
-
             Endpoint endpoint = new Endpoint(serverId.getIp(), serverId.getPort());
             GrpcClient rpcClient = (GrpcClient) JPacificaRpcServerFactory.createPacificaRpcClient();
             rpcClient.init(new GrpcClient.Option());
@@ -112,9 +114,8 @@ public class CounterServerBootstrap {
 
             //join
             for (;;) {
-
-                long value = CounterClientBootstrap.incrementAndGet(rpcClient, new Endpoint("127.0.0.1", 9091), COUNTER_GROUP_NAME, 3);
-                System.out.println(value);
+                Thread.sleep(1000);
+                System.out.println("running....");
             }
         } catch (Throwable e) {
             e.printStackTrace();
