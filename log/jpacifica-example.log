@@ -399,3 +399,177 @@ Caused by: java.lang.NoSuchMethodError: 'void org.apache.logging.slf4j.Log4jLogg
 	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:61) ~[jraft-core-1.3.14.jar:?]
 	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:71) ~[main/:?]
 	... 1 more
+2024-07-16 21:52:18 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 21:52:18 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 21:52:18 [main] ERROR com.trs.pacifica.example.counter.CounterServerBootstrap: failed to start
+com.trs.pacifica.error.PacificaException: 
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:88) ~[main/:?]
+	at com.trs.pacifica.example.counter.CounterServerBootstrap.main(CounterServerBootstrap.java:81) [main/:?]
+Caused by: java.lang.NoSuchMethodError: 'void org.apache.logging.slf4j.Log4jLogger.<init>(org.apache.logging.log4j.spi.ExtendedLogger, java.lang.String)'
+	at com.alipay.sofa.common.log.factory.LoggerSpaceFactory4Log4j2Builder$1.getLogger(LoggerSpaceFactory4Log4j2Builder.java:123) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.MultiAppLoggerSpaceManager.getLoggerBySpace(MultiAppLoggerSpaceManager.java:172) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.MultiAppLoggerSpaceManager.getLoggerBySpace(MultiAppLoggerSpaceManager.java:114) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.LoggerSpaceManager.getLoggerBySpace(LoggerSpaceManager.java:57) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.LoggerSpaceManager.getLoggerBySpace(LoggerSpaceManager.java:42) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.remoting.log.BoltLoggerFactory.getLogger(BoltLoggerFactory.java:86) ~[bolt-1.6.4.jar:?]
+	at com.alipay.remoting.AbstractRemotingServer.<clinit>(AbstractRemotingServer.java:42) ~[bolt-1.6.4.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory.createRpcServer(BoltRaftRpcFactory.java:69) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcFactory.createRpcServer(RaftRpcFactory.java:64) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:88) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:74) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:61) ~[jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:71) ~[main/:?]
+	... 1 more
+2024-07-16 21:54:53 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.GrpcRaftRpcFactory] loading.
+2024-07-16 21:54:53 [main] ERROR com.trs.pacifica.example.counter.CounterServerBootstrap: failed to start
+com.trs.pacifica.error.PacificaException: 
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:88) ~[main/:?]
+	at com.trs.pacifica.example.counter.CounterServerBootstrap.main(CounterServerBootstrap.java:81) [main/:?]
+Caused by: java.lang.NullPointerException: null default instance: com.trs.pacifica.example.counter.MetaReplicaRpc$AddSecondaryRequest
+	at com.alipay.sofa.jraft.util.Requires.requireNonNull(Requires.java:55) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.GrpcServer.registerProcessor(GrpcServer.java:133) ~[rpc-grpc-impl-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:72) ~[main/:?]
+	... 1 more
+2024-07-16 22:04:48 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.GrpcRaftRpcFactory] loading.
+2024-07-16 22:04:48 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.JRaftServiceFactory - com.alipay.sofa.jraft.core.DefaultJRaftServiceFactory] loading.
+2024-07-16 22:04:48 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.util.timer.RaftTimerFactory - com.alipay.sofa.jraft.util.timer.DefaultRaftTimerFactory] loading.
+2024-07-16 22:04:48 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: The number of active nodes increment to 1.
+2024-07-16 22:04:49 [JRaft-Group-Default-Executor-0] INFO  com.alipay.sofa.jraft.storage.impl.RocksDBLogStorage: Truncated prefix logs in data path: D:\tmp\jpacifica\test1\master\wal from log index 0 to 1, cost 1 ms.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.core.FSMCallerImpl: Starts FSMCaller successfully.
+2024-07-16 22:04:49 [main] WARN  com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotStorage: No data for snapshot reader D:\tmp\jpacifica\test1\master\snapshot.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> target priority value has changed from: 0, to: -1.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> init, term=5, lastLogId=LogId [index=10, term=5], conf=127.0.0.1:8081, oldConf=.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> start vote and grant vote self, term=5.
+2024-07-16 22:04:49 [main] WARN  com.alipay.sofa.jraft.util.Utils: Unable to fsync directory D:\tmp\jpacifica\test1\master\raft_meta on windows.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.storage.impl.LocalRaftMetaStorage: Save raft meta, path=D:\tmp\jpacifica\test1\master\raft_meta, term=6, votedFor=127.0.0.1:8081, cost time=11 ms
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> become leader of group, term=6, conf=127.0.0.1:8081, oldConf=.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.util.Recyclers: -Djraft.recyclers.maxCapacityPerThread: 4096.
+2024-07-16 22:04:49 [JRaft-FSMCaller-Disruptor-0] INFO  com.alipay.sofa.jraft.core.StateMachineAdapter: onLeaderStart: term=6.
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.RaftGroupService: Start the RaftGroupService successfully.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.service.ReplicaServiceManager - com.trs.pacifica.rpc.service.DefaultReplicaServiceManager] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.rpc.service.ReplicaServiceManagerHolder: use RpcFactory=com.trs.pacifica.rpc.service.DefaultReplicaServiceManager
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcServer: the rpc server is ServerImpl , port=9091
+2024-07-16 22:04:49 [main] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: Creating new channel to: 127.0.0.1:8081.
+2024-07-16 22:04:49 [grpc-default-executor-0] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: CONNECTING.
+2024-07-16 22:04:49 [grpc-nio-worker-ELG-3-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: READY.
+2024-07-16 22:04:49 [grpc-nio-worker-ELG-3-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 has successfully established.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.LogStorageFactory - com.trs.pacifica.log.FsLogStorageFactory] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use LogStorageFactory=com.trs.pacifica.log.FsLogStorageFactory
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.SnapshotStorageFactory - com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use SnapshotStorageFactory=com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.async.thread.ExecutorGroupFactory - com.trs.pacifica.async.thread.DefaultExecutorGroupFactory] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder: use ExecutorGroupFactory=com.trs.pacifica.async.thread.DefaultExecutorGroupFactory
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.log.codec.LogEntryCodecFactory - com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use LogEntryCodecFactory=com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.util.timer.TimerFactory - com.trs.pacifica.util.timer.GlobalTimerFactory] loading.
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.fs.FileServiceFactory - com.trs.pacifica.fs.GlobalFileServiceFactory] loading.
+2024-07-16 22:04:49 [pacifica-callback-thread-0] INFO  com.trs.pacifica.core.SnapshotManagerImpl: example_counter_node-01 success to load snapshot, snapshot_log_id=LogId [index=32, term=0]
+2024-07-16 22:04:49 [main] INFO  com.trs.pacifica.core.ReplicaImpl: The state of the replica=example_counter changes from Shutdown to Primary.
+2024-07-16 22:04:49 [default-pacifica-single-thread-0] ERROR com.trs.pacifica.core.ReplicaImpl: example_counter_node-01 encountered an error.
+com.trs.pacifica.error.PacificaException: failed to get LogEntry at logIndex=33
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:108) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl.unsafeCommitAt(StateMachineCallerImpl.java:209) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl$CommitEvent.run(StateMachineCallerImpl.java:347) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:340) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:324) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor.lambda$doStartWorker$3(MpscSingleThreadExecutor.java:251) ~[pacifica-core.jar:?]
+	at java.base/java.lang.Thread.run(Thread.java:833) [?:?]
+Caused by: java.lang.IndexOutOfBoundsException: position(38) greater than current_flush_position(32).
+	at com.trs.pacifica.log.store.file.AbstractFile.readDataBuffer(AbstractFile.java:336) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.file.SegmentFile.lookupBlock(SegmentFile.java:99) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.SegmentStore.lookupLogEntry(SegmentStore.java:120) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.FsLogStorage.getLogEntry(FsLogStorage.java:214) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.LogManagerImpl.getLogEntryAt(LogManagerImpl.java:252) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:93) ~[pacifica-core.jar:?]
+	... 6 more
+2024-07-16 22:04:49 [default-pacifica-single-thread-0] ERROR com.trs.pacifica.core.StateMachineCallerImpl: example_counter_node-01 a failure has occurred. Repeat the report.
+com.trs.pacifica.error.PacificaException: failed to get LogEntry at logIndex=33
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:108) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl.unsafeCommitAt(StateMachineCallerImpl.java:209) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl$CommitEvent.run(StateMachineCallerImpl.java:347) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:340) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:324) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor.lambda$doStartWorker$3(MpscSingleThreadExecutor.java:251) ~[pacifica-core.jar:?]
+	at java.base/java.lang.Thread.run(Thread.java:833) [?:?]
+Caused by: java.lang.IndexOutOfBoundsException: position(38) greater than current_flush_position(32).
+	at com.trs.pacifica.log.store.file.AbstractFile.readDataBuffer(AbstractFile.java:336) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.file.SegmentFile.lookupBlock(SegmentFile.java:99) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.SegmentStore.lookupLogEntry(SegmentStore.java:120) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.FsLogStorage.getLogEntry(FsLogStorage.java:214) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.LogManagerImpl.getLogEntryAt(LogManagerImpl.java:252) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:93) ~[pacifica-core.jar:?]
+	... 6 more
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.GrpcRaftRpcFactory] loading.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.JRaftServiceFactory - com.alipay.sofa.jraft.core.DefaultJRaftServiceFactory] loading.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.util.timer.RaftTimerFactory - com.alipay.sofa.jraft.util.timer.DefaultRaftTimerFactory] loading.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: The number of active nodes increment to 1.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.core.FSMCallerImpl: Starts FSMCaller successfully.
+2024-07-16 22:05:19 [main] WARN  com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotStorage: No data for snapshot reader D:\tmp\jpacifica\test1\master\snapshot.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> init, term=0, lastLogId=LogId [index=0, term=0], conf=127.0.0.1:8081, oldConf=.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> start vote and grant vote self, term=0.
+2024-07-16 22:05:19 [main] WARN  com.alipay.sofa.jraft.util.Utils: Unable to fsync directory D:\tmp\jpacifica\test1\master\raft_meta on windows.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.storage.impl.LocalRaftMetaStorage: Save raft meta, path=D:\tmp\jpacifica\test1\master\raft_meta, term=1, votedFor=127.0.0.1:8081, cost time=14 ms
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> become leader of group, term=1, conf=127.0.0.1:8081, oldConf=.
+2024-07-16 22:05:19 [main] INFO  com.alipay.sofa.jraft.util.Recyclers: -Djraft.recyclers.maxCapacityPerThread: 4096.
+2024-07-16 22:05:19 [JRaft-FSMCaller-Disruptor-0] INFO  com.alipay.sofa.jraft.core.StateMachineAdapter: onLeaderStart: term=1.
+2024-07-16 22:05:20 [main] INFO  com.alipay.sofa.jraft.RaftGroupService: Start the RaftGroupService successfully.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.service.ReplicaServiceManager - com.trs.pacifica.rpc.service.DefaultReplicaServiceManager] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.rpc.service.ReplicaServiceManagerHolder: use RpcFactory=com.trs.pacifica.rpc.service.DefaultReplicaServiceManager
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcServer: the rpc server is ServerImpl , port=9091
+2024-07-16 22:05:20 [main] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: Creating new channel to: 127.0.0.1:8081.
+2024-07-16 22:05:20 [grpc-default-executor-0] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: CONNECTING.
+2024-07-16 22:05:20 [grpc-nio-worker-ELG-3-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: READY.
+2024-07-16 22:05:20 [grpc-nio-worker-ELG-3-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 has successfully established.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.LogStorageFactory - com.trs.pacifica.log.FsLogStorageFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use LogStorageFactory=com.trs.pacifica.log.FsLogStorageFactory
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.SnapshotStorageFactory - com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use SnapshotStorageFactory=com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.async.thread.ExecutorGroupFactory - com.trs.pacifica.async.thread.DefaultExecutorGroupFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder: use ExecutorGroupFactory=com.trs.pacifica.async.thread.DefaultExecutorGroupFactory
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.log.codec.LogEntryCodecFactory - com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use LogEntryCodecFactory=com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.util.timer.TimerFactory - com.trs.pacifica.util.timer.GlobalTimerFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.fs.FileServiceFactory - com.trs.pacifica.fs.GlobalFileServiceFactory] loading.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.core.SnapshotManagerImpl: example_counter_node-01 do first load snapshot, but no snapshot data.
+2024-07-16 22:05:20 [main] INFO  com.trs.pacifica.core.ReplicaImpl: The state of the replica=example_counter changes from Shutdown to Primary.
+2024-07-16 22:05:39 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 22:05:39 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 22:05:39 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.GrpcRaftRpcFactory] loading.
+2024-07-16 22:05:40 [main] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: Creating new channel to: 127.0.0.1:8081.
+2024-07-16 22:05:40 [grpc-default-executor-0] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: CONNECTING.
+2024-07-16 22:05:40 [grpc-nio-worker-ELG-1-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: READY.
+2024-07-16 22:05:40 [grpc-nio-worker-ELG-1-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 has successfully established.
+2024-07-16 22:05:40 [main] ERROR com.trs.pacifica.example.counter.config.CounterReplicaConfigClient: failed to get ReplicaGroup
+java.lang.NullPointerException: null default instance: com.trs.pacifica.example.counter.MetaReplicaRpc$GetReplicaGroupRequest
+	at com.alipay.sofa.jraft.util.Requires.requireNonNull(Requires.java:55) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.GrpcClient.getCallMethod(GrpcClient.java:175) ~[rpc-grpc-impl-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.GrpcClient.invokeAsync(GrpcClient.java:151) ~[rpc-grpc-impl-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.GrpcClient.invokeSync(GrpcClient.java:118) ~[rpc-grpc-impl-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RpcClient.invokeSync(RpcClient.java:71) ~[jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:148) ~[main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:143) ~[main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.getReplicaGroup(CounterReplicaConfigClient.java:65) [main/:?]
+	at com.trs.pacifica.example.counter.CounterClientBootstrap.main(CounterClientBootstrap.java:59) [main/:?]
+2024-07-16 22:05:41 [grpc-nio-worker-ELG-3-11] INFO  com.alipay.sofa.jraft.rpc.RpcRequestProcessor: Connection disconnected: /127.0.0.1:54790
+2024-07-16 22:08:20 [pacifica-callback-thread-2] INFO  com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage: Deleting snapshot D:\tmp\jpacifica\test1\counter\snapshot\snapshot_0.
+2024-07-16 22:08:20 [pacifica-callback-thread-2] INFO  com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage: Deleting snapshot D:\tmp\jpacifica\test1\counter\snapshot\_temp.
+2024-07-16 22:13:58 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 22:13:58 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 22:13:58 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.GrpcRaftRpcFactory] loading.
+2024-07-16 22:13:58 [main] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: Creating new channel to: 127.0.0.1:8081.
+2024-07-16 22:13:58 [grpc-default-executor-0] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: CONNECTING.
+2024-07-16 22:13:59 [grpc-nio-worker-ELG-1-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 is in state: READY.
+2024-07-16 22:13:59 [grpc-nio-worker-ELG-1-5] INFO  com.alipay.sofa.jraft.rpc.impl.GrpcClient: The channel 127.0.0.1:8081 has successfully established.
+2024-07-16 22:13:59 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-16 22:13:59 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-16 22:13:59 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcClient: Creating new channel to: 127.0.0.1:9091.
+2024-07-16 22:14:07 [main] INFO  com.trs.pacifica.example.counter.CounterClientBootstrap: success to run counter client
+2024-07-16 22:14:07 [grpc-nio-worker-ELG-3-12] INFO  com.alipay.sofa.jraft.rpc.RpcRequestProcessor: Connection disconnected: /127.0.0.1:55077

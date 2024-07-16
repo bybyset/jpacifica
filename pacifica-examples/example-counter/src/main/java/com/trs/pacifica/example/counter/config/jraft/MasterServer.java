@@ -24,17 +24,26 @@ import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
 import com.alipay.sofa.jraft.rpc.RpcServer;
+import com.alipay.sofa.jraft.util.RpcFactoryHelper;
+import com.google.protobuf.Message;
 import com.trs.pacifica.LifeCycle;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.example.counter.MetaReplicaRpc;
+import com.trs.pacifica.example.counter.config.CounterGrpcHelper;
 import com.trs.pacifica.example.counter.config.jraft.fsm.ReplicaFsm;
 import com.trs.pacifica.example.counter.config.jraft.rpc.*;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class MasterServer implements LifeCycle<MasterServer.Option> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MasterServer.class);
 
     public static final String DEFAULT_GROUP_ID = "master";
 
@@ -69,11 +78,7 @@ public class MasterServer implements LifeCycle<MasterServer.Option> {
             final PeerId masterServerId = this.option.getServerId();
             FileUtils.forceMkdir(new File(dataPath));
             final RpcServer rpcServer = RaftRpcServerFactory.createRaftRpcServer(masterServerId.getEndpoint());
-            rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
-            rpcServer.registerProcessor(new RemoveSecondaryProcessor(metaReplicaService));
-            rpcServer.registerProcessor(new ChangePrimaryProcessor(metaReplicaService));
-            rpcServer.registerProcessor(new GetReplicaGroupProcessor(metaReplicaService));
-            rpcServer.registerProcessor(new AddReplicaProcessor(metaReplicaService));
+            startRpcServer(rpcServer);
             final Configuration configuration = this.option.getConfiguration();
             final NodeOptions options = new NodeOptions();
             this.replicaFsm = new ReplicaFsm();
@@ -95,6 +100,15 @@ public class MasterServer implements LifeCycle<MasterServer.Option> {
         this.getRaftGroupService().shutdown();
     }
 
+
+    void startRpcServer(RpcServer rpcServer) {
+        CounterGrpcHelper.registerProtobufSerializer();
+        rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new RemoveSecondaryProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new ChangePrimaryProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new GetReplicaGroupProcessor(metaReplicaService));
+        rpcServer.registerProcessor(new AddReplicaProcessor(metaReplicaService));
+    }
     public RaftGroupService getRaftGroupService() {
         return raftGroupService;
     }

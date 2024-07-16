@@ -19,6 +19,7 @@ package com.trs.pacifica.example.counter;
 
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.example.counter.config.CounterGrpcHelper;
 import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
@@ -55,6 +56,7 @@ public class CounterClientBootstrap {
         }
         EndpointManager endpointManager = EndpointManagerHolder.getInstance();
         registerNodeId(endpointManager, replicaInitConfStr);
+        CounterGrpcHelper.registerProtobufSerializer();
         CounterReplicaConfigClient counterReplicaConfigClient = new CounterReplicaConfigClient(initConf);
         final ReplicaGroup replicaGroup = counterReplicaConfigClient.getReplicaGroup(groupName);
         ReplicaId primaryId = replicaGroup.getPrimary();
