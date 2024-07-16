@@ -17,7 +17,6 @@
 
 package com.trs.pacifica.example.counter;
 
-import com.alipay.sofa.jraft.RouteTable;
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
@@ -30,15 +29,18 @@ import com.trs.pacifica.rpc.node.Endpoint;
 import com.trs.pacifica.rpc.node.EndpointManager;
 import com.trs.pacifica.rpc.node.EndpointManagerHolder;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CounterClientBootstrap {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CounterClientBootstrap.class);
 
 
     public static void main(String[] args) {
         final String groupName = args[0];
         final String masterInitConfStr = args[1];
         final String replicaInitConfStr = args[2];
-
         if (args.length != 3) {
             System.out
                     .println("Usage : java com.trs.pacifica.example.counter.CounterClientBootstrap {groupName} {masterInitConf} {serverConfStr}");
@@ -54,29 +56,28 @@ public class CounterClientBootstrap {
         EndpointManager endpointManager = EndpointManagerHolder.getInstance();
         registerNodeId(endpointManager, replicaInitConfStr);
         CounterReplicaConfigClient counterReplicaConfigClient = new CounterReplicaConfigClient(initConf);
-
         final ReplicaGroup replicaGroup = counterReplicaConfigClient.getReplicaGroup(groupName);
-
         ReplicaId primaryId = replicaGroup.getPrimary();
         Endpoint primaryEndPoint = endpointManager.getEndpoint(primaryId.getNodeId());
         GrpcClient rpcClient = (GrpcClient) JPacificaRpcServerFactory.createPacificaRpcClient();
         rpcClient.extendMarshaller(CounterRpc.IncrementAndGetRequest.getDefaultInstance(), CounterRpc.IncrementAndGetResponse.getDefaultInstance());
         try {
-            rpcClient.init(new GrpcClient.Option());
-            rpcClient.startup();
             long delta = 3;
             for (int i = 0; i < 10; i++) {
                 long value = incrementAndGet(rpcClient, primaryEndPoint, groupName, delta);
                 System.out.println(value);
             }
+            LOGGER.info("success to run counter client");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("failed ...", e);
+        } finally {
+
         }
+
     }
 
 
     static long incrementAndGet(RpcClient rpcClient, Endpoint primary, String groupName, final long delta) throws PacificaException {
-
         CounterRpc.IncrementAndGetRequest request = CounterRpc.IncrementAndGetRequest.newBuilder()//
                 .setDelta(delta)//
                 .setGroupName(groupName)

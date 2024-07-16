@@ -84,5 +84,9 @@ public class CounterReplica {
         this.replicaWharf.start();
     }
 
+    public void shutdown() throws PacificaException {
+        this.replicaWharf.shutdown();
+    }
+
 
 }

@@ -22,7 +22,6 @@ import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.error.RemotingException;
 import com.alipay.sofa.jraft.option.CliOptions;
-import com.alipay.sofa.jraft.option.RpcOptions;
 import com.alipay.sofa.jraft.rpc.impl.cli.CliClientServiceImpl;
 import com.trs.pacifica.ConfigurationClient;
 import com.trs.pacifica.example.counter.MetaReplicaRpc;
@@ -155,11 +154,10 @@ public class CounterReplicaConfigClient implements ConfigurationClient {
     }
 
     PeerId getLeader() throws InterruptedException, TimeoutException {
-//        if (!RouteTable.getInstance().refreshLeader(cliClientService, groupId, 1000).isOk()) {
-//            throw new IllegalStateException("Refresh leader failed");
-//        }
-//        final PeerId leader = RouteTable.getInstance().selectLeader(groupId);
-//        return leader;
-        return new PeerId("127.0.0.1", 8081);
+        if (!RouteTable.getInstance().refreshLeader(cliClientService, groupId, 1000).isOk()) {
+            throw new IllegalStateException("Refresh leader failed");
+        }
+        final PeerId leader = RouteTable.getInstance().selectLeader(groupId);
+        return leader;
     }
 }

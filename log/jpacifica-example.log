@@ -99,3 +99,257 @@
 2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.fs.FileServiceFactory - com.trs.pacifica.fs.GlobalFileServiceFactory] loading.
 2024-07-15 21:05:28 [pacifica-callback-thread-0] INFO  com.trs.pacifica.core.SnapshotManagerImpl: example_counter_node-01 success to load snapshot, snapshot_log_id=LogId [index=21, term=0]
 2024-07-15 21:05:28 [main] INFO  com.trs.pacifica.core.ReplicaImpl: The state of the replica=example_counter changes from Shutdown to Primary.
+2024-07-16 20:23:36 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 20:23:36 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 20:23:36 [main] ERROR com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J Error: Build ILoggerFactory error! Default app logger will be used.
+2024-07-16 20:23:37 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.JRaftServiceFactory - com.alipay.sofa.jraft.core.DefaultJRaftServiceFactory] loading.
+2024-07-16 20:23:37 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.util.timer.RaftTimerFactory - com.alipay.sofa.jraft.util.timer.DefaultRaftTimerFactory] loading.
+2024-07-16 20:23:37 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: The number of active nodes increment to 1.
+2024-07-16 20:23:38 [JRaft-Group-Default-Executor-0] INFO  com.alipay.sofa.jraft.storage.impl.RocksDBLogStorage: Truncated prefix logs in data path: D:\tmp\jpacifica\test1\master\wal from log index 0 to 1, cost 0 ms.
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.core.FSMCallerImpl: Starts FSMCaller successfully.
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.jraft.storage.snapshot.local.LocalSnapshotStorage: No data for snapshot reader D:\tmp\jpacifica\test1\master\snapshot.
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> target priority value has changed from: 0, to: -1.
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.common.log: [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.common.log: Switch on reconnect manager
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> init, term=3, lastLogId=LogId [index=6, term=3], conf=127.0.0.1:8081, oldConf=.
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> start vote and grant vote self, term=3.
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.jraft.util.Utils: Unable to fsync directory D:\tmp\jpacifica\test1\master\raft_meta on windows.
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.storage.impl.LocalRaftMetaStorage: Save raft meta, path=D:\tmp\jpacifica\test1\master\raft_meta, term=4, votedFor=127.0.0.1:8081, cost time=38 ms
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.core.NodeImpl: Node <master/127.0.0.1:8081> become leader of group, term=4, conf=127.0.0.1:8081, oldConf=.
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.util.Recyclers: -Djraft.recyclers.maxCapacityPerThread: 4096.
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.common.log: [server side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.common.log: Prepare to start server on port 8081 
+2024-07-16 20:23:38 [JRaft-FSMCaller-Disruptor-0] INFO  com.alipay.sofa.jraft.core.StateMachineAdapter: onLeaderStart: term=4.
+2024-07-16 20:23:38 [main] WARN  com.alipay.sofa.common.log: Server started on port 8081
+2024-07-16 20:23:38 [main] INFO  com.alipay.sofa.jraft.RaftGroupService: Start the RaftGroupService successfully.
+2024-07-16 20:23:42 [main] WARN  com.alipay.sofa.common.log: [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-16 20:23:42 [main] WARN  com.alipay.sofa.common.log: Switch on reconnect manager
+2024-07-16 20:23:46 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-16 20:23:46 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-16 20:23:46 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.service.ReplicaServiceManager - com.trs.pacifica.rpc.service.DefaultReplicaServiceManager] loading.
+2024-07-16 20:23:46 [main] INFO  com.trs.pacifica.rpc.service.ReplicaServiceManagerHolder: use RpcFactory=com.trs.pacifica.rpc.service.DefaultReplicaServiceManager
+2024-07-16 20:23:47 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 20:23:47 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcServer: the rpc server is ServerImpl , port=9091
+2024-07-16 20:23:48 [main] WARN  com.alipay.sofa.common.log: check failed. address: 127.0.0.1:8081, connection: null
+com.alipay.remoting.exception.RemotingException: Connection is null when do check!
+	at com.alipay.remoting.DefaultConnectionManager.check(DefaultConnectionManager.java:353) ~[bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:447) [bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:438) [bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:433) [bolt-1.6.4.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.BoltRpcClient.checkConnection(BoltRpcClient.java:73) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.AbstractClientService.isConnected(AbstractClientService.java:81) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.AbstractClientService.connect(AbstractClientService.java:142) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.RouteTable.refreshLeader(RouteTable.java:242) [jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.getLeader(CounterReplicaConfigClient.java:157) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:147) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:143) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.addReplica(CounterReplicaConfigClient.java:134) [main/:?]
+	at com.trs.pacifica.example.counter.CounterServer.addReplica(CounterServer.java:110) [main/:?]
+	at com.trs.pacifica.example.counter.CounterServer.startup(CounterServer.java:90) [main/:?]
+	at com.trs.pacifica.example.counter.CounterServerBootstrap.main(CounterServerBootstrap.java:96) [main/:?]
+2024-07-16 20:23:48 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: Connection channel registered: UNKNOWN-ADDR
+2024-07-16 20:23:48 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: Try connect to 127.0.0.1:8081
+2024-07-16 20:23:48 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:8081
+2024-07-16 20:23:48 [Rpc-netty-server-worker-1-thread-1] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:50478], event: CONNECT
+2024-07-16 20:23:48 [Rpc-netty-server-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel registered: 127.0.0.1:50478
+2024-07-16 20:23:48 [bolt-netty-client-worker-3-thread-1] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:50478], remote[127.0.0.1:8081], event: CONNECT
+2024-07-16 20:23:48 [Rpc-netty-server-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:50478
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.LogStorageFactory - com.trs.pacifica.log.FsLogStorageFactory] loading.
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use LogStorageFactory=com.trs.pacifica.log.FsLogStorageFactory
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.SnapshotStorageFactory - com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory] loading.
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.core.LogStorageFactoryHolder: use SnapshotStorageFactory=com.trs.pacifica.snapshot.storage.DefaultSnapshotStorageFactory
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.async.thread.ExecutorGroupFactory - com.trs.pacifica.async.thread.DefaultExecutorGroupFactory] loading.
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.async.thread.ReplicaExecutorGroupHolder: use ExecutorGroupFactory=com.trs.pacifica.async.thread.DefaultExecutorGroupFactory
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.log.codec.LogEntryCodecFactory - com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory] loading.
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use LogEntryCodecFactory=com.trs.pacifica.log.codec.DefaultLogEntryCodecFactory
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.util.timer.TimerFactory - com.trs.pacifica.util.timer.GlobalTimerFactory] loading.
+2024-07-16 20:23:48 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.fs.FileServiceFactory - com.trs.pacifica.fs.GlobalFileServiceFactory] loading.
+2024-07-16 20:23:49 [pacifica-callback-thread-0] INFO  com.trs.pacifica.core.SnapshotManagerImpl: example_counter_node-01 success to load snapshot, snapshot_log_id=LogId [index=21, term=0]
+2024-07-16 20:23:49 [main] INFO  com.trs.pacifica.core.ReplicaImpl: The state of the replica=example_counter changes from Shutdown to Primary.
+2024-07-16 20:24:07 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 20:24:07 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 20:24:07 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 20:24:07 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 20:24:07 [main] ERROR com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J Error: Build ILoggerFactory error! Default app logger will be used.
+2024-07-16 20:24:07 [main] WARN  com.alipay.sofa.common.log: [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-16 20:24:08 [main] WARN  com.alipay.sofa.common.log: Switch on reconnect manager
+2024-07-16 20:24:08 [main] WARN  com.alipay.sofa.common.log: check failed. address: 127.0.0.1:8081, connection: null
+com.alipay.remoting.exception.RemotingException: Connection is null when do check!
+	at com.alipay.remoting.DefaultConnectionManager.check(DefaultConnectionManager.java:353) ~[bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:447) [bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:438) [bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:433) [bolt-1.6.4.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.BoltRpcClient.checkConnection(BoltRpcClient.java:73) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.AbstractClientService.isConnected(AbstractClientService.java:81) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.AbstractClientService.connect(AbstractClientService.java:142) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.RouteTable.refreshLeader(RouteTable.java:242) [jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.getLeader(CounterReplicaConfigClient.java:157) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:147) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:143) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.getReplicaGroup(CounterReplicaConfigClient.java:65) [main/:?]
+	at com.trs.pacifica.example.counter.CounterClientBootstrap.main(CounterClientBootstrap.java:60) [main/:?]
+2024-07-16 20:24:08 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel registered: UNKNOWN-ADDR
+2024-07-16 20:24:08 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Try connect to 127.0.0.1:8081
+2024-07-16 20:24:08 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:50490], event: CONNECT
+2024-07-16 20:24:08 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Connection channel registered: 127.0.0.1:50490
+2024-07-16 20:24:08 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:50490
+2024-07-16 20:24:08 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:8081
+2024-07-16 20:24:08 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:50490], remote[127.0.0.1:8081], event: CONNECT
+2024-07-16 20:24:08 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-16 20:24:08 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-16 20:24:11 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcClient: Creating new channel to: 127.0.0.1:9091.
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] WARN  com.alipay.sofa.common.log: ExceptionCaught in connection: local[127.0.0.1:8081], remote[127.0.0.1:50490], close the connection! Cause[SocketException:Connection reset]
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Connection closed: 127.0.0.1:50490
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Connection closed: 127.0.0.1:50490
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Close the connection to remote address=127.0.0.1:50490, result=true, cause=null
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] WARN  com.alipay.sofa.common.log: Remove and close the last connection in ConnectionPool with poolKey 127.0.0.1:50490
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Connection channel inactive: 127.0.0.1:50490
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:50490], event: CLOSE
+2024-07-16 20:25:12 [Rpc-netty-server-worker-1-thread-2] INFO  com.alipay.sofa.common.log: Connection channel unregistered: 127.0.0.1:50490
+2024-07-16 20:25:12 [Bolt-conn-event-executor-10-thread-1] INFO  com.alipay.sofa.jraft.rpc.RpcRequestProcessor: Connection disconnected: 127.0.0.1:50490
+2024-07-16 20:26:49 [pacifica-callback-thread-7] INFO  com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage: Deleting snapshot D:\tmp\jpacifica\test1\counter\snapshot\snapshot_21.
+2024-07-16 20:26:49 [pacifica-callback-thread-7] INFO  com.trs.pacifica.snapshot.storage.DefaultSnapshotStorage: Deleting snapshot D:\tmp\jpacifica\test1\counter\snapshot\_temp.
+2024-07-16 20:27:00 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 20:27:00 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 20:27:00 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 20:27:00 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 20:27:01 [main] ERROR com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J Error: Build ILoggerFactory error! Default app logger will be used.
+2024-07-16 20:27:01 [main] WARN  com.alipay.sofa.common.log: [client side] bolt netty low water mark is 262144 bytes, high water mark is 524288 bytes
+2024-07-16 20:27:01 [main] WARN  com.alipay.sofa.common.log: Switch on reconnect manager
+2024-07-16 20:27:01 [main] WARN  com.alipay.sofa.common.log: check failed. address: 127.0.0.1:8081, connection: null
+com.alipay.remoting.exception.RemotingException: Connection is null when do check!
+	at com.alipay.remoting.DefaultConnectionManager.check(DefaultConnectionManager.java:353) ~[bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:447) [bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:438) [bolt-1.6.4.jar:?]
+	at com.alipay.remoting.rpc.RpcClient.checkConnection(RpcClient.java:433) [bolt-1.6.4.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.BoltRpcClient.checkConnection(BoltRpcClient.java:73) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.AbstractClientService.isConnected(AbstractClientService.java:81) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.AbstractClientService.connect(AbstractClientService.java:142) [jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.RouteTable.refreshLeader(RouteTable.java:242) [jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.getLeader(CounterReplicaConfigClient.java:157) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:147) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.sendRequest(CounterReplicaConfigClient.java:143) [main/:?]
+	at com.trs.pacifica.example.counter.config.CounterReplicaConfigClient.getReplicaGroup(CounterReplicaConfigClient.java:65) [main/:?]
+	at com.trs.pacifica.example.counter.CounterClientBootstrap.main(CounterClientBootstrap.java:59) [main/:?]
+2024-07-16 20:27:01 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel registered: UNKNOWN-ADDR
+2024-07-16 20:27:01 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Try connect to 127.0.0.1:8081
+2024-07-16 20:27:01 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:50614], event: CONNECT
+2024-07-16 20:27:01 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection channel registered: 127.0.0.1:50614
+2024-07-16 20:27:01 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:50614
+2024-07-16 20:27:01 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: Connection channel active: 127.0.0.1:8081
+2024-07-16 20:27:01 [bolt-netty-client-worker-1-thread-1] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:50614], remote[127.0.0.1:8081], event: CONNECT
+2024-07-16 20:27:01 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.RpcFactory - com.trs.pacifica.rpc.impl.grpc.GrpcFactory] loading.
+2024-07-16 20:27:01 [main] INFO  com.trs.pacifica.rpc.RpcFactoryHolder: use RpcFactory=com.trs.pacifica.rpc.impl.grpc.GrpcFactory
+2024-07-16 20:27:01 [main] INFO  com.trs.pacifica.rpc.impl.grpc.GrpcClient: Creating new channel to: 127.0.0.1:9091.
+2024-07-16 20:27:01 [default-pacifica-single-thread-0] ERROR com.trs.pacifica.core.ReplicaImpl: example_counter_node-01 encountered an error.
+com.trs.pacifica.error.PacificaException: failed to get LogEntry at logIndex=33
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:108) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl.unsafeCommitAt(StateMachineCallerImpl.java:209) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl$CommitEvent.run(StateMachineCallerImpl.java:347) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:340) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:324) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor.lambda$doStartWorker$3(MpscSingleThreadExecutor.java:251) ~[pacifica-core.jar:?]
+	at java.base/java.lang.Thread.run(Thread.java:833) [?:?]
+Caused by: java.lang.IndexOutOfBoundsException: position(38) greater than current_flush_position(32).
+	at com.trs.pacifica.log.store.file.AbstractFile.readDataBuffer(AbstractFile.java:336) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.file.SegmentFile.lookupBlock(SegmentFile.java:99) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.SegmentStore.lookupLogEntry(SegmentStore.java:120) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.FsLogStorage.getLogEntry(FsLogStorage.java:214) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.LogManagerImpl.getLogEntryAt(LogManagerImpl.java:252) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:93) ~[pacifica-core.jar:?]
+	... 6 more
+2024-07-16 20:27:01 [default-pacifica-single-thread-0] ERROR com.trs.pacifica.core.StateMachineCallerImpl: example_counter_node-01 a failure has occurred. Repeat the report.
+com.trs.pacifica.error.PacificaException: failed to get LogEntry at logIndex=33
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:108) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl.unsafeCommitAt(StateMachineCallerImpl.java:209) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.StateMachineCallerImpl$CommitEvent.run(StateMachineCallerImpl.java:347) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.runTask(MpscSingleThreadExecutor.java:340) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor$Worker.run(MpscSingleThreadExecutor.java:324) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.async.thread.MpscSingleThreadExecutor.lambda$doStartWorker$3(MpscSingleThreadExecutor.java:251) ~[pacifica-core.jar:?]
+	at java.base/java.lang.Thread.run(Thread.java:833) [?:?]
+Caused by: java.lang.IndexOutOfBoundsException: position(38) greater than current_flush_position(32).
+	at com.trs.pacifica.log.store.file.AbstractFile.readDataBuffer(AbstractFile.java:336) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.file.SegmentFile.lookupBlock(SegmentFile.java:99) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.store.SegmentStore.lookupLogEntry(SegmentStore.java:120) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.log.FsLogStorage.getLogEntry(FsLogStorage.java:214) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.LogManagerImpl.getLogEntryAt(LogManagerImpl.java:252) ~[pacifica-core.jar:?]
+	at com.trs.pacifica.core.fsm.OperationIteratorImpl.next(OperationIteratorImpl.java:93) ~[pacifica-core.jar:?]
+	... 6 more
+2024-07-16 20:28:01 [main] ERROR com.trs.pacifica.example.counter.CounterClientBootstrap: failed ...
+com.trs.pacifica.error.PacificaException: DEADLINE_EXCEEDED: CallOptions deadline exceeded after 59.979954100s. Name resolution delay 0.001740600 seconds. [closed=[], open=[[buffered_nanos=182251700, remote_addr=/127.0.0.1:9091]]]
+	at com.trs.pacifica.rpc.impl.grpc.GrpcClient.invokeSync(GrpcClient.java:181) ~[rpc-grpc-impl.jar:?]
+	at com.trs.pacifica.example.counter.CounterClientBootstrap.incrementAndGet(CounterClientBootstrap.java:86) ~[main/:?]
+	at com.trs.pacifica.example.counter.CounterClientBootstrap.main(CounterClientBootstrap.java:67) [main/:?]
+Caused by: io.grpc.StatusRuntimeException: DEADLINE_EXCEEDED: CallOptions deadline exceeded after 59.979954100s. Name resolution delay 0.001740600 seconds. [closed=[], open=[[buffered_nanos=182251700, remote_addr=/127.0.0.1:9091]]]
+	at io.grpc.Status.asRuntimeException(Status.java:533) ~[grpc-api-1.63.0.jar:1.63.0]
+	at io.grpc.stub.ClientCalls$StreamObserverToCallListenerAdapter.onClose(ClientCalls.java:481) ~[grpc-stub-1.63.0.jar:1.63.0]
+	at io.grpc.internal.DelayedClientCall$DelayedListener$3.run(DelayedClientCall.java:489) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.DelayedClientCall$DelayedListener.delayOrExecute(DelayedClientCall.java:453) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.DelayedClientCall$DelayedListener.onClose(DelayedClientCall.java:486) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ClientCallImpl.closeObserver(ClientCallImpl.java:564) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ClientCallImpl.access$100(ClientCallImpl.java:72) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1StreamClosed.runInternal(ClientCallImpl.java:729) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1StreamClosed.runInContext(ClientCallImpl.java:710) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.SerializeReentrantCallsDirectExecutor.execute(SerializeReentrantCallsDirectExecutor.java:49) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.closedInternal(ClientCallImpl.java:736) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.closed(ClientCallImpl.java:680) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.RetriableStream$Sublistener$2.run(RetriableStream.java:909) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.SynchronizationContext.drain(SynchronizationContext.java:94) ~[grpc-api-1.63.0.jar:1.63.0]
+	at io.grpc.SynchronizationContext.execute(SynchronizationContext.java:126) ~[grpc-api-1.63.0.jar:1.63.0]
+	at io.grpc.internal.RetriableStream$Sublistener.closed(RetriableStream.java:904) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.DelayedStream$DelayedStreamListener$4.run(DelayedStream.java:510) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.DelayedStream$DelayedStreamListener.delayOrExecute(DelayedStream.java:462) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.DelayedStream$DelayedStreamListener.closed(DelayedStream.java:507) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.ForwardingClientStreamListener.closed(ForwardingClientStreamListener.java:34) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.InternalSubchannel$CallTracingTransport$1$1.closed(InternalSubchannel.java:708) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.AbstractClientStream$TransportState.closeListener(AbstractClientStream.java:465) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.AbstractClientStream$TransportState.access$400(AbstractClientStream.java:221) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.AbstractClientStream$TransportState$1.run(AbstractClientStream.java:445) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.AbstractClientStream$TransportState.deframerClosed(AbstractClientStream.java:282) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.Http2ClientStreamTransportState.deframerClosed(Http2ClientStreamTransportState.java:32) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.MessageDeframer.close(MessageDeframer.java:234) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.MessageDeframer.closeWhenComplete(MessageDeframer.java:192) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.AbstractStream$TransportState.closeDeframer(AbstractStream.java:232) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.internal.AbstractClientStream$TransportState.transportReportStatus(AbstractClientStream.java:448) ~[grpc-core-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.grpc.netty.NettyClientHandler.onRstStreamRead(NettyClientHandler.java:412) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.grpc.netty.NettyClientHandler.access$1400(NettyClientHandler.java:95) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.grpc.netty.NettyClientHandler$FrameListener.onRstStreamRead(NettyClientHandler.java:947) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.DefaultHttp2ConnectionDecoder$FrameReadListener.onRstStreamRead(DefaultHttp2ConnectionDecoder.java:442) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2InboundFrameLogger$1.onRstStreamRead(Http2InboundFrameLogger.java:80) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.DefaultHttp2FrameReader.readRstStreamFrame(DefaultHttp2FrameReader.java:509) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.DefaultHttp2FrameReader.processPayloadState(DefaultHttp2FrameReader.java:259) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.DefaultHttp2FrameReader.readFrame(DefaultHttp2FrameReader.java:159) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2InboundFrameLogger.readFrame(Http2InboundFrameLogger.java:41) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.DefaultHttp2ConnectionDecoder.decodeFrame(DefaultHttp2ConnectionDecoder.java:173) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2ConnectionHandler$FrameDecoder.decode(Http2ConnectionHandler.java:393) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2ConnectionHandler.decode(Http2ConnectionHandler.java:453) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.ByteToMessageDecoder.decodeRemovalReentryProtection(ByteToMessageDecoder.java:529) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.ByteToMessageDecoder.callDecode(ByteToMessageDecoder.java:468) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:290) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at io.grpc.netty.shaded.io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[grpc-netty-shaded-1.63.0.jar:1.63.0]
+	at java.base/java.lang.Thread.run(Thread.java:833) ~[?:?]
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] WARN  com.alipay.sofa.common.log: ExceptionCaught in connection: local[127.0.0.1:8081], remote[127.0.0.1:50614], close the connection! Cause[SocketException:Connection reset]
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection closed: 127.0.0.1:50614
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection closed: 127.0.0.1:50614
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Close the connection to remote address=127.0.0.1:50614, result=true, cause=null
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] WARN  com.alipay.sofa.common.log: Remove and close the last connection in ConnectionPool with poolKey 127.0.0.1:50614
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection channel inactive: 127.0.0.1:50614
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:50614], event: CLOSE
+2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection channel unregistered: 127.0.0.1:50614
+2024-07-16 20:28:33 [Bolt-conn-event-executor-10-thread-1] INFO  com.alipay.sofa.jraft.rpc.RpcRequestProcessor: Connection disconnected: 127.0.0.1:50614
