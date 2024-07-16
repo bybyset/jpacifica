@@ -17,14 +17,12 @@
 
 package com.trs.pacifica.rpc.client;
 
-import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.rpc.node.Endpoint;
 
-import java.util.concurrent.TimeoutException;
+import java.io.Closeable;
 
-public interface RpcClient {
+public interface RpcClient extends Closeable {
 
 
     /**

@@ -35,6 +35,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -42,40 +43,44 @@ import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
+public class GrpcClient implements RpcClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpcClient.class);
+
+    static final int DEF_MAX_INBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
+    static final int DEF_MAX_OUTBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
+
     private static final int RESET_CONN_THRESHOLD = SystemPropertyUtil.getInt(
             "jpacifica.grpc.max.conn.failures.to_reset", 2);
+
+    private static final int MAX_INBOUND_MESSAGE_SIZE = SystemPropertyUtil.getInt(
+            "jpacifica.grpc.max.inbound.message.size", DEF_MAX_INBOUND_MESSAGE_SIZE);
+
+    private static final int MAX_OUTBOUND_MESSAGE_SIZE = SystemPropertyUtil.getInt(
+            "jpacifica.grpc.max.outbound.message.size", DEF_MAX_OUTBOUND_MESSAGE_SIZE);
+
 
     private final Map<Endpoint, ManagedChannel> channelContainer = new ConcurrentHashMap<>();
     private final Map<Endpoint, AtomicInteger> transientFailures = new ConcurrentHashMap<>();
     private final MarshallerManager requestMarshallerManager;
     private final MarshallerManager responseMarshallerManager;
-    private volatile boolean stopped = true;
+    private volatile boolean stopped = false;
+    private int maxInboundMessageSize = MAX_INBOUND_MESSAGE_SIZE;
+    private int maxOutboundMessageSize = MAX_OUTBOUND_MESSAGE_SIZE;
 
-    private Option option = null;
 
-    public GrpcClient(MarshallerManager requestMarshallerManager, MarshallerManager responseMarshallerManager) {
+    public GrpcClient(MarshallerManager requestMarshallerManager, MarshallerManager responseMarshallerManager, int maxInboundMessageSize, int maxOutboundMessageSize) {
         this.requestMarshallerManager = requestMarshallerManager;
         this.responseMarshallerManager = responseMarshallerManager;
+        this.maxInboundMessageSize = maxInboundMessageSize;
+        this.maxOutboundMessageSize = maxOutboundMessageSize;
+    }
+
+    public GrpcClient(MarshallerManager requestMarshallerManager, MarshallerManager responseMarshallerManager) {
+        this(requestMarshallerManager, responseMarshallerManager, MAX_INBOUND_MESSAGE_SIZE, MAX_OUTBOUND_MESSAGE_SIZE);
     }
 
 
-    @Override
-    public synchronized void init(Option option) throws PacificaException {
-        this.option = option;
-    }
-
-    @Override
-    public synchronized void startup() throws PacificaException {
-        if (isStopped()) {
-
-            this.stopped = false;
-        }
-    }
-
-    @Override
-    public synchronized void shutdown() throws PacificaException {
+    void shutdown() {
         if (!isStopped()) {
             this.stopped = true;
             closeAllChannel();
@@ -85,6 +90,14 @@ public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
 
     public boolean isStopped() {
         return this.stopped;
+    }
+
+    public int getMaxInboundMessageSize() {
+        return this.maxInboundMessageSize;
+    }
+
+    public int getMaxOutboundMessageSize() {
+        return this.maxOutboundMessageSize;
     }
 
     public void ensureOpen() {
@@ -116,8 +129,8 @@ public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
         // client option
         final CallOptions callOpts = CallOptions.DEFAULT//
                 .withDeadlineAfter(timeoutMs, TimeUnit.MILLISECONDS)//
-                .withMaxInboundMessageSize(this.option.getMaxInboundMessageSize())//
-                .withMaxOutboundMessageSize(this.option.getMaxOutboundMessageSize());//
+                .withMaxInboundMessageSize(this.getMaxInboundMessageSize())//
+                .withMaxOutboundMessageSize(this.getMaxOutboundMessageSize());//
 
         // method
         final MethodDescriptor<Message, Message> method = getCallMethod(request);
@@ -247,7 +260,7 @@ public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
                 .forAddress(endpoint.getIp(), endpoint.getPort()) //
                 .usePlaintext() //
                 .directExecutor() //
-                .maxInboundMessageSize(this.option.getMaxInboundMessageSize()) //
+                .maxInboundMessageSize(this.getMaxInboundMessageSize()) //
                 .build();
         LOGGER.info("Creating new channel to: {}.", endpoint);
         return ch;
@@ -302,35 +315,8 @@ public class GrpcClient implements RpcClient, LifeCycle<GrpcClient.Option> {
         this.responseMarshallerManager.registerMarshaller(requestClzName, response);
     }
 
-    public static class Option {
-
-        public static final int DEFAULT_MAX_INBOUND_MESSAGE_SIZE = 32 * 1024 * 1024;
-
-        /**
-         *
-         */
-        private int maxInboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
-
-        /**
-         *
-         */
-        private int maxOutboundMessageSize = DEFAULT_MAX_INBOUND_MESSAGE_SIZE;
-
-        public int getMaxInboundMessageSize() {
-            return maxInboundMessageSize;
-        }
-
-        public void setMaxInboundMessageSize(int maxInboundMessageSize) {
-            this.maxInboundMessageSize = maxInboundMessageSize;
-        }
-
-        public int getMaxOutboundMessageSize() {
-            return maxOutboundMessageSize;
-        }
-
-        public void setMaxOutboundMessageSize(int maxOutboundMessageSize) {
-            this.maxOutboundMessageSize = maxOutboundMessageSize;
-        }
+    @Override
+    public void close() throws IOException {
+        this.shutdown();
     }
-
 }

@@ -18,13 +18,8 @@
 package com.trs.pacifica.rpc;
 
 import com.trs.pacifica.LifeCycle;
-import com.trs.pacifica.util.SystemPropertyUtil;
 
 public interface RpcServer extends LifeCycle<Object> {
-
-    static final int DEFAULT_RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE = 32 * 1024 * 1024;
-    static final int RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE = SystemPropertyUtil.getInt(
-            "jpacifica.grpc.max.inbound.message.size.bytes", DEFAULT_RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE);
 
     void registerRpcHandler(final RpcHandler<?, ?> rpcHandler);
 

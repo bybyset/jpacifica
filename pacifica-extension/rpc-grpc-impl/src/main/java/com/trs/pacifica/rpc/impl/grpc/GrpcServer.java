@@ -25,6 +25,7 @@ import com.trs.pacifica.rpc.RpcContext;
 import com.trs.pacifica.rpc.RpcHandler;
 import com.trs.pacifica.rpc.RpcServer;
 import com.trs.pacifica.rpc.node.Endpoint;
+import com.trs.pacifica.util.SystemPropertyUtil;
 import io.grpc.*;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.ServerCalls;
@@ -42,6 +43,11 @@ import java.util.concurrent.TimeUnit;
 
 public class GrpcServer implements RpcServer{
     private static final Logger LOGGER = LoggerFactory.getLogger(GrpcServer.class);
+
+    static final int DEF_MAX_INBOUND_MESSAGE_SIZE = 16 * 1024 * 1024;
+    private static final int MAX_INBOUND_MESSAGE_SIZE = SystemPropertyUtil.getInt(
+            "jpacifica.grpc.max.inbound.message.size", DEF_MAX_INBOUND_MESSAGE_SIZE);
+
 
     protected final Endpoint endpoint;
 
@@ -98,7 +104,7 @@ public class GrpcServer implements RpcServer{
 
     protected Server buildServer(final Endpoint endpoint) {
         final int port = this.endpoint.getPort();
-        final int maxInboundMessageSize = RPC_SERVER_MAX_INBOUND_MESSAGE_SIZE;
+        final int maxInboundMessageSize = MAX_INBOUND_MESSAGE_SIZE;
         return NettyServerBuilder.forPort(port)//
                 .fallbackHandlerRegistry(this.mutableHandlerRegistry)//
                 .maxInboundMessageSize(maxInboundMessageSize)//
