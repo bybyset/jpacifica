@@ -64,7 +64,7 @@ public class IndexStoreTest extends BaseStorageTest {
         Assertions.assertEquals(FileHeader.getBytesSize() + IndexFile.getWriteByteSize() * 2, result.getSecond());
 
         final LogId logId3 = new LogId(1003, 1);
-        result =  this.indexStore.appendLogIndex(logId3, 40);
+        result = this.indexStore.appendLogIndex(logId3, 40);
         Assertions.assertEquals(FileHeader.getBytesSize() + IndexFile.getWriteByteSize() * 2, result.getFirst());
         Assertions.assertEquals(FileHeader.getBytesSize() + IndexFile.getWriteByteSize() * 3, result.getSecond());
 
@@ -90,7 +90,7 @@ public class IndexStoreTest extends BaseStorageTest {
 
         final LogId logId3 = new LogId(1003, 1);
         IndexEntry indexEntry3 = new IndexEntry(logId3, 40);
-        result =  this.indexStore.appendLogIndex(indexEntry3);
+        result = this.indexStore.appendLogIndex(indexEntry3);
         Assertions.assertEquals(FileHeader.getBytesSize() + IndexFile.getWriteByteSize() * 2, result.getFirst());
         Assertions.assertEquals(FileHeader.getBytesSize() + IndexFile.getWriteByteSize() * 3, result.getSecond());
 
@@ -119,7 +119,8 @@ public class IndexStoreTest extends BaseStorageTest {
         final LogId logId2 = new LogId(1002, 1);
         int position2 = 20;
         IndexEntry indexEntry2 = new IndexEntry(logId2, position2);
-         this.indexStore.appendLogIndex(indexEntry2);
+        this.indexStore.appendLogIndex(indexEntry2);
+        this.indexStore.flush();
 
         int result1 = this.indexStore.lookupPositionAt(1001);
         Assertions.assertEquals(position1, result1);

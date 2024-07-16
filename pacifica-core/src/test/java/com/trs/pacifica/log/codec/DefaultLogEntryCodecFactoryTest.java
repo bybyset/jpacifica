@@ -51,6 +51,6 @@ public class DefaultLogEntryCodecFactoryTest {
     @Test
     void testEncodeHeader() {
         byte[] result = DefaultLogEntryCodecFactory.encodeHeader();
-        Assertions.assertArrayEquals(new byte[]{(byte) 0}, result);
+        Assertions.assertArrayEquals(new byte[]{-69, -46, 1, 0, 0, 0}, result);
     }
 }

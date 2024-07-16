@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.PriorityQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -785,6 +786,17 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         this.option.getReplica().onReceiveHigherTerm(higherTerm);
     }
 
+
+    @OnlyForTest
+    void flushEvent() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        this.executor.execute(
+                ()->{
+                    latch.countDown();
+                }
+        );
+        latch.await();
+    }
     class OnCaughtUpTimeoutAble implements OnCaughtUp {
 
         private final OnCaughtUp wrapper;

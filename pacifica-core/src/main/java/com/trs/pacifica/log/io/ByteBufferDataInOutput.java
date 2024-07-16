@@ -230,7 +230,7 @@ public class ByteBufferDataInOutput implements InOutput {
     }
 
     AlreadyClosedException alreadyClosed(RuntimeException unused) {
-        return new AlreadyClosedException("Already closed: " + this);
+        return new AlreadyClosedException("Already closed: " + unused.getMessage(), unused, true, true);
     }
 
 

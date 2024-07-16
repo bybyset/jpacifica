@@ -353,3 +353,49 @@ Caused by: io.grpc.StatusRuntimeException: DEADLINE_EXCEEDED: CallOptions deadli
 2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: trigger user event, local[127.0.0.1:8081], remote[127.0.0.1:50614], event: CLOSE
 2024-07-16 20:28:33 [Rpc-netty-server-worker-1-thread-3] INFO  com.alipay.sofa.common.log: Connection channel unregistered: 127.0.0.1:50614
 2024-07-16 20:28:33 [Bolt-conn-event-executor-10-thread-1] INFO  com.alipay.sofa.jraft.rpc.RpcRequestProcessor: Connection disconnected: 127.0.0.1:50614
+2024-07-16 20:39:43 [main] INFO  com.trs.pacifica.spi.JPacificaServiceLoader: SPI service [com.trs.pacifica.rpc.node.EndpointManager - com.trs.pacifica.rpc.node.DefaultEndpointManager] loading.
+2024-07-16 20:39:43 [main] INFO  com.trs.pacifica.rpc.node.EndpointManagerHolder: use EndpointFactory=com.trs.pacifica.rpc.node.DefaultEndpointManager
+2024-07-16 20:39:43 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 20:39:43 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 20:41:00 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 20:41:00 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 20:41:00 [main] ERROR com.trs.pacifica.example.counter.CounterServerBootstrap: failed to start
+com.trs.pacifica.error.PacificaException: 
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:88) ~[main/:?]
+	at com.trs.pacifica.example.counter.CounterServerBootstrap.main(CounterServerBootstrap.java:81) [main/:?]
+Caused by: java.lang.NoSuchMethodError: 'void org.apache.logging.slf4j.Log4jLogger.<init>(org.apache.logging.log4j.spi.ExtendedLogger, java.lang.String)'
+	at com.alipay.sofa.common.log.factory.LoggerSpaceFactory4Log4j2Builder$1.getLogger(LoggerSpaceFactory4Log4j2Builder.java:123) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.MultiAppLoggerSpaceManager.getLoggerBySpace(MultiAppLoggerSpaceManager.java:172) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.MultiAppLoggerSpaceManager.getLoggerBySpace(MultiAppLoggerSpaceManager.java:114) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.LoggerSpaceManager.getLoggerBySpace(LoggerSpaceManager.java:57) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.LoggerSpaceManager.getLoggerBySpace(LoggerSpaceManager.java:42) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.remoting.log.BoltLoggerFactory.getLogger(BoltLoggerFactory.java:86) ~[bolt-1.6.4.jar:?]
+	at com.alipay.remoting.AbstractRemotingServer.<clinit>(AbstractRemotingServer.java:42) ~[bolt-1.6.4.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory.createRpcServer(BoltRaftRpcFactory.java:69) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcFactory.createRpcServer(RaftRpcFactory.java:64) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:88) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:74) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:61) ~[jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:71) ~[main/:?]
+	... 1 more
+2024-07-16 20:44:49 [main] INFO  com.alipay.sofa.jraft.util.JRaftServiceLoader: SPI service [com.alipay.sofa.jraft.rpc.RaftRpcFactory - com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory] loading.
+2024-07-16 20:44:49 [main] INFO  com.alipay.sofa.common.log: Sofa-Middleware-Log SLF4J : Actual binding is of type [ com.alipay.remoting Log4j2 ]
+2024-07-16 20:44:49 [main] ERROR com.trs.pacifica.example.counter.CounterServerBootstrap: failed to start
+com.trs.pacifica.error.PacificaException: 
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:88) ~[main/:?]
+	at com.trs.pacifica.example.counter.CounterServerBootstrap.main(CounterServerBootstrap.java:81) [main/:?]
+Caused by: java.lang.NoSuchMethodError: 'void org.apache.logging.slf4j.Log4jLogger.<init>(org.apache.logging.log4j.spi.ExtendedLogger, java.lang.String)'
+	at com.alipay.sofa.common.log.factory.LoggerSpaceFactory4Log4j2Builder$1.getLogger(LoggerSpaceFactory4Log4j2Builder.java:123) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.MultiAppLoggerSpaceManager.getLoggerBySpace(MultiAppLoggerSpaceManager.java:172) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.MultiAppLoggerSpaceManager.getLoggerBySpace(MultiAppLoggerSpaceManager.java:114) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.LoggerSpaceManager.getLoggerBySpace(LoggerSpaceManager.java:57) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.sofa.common.log.LoggerSpaceManager.getLoggerBySpace(LoggerSpaceManager.java:42) ~[sofa-common-tools-1.0.12.jar:?]
+	at com.alipay.remoting.log.BoltLoggerFactory.getLogger(BoltLoggerFactory.java:86) ~[bolt-1.6.4.jar:?]
+	at com.alipay.remoting.AbstractRemotingServer.<clinit>(AbstractRemotingServer.java:42) ~[bolt-1.6.4.jar:?]
+	at com.alipay.sofa.jraft.rpc.impl.BoltRaftRpcFactory.createRpcServer(BoltRaftRpcFactory.java:69) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcFactory.createRpcServer(RaftRpcFactory.java:64) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:88) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:74) ~[jraft-core-1.3.14.jar:?]
+	at com.alipay.sofa.jraft.rpc.RaftRpcServerFactory.createRaftRpcServer(RaftRpcServerFactory.java:61) ~[jraft-core-1.3.14.jar:?]
+	at com.trs.pacifica.example.counter.config.jraft.MasterServer.startup(MasterServer.java:71) ~[main/:?]
+	... 1 more

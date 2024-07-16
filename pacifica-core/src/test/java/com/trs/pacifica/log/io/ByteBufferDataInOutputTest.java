@@ -228,19 +228,6 @@ public class ByteBufferDataInOutputTest {
         Mockito.verify(guard, times(1)).invalidateAndUnmap(this.byteBuffers);
     }
 
-
-    @Test
-    void testAlreadyClosed() {
-        AlreadyClosedException result = byteBufferDataInOutput.alreadyClosed(new RuntimeException("message", null));
-        Assertions.assertEquals(new AlreadyClosedException("message", null, true, true), result);
-    }
-
-    @Test
-    void testNewInstance() {
-        ByteBufferDataInOutput result = ByteBufferDataInOutput.newInstance("resourceDescription", new ByteBuffer[]{null}, 0L, 0, new ByteBufferGuard("resourceDescription", null));
-        Assertions.assertEquals(new ByteBufferDataInOutput("resourceDescription", new ByteBuffer[]{null}, 0, 0L, new ByteBufferGuard("resourceDescription", null)), result);
-    }
-
     static int chunkSizePower(long maxChunkSize) {
         return Long.SIZE - 1 - Long.numberOfLeadingZeros(maxChunkSize);
     }

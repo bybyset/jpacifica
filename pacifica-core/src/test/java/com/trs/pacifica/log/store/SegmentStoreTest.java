@@ -158,6 +158,7 @@ public class SegmentStoreTest extends BaseStorageTest {
         byte[] logData3 = "test_append_log_data3".getBytes();
         Tuple2<Integer, Long> result3 = this.segmentStore.appendLogData(logIndex3, new ByteDataBuffer(logData3));
 
+        this.segmentStore.flush();
 
         final DataBuffer logEntry2 = this.segmentStore.lookupLogEntry(logIndex2, result2.getFirst());
         final byte[] logEntry2Bytes = logEntry2.readRemain();
@@ -180,6 +181,8 @@ public class SegmentStoreTest extends BaseStorageTest {
         byte[] logData3 = mockBytes(5 * 1024);
         Tuple2<Integer, Long> result3 = this.segmentStore.appendLogData(logIndex3, new ByteDataBuffer(logData3));
 
+        this.segmentStore.flush();
+
         final DataBuffer logEntry2 = this.segmentStore.lookupLogEntry(logIndex2, result2.getFirst());
         final byte[] logEntry2Bytes = logEntry2.readRemain();
         Assertions.assertArrayEquals(logData2, logEntry2Bytes);
@@ -201,6 +204,7 @@ public class SegmentStoreTest extends BaseStorageTest {
         byte[] logData3 = mockBytes(1 * 1024);
         Tuple2<Integer, Long> result3 = this.segmentStore.appendLogData(logIndex3, new ByteDataBuffer(logData3));
 
+        this.segmentStore.flush();
         final DataBuffer logEntry2 = this.segmentStore.lookupLogEntry(logIndex2, result2.getFirst());
         final byte[] logEntry2Bytes = logEntry2.readRemain();
         Assertions.assertArrayEquals(logData2, logEntry2Bytes);

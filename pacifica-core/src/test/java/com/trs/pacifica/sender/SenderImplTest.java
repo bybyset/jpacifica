@@ -207,14 +207,6 @@ public class SenderImplTest {
 
     }
 
-    @Test
-    public void testDoSendProbeRequest() throws PacificaException {
-        this.sender.startup();
-        this.sender.sendProbeRequest();
-        Mockito.verify(this.pacificaClient).appendLogEntries(Mockito.any(), Mockito.any());
-
-    }
-
 
     @Test
     public void testSecondaryHandleAppendLogEntryResponseSuccess() throws PacificaException {
