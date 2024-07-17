@@ -17,7 +17,9 @@
 
 package com.trs.pacifica.util.io;
 
+import com.google.common.collect.Lists;
 import com.trs.pacifica.error.NotSupportedException;
+import com.trs.pacifica.util.ObjectsUtil;
 
 import java.nio.BufferUnderflowException;
 import java.util.*;
@@ -52,7 +54,7 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
 
 
     public LinkedDataBuffer(DataBuffer... dataBuffers) {
-        this(List.of(dataBuffers));
+        this(Lists.newArrayList(dataBuffers));
     }
 
     @Override
@@ -98,7 +100,7 @@ public class LinkedDataBuffer extends AbstractDataBuffer{
 
     @Override
     public DataBuffer get(byte[] dst, final int offset, final int length) {
-        Objects.checkFromIndexSize(offset, length, dst.length);
+        ObjectsUtil.checkFromIndexSize(offset, length, dst.length);
         int pos = position();
         if (length > limit() - pos)
             throw new BufferUnderflowException();

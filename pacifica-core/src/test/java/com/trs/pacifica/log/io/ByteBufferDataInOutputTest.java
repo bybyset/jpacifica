@@ -17,7 +17,6 @@
 
 package com.trs.pacifica.log.io;
 
-import com.trs.pacifica.error.AlreadyClosedException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

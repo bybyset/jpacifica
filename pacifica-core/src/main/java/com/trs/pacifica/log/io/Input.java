@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.log.io;
 
+import com.trs.pacifica.util.ObjectsUtil;
+
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
@@ -47,7 +49,7 @@ public interface Input extends Closeable {
      *                                   {@code b.length - off}
      */
     default int readBytes(byte[] b, int off, int len) throws IOException {
-        Objects.checkFromIndexSize(off, len, b.length);
+        ObjectsUtil.checkFromIndexSize(off, len, b.length);
         if (len == 0) {
             return 0;
         }

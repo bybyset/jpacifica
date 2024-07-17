@@ -80,10 +80,8 @@ public class DefaultSnapshotMeta {
     }
 
     public static DefaultSnapshotMeta loadFromFile(File metaFile) throws IOException {
-        try (final FileInputStream fis = new FileInputStream(metaFile)) {
-            final byte[] bytes = fis.readAllBytes();
-            return decode(bytes);
-        }
+        final byte[] bytes = FileUtils.readFileToByteArray(metaFile);
+        return decode(bytes);
     }
 
     public static DefaultSnapshotMeta loadFromFile(String filePath) throws IOException {

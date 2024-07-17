@@ -20,5 +20,5 @@ apply plugin: 'java-library'
 description = 'jpacifica config library'
 
 dependencies {
-
+    implementation "com.google.guava:guava:$guava_version"
 }

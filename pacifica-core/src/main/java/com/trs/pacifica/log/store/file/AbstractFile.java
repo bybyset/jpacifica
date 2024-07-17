@@ -20,6 +20,7 @@ package com.trs.pacifica.log.store.file;
 import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
+import com.trs.pacifica.util.ObjectsUtil;
 import com.trs.pacifica.util.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,7 +312,7 @@ public abstract class AbstractFile implements Closeable {
      * @throws IOException
      */
     int readBytes(@Nonnull final byte[] bytes, final int position, final int len) throws IOException {
-        Objects.checkFromIndexSize(0, len, bytes.length);
+        ObjectsUtil.checkFromIndexSize(0, len, bytes.length);
         if (len == 0) {
             return 0;
         }

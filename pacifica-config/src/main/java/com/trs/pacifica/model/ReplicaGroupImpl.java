@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.model;
 
+import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +47,7 @@ public class ReplicaGroupImpl implements ReplicaGroup{
     }
 
     public ReplicaGroupImpl(String groupName, long version, long term, ReplicaId primary, ReplicaId... secondary) {
-        this(groupName, version, term, primary, List.of(secondary));
+        this(groupName, version, term, primary, Lists.newArrayList(secondary));
     }
 
     public ReplicaGroupImpl(String groupName, long version, long term, String primaryNodeId) {

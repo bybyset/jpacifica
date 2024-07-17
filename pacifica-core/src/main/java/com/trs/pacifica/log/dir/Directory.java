@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.log.dir;
 
+import com.google.common.collect.Lists;
 import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.log.io.InOutput;
 
@@ -71,7 +72,7 @@ public abstract class Directory implements Closeable {
     public abstract void sync(Collection<String> names) throws IOException;
 
     public void sync(String filename) throws IOException {
-        sync(List.of(filename));
+        sync(Lists.newArrayList(filename));
     }
 
 

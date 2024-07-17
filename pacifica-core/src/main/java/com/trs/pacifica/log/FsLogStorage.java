@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.log;
 
+import com.google.common.collect.Lists;
 import com.trs.pacifica.LogStorage;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
@@ -289,7 +290,7 @@ public class FsLogStorage implements LogStorage {
 
     @Override
     public boolean appendLogEntry(LogEntry logEntry) {
-        return appendLogEntries(List.of(logEntry)) == 1;
+        return appendLogEntries(Lists.newArrayList(logEntry)) == 1;
     }
 
     @Override

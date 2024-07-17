@@ -16,6 +16,7 @@
  */
 package com.trs.pacifica;
 
+import com.google.common.collect.Lists;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.LogEntryCorruptedException;
 import com.trs.pacifica.model.LogEntry;
@@ -42,7 +43,7 @@ public interface LogManager {
      * @param callback
      */
     default void appendLogEntry(final LogEntry logEntry, final AppendLogEntriesCallback callback) {
-        appendLogEntries(List.of(logEntry), callback);
+        appendLogEntries(Lists.newArrayList(logEntry), callback);
     }
 
     /**

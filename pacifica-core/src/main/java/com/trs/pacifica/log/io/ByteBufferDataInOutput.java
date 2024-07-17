@@ -18,6 +18,7 @@
 package com.trs.pacifica.log.io;
 
 import com.trs.pacifica.error.AlreadyClosedException;
+import com.trs.pacifica.util.ObjectsUtil;
 import com.trs.pacifica.util.OnlyForTest;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -86,7 +87,7 @@ public class ByteBufferDataInOutput implements InOutput {
 
     @Override
     public int readBytes(byte[] b, int off, int len) throws IOException {
-        Objects.checkFromIndexSize(off, len, b.length);
+        ObjectsUtil.checkFromIndexSize(off, len, b.length);
         if (len <= 0) {
             return 0;
         }
@@ -114,8 +115,8 @@ public class ByteBufferDataInOutput implements InOutput {
     @Override
     public void writeBytes(int index, byte[] bytes, int offset, int length) throws IOException {
         //check
-        Objects.checkFromIndexSize(index, length, (int)this.length);
-        Objects.checkFromIndexSize(offset, length, bytes.length);
+        ObjectsUtil.checkFromIndexSize(index, length, (int)this.length);
+        ObjectsUtil.checkFromIndexSize(offset, length, bytes.length);
         //seek
         int bi = (int) (index >> chunkSizePower);
         int position = (int) (index & chunkSizeMask);

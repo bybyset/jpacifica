@@ -18,6 +18,7 @@
 package com.trs.pacifica.util.io;
 
 import com.trs.pacifica.util.BitUtil;
+import com.trs.pacifica.util.ObjectsUtil;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -138,7 +139,7 @@ public abstract class DataInput {
      * @lucene.experimental
      */
     public void readLongs(long[] dst, int offset, int length) throws IOException {
-        Objects.checkFromIndexSize(offset, length, dst.length);
+        ObjectsUtil.checkFromIndexSize(offset, length, dst.length);
         for (int i = 0; i < length; ++i) {
             dst[offset + i] = readLong();
         }
@@ -152,7 +153,7 @@ public abstract class DataInput {
      * @param length the number of ints to read
      */
     public void readInts(int[] dst, int offset, int length) throws IOException {
-        Objects.checkFromIndexSize(offset, length, dst.length);
+        ObjectsUtil.checkFromIndexSize(offset, length, dst.length);
         for (int i = 0; i < length; ++i) {
             dst[offset + i] = readInt();
         }
@@ -166,7 +167,7 @@ public abstract class DataInput {
      * @param len the number of floats to read
      */
     public void readFloats(float[] floats, int offset, int len) throws IOException {
-        Objects.checkFromIndexSize(offset, len, floats.length);
+        ObjectsUtil.checkFromIndexSize(offset, len, floats.length);
         for (int i = 0; i < len; i++) {
             floats[offset + i] = Float.intBitsToFloat(readInt());
         }

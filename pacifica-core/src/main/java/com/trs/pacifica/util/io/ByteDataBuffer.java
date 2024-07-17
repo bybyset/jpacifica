@@ -17,6 +17,8 @@
 
 package com.trs.pacifica.util.io;
 
+import com.trs.pacifica.util.ObjectsUtil;
+
 import java.nio.BufferUnderflowException;
 import java.util.Objects;
 
@@ -37,7 +39,7 @@ public class ByteDataBuffer extends AbstractDataBuffer{
     }
 
     public ByteDataBuffer(byte[] bytes, int offset, int length) {
-        Objects.checkFromIndexSize(offset, length, bytes.length);
+        ObjectsUtil.checkFromIndexSize(offset, length, bytes.length);
         this.bytes = bytes;
         this.offset = offset;
         this.length = length;
@@ -70,7 +72,7 @@ public class ByteDataBuffer extends AbstractDataBuffer{
 
     @Override
     public DataBuffer get(byte[] dst, int offset, int length) {
-        Objects.checkFromIndexSize(offset, length, dst.length);
+        ObjectsUtil.checkFromIndexSize(offset, length, dst.length);
         int pos = position();
         if (length > limit() - pos)
             throw new BufferUnderflowException();

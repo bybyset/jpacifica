@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.log.dir;
 
+import com.google.common.collect.Sets;
 import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.IOUtils;
 
@@ -122,7 +123,7 @@ public abstract class FsDirectory extends BaseDirectory {
         if (pendingDeletes.isEmpty()) {
             return Collections.emptySet();
         } else {
-            return Set.copyOf(pendingDeletes);
+            return Sets.newHashSet(pendingDeletes);
         }
     }
 

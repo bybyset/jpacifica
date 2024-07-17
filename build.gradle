@@ -26,15 +26,15 @@ allprojects {
         metrics_version = '4.2.25'
         commons_io_version = '2.16.0'
         disruptor_version = '3.3.7'
-        mockito_version = '5.12.0'
+        mockito_version = '4.11.0'
         jupiter_version = '5.11.0-M2'
     }
 }
 
 subprojects {
     apply plugin: 'java'
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 8
+    targetCompatibility = 8
 
     dependencies {
         implementation "org.slf4j:slf4j-api:$slf4j_version"
