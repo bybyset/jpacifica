@@ -31,22 +31,75 @@
 ## 副本状态转换图
 ![state](PacificA状态转换图.png)  
 在JPacificA中采用租期(Leases)的方式实现主/从副本间的故障检测。  
-主副本定期向从副本发送心跳请求，并收到“成功”的响应后即为获得来自指定从副本的租约(lease),
+1. 主副本定期向从副本发送心跳请求，并收到“成功”的响应后即为获得来自指定从副本的租约(lease),
 若主副本长时间未收到心跳响应(超过租赁期lease period)，则认为从副本故障，并联系配置管理集群要求将故障的从副本从副本组中移除。
 若移除成功，故障从副本的状态将由Secondary转为Candidate(候选状态)。  
-同时，从副本维护了最近一次来自主副本的心跳请求，若长时间未收到来自主副本的心跳请求(超过宽限期grace period)，
+2. 同时，从副本维护了最近一次来自主副本的心跳请求，若长时间未收到来自主副本的心跳请求(超过宽限期grace period)，
 则认为主副本故障，将联系配置管理集群要求移除故障主副本并竟选成为新的主副本。若成功竞选，则该从副本的状态由Secondary转变为Primary，
 同时旧的主副本的状态由Primary转为Candidate。  
-对于候选状态的副本，将定时向主副本发送恢复请求，主副本收到恢复请求后，开始向候选副本发送快照或复制日志，
+3. 对于候选状态的副本，将定时向主副本发送恢复请求，主副本收到恢复请求后，开始向候选副本发送快照或复制日志，
 一旦候选副本的操作日志的序号追赶上了，主副本将联系配置管理集群要求将候选副本加入副本组内，成功后，候选副本的状态由Candidate转为Secondary。  
-在配置管理集群中，为每个副本组维护了一个单调递增的版本号(version),每次副本组的变更都会让该版本号自增。
+4. 在配置管理集群中，为每个副本组维护了一个单调递增的版本号(version),每次副本组的变更都会让该版本号自增。
 每次配置变更请求都会携带当前配置的版本号，当且仅当请求中的版本号于配置管理集群中的版本号匹配时，才会处理并响应请求，否则拒绝。
 这可以保证多个从副本同时竞争选主时，只有一个从副本可以成功，其他均为失败。
 
 
+
+## 副本启动
+配置集群保存了整个副本组的状态，包含各个副本的状态等，各个副本启动时，都将以配置集群上对应的状态启动。
+任何状态的副本启动时，都会执行以下两步：  
+1. 如果启用了快照(Snapshot)的功能，副本状态机将加载快照至状态机，然后从checkpoint(快照数据的日志index)开始继续回放操作日志至状态机，直至本地日志的最后一条日志。
+2. 如果未启用快照功能，将重放本地所有操作日志至状态机。
+
+### 主副本(Primary)启动
+将提交一个“NO_OP”类型的操作日志，用以对齐其他副本的日志队列，即Reconciliation。
+
+### 候选副本(Candidate)启动
+开启定时调度作业，联系主副本并拉取快照和操作日志，直到追赶上主副本后成为Secondary状态，停止该调度作业。
+
+
+
+## 一致性和可用性设计
+这里我们讨论下JPacificA在遇到副本或节点故障时副本组的一致性和可用性的情况。  
+故障包含且不仅包含以下情况：  
+- 磁盘损坏
+- OutOfMemory故障宕机或频繁Full GC导致运行缓慢
+- 强制kill应用导致宕机
+- 断电宕机
+- 网络故障
+
+需要注意的是：  
+- 单个副本没有任何可用性，保证副本组中包含两个及以上的副本，才可以提供可用性的保证。
+- 配置集群中的副本组有且仅有一个副本的状态是Primary。
+
+针对以下两种服务类型讨论：
+- **读服务**  
+读取副本状态机中数据的服务。  
+
+- **写服务**  
+更改(增/删/改)副本状态机中数据的服务。  
+当且仅当存在主副本时提供该服务。
+
+  
+### 一致性
+针对读服务的一致性
+- 可以从主副本(Primary)读取，此时将提供强一致性的保证。  
+- 也可以读取从副本(Secondary)数据，但只能提供弱一致性，即可能读取不是最新的数据，存在脏读。  
+- 不建议读取候选副本(Candidate)数据。
+
+### 可用性
+**单个副本故障**  
+1. 主副本(Primary)故障，副本组最多在宽限期(grace period)时间后开始选举主副本，在产生新的主副本之前，写服务不可用，读服务正常可用。  
+2. 从副本(Secondary)故障，不影响读服务，写服务将出现“抖动”，即主副本将最多等待租赁期(lease period)时间，并在移除故障的从副本后，返回响应。  
+3. 候选副本(Candidate)故障，不影响读/写服务。
+
+**少数或多数副本故障**  
+同单个副本故障，当且仅当有一个主副本在线时即可提供读/写服务。
+
+
 ## 核心组件设计
 ![components](JPacificA核心设计.png)  
-上图列出了JPacificA中的核心组件，基本与SOFAJRaft中的设计保持一致，因为它抽象地实在太好了，何不站在巨人的肩膀上呢？  
+上图列出了JPacificA中的核心组件，基本与SOFAJRaft中的设计保持一致，因为它抽象地实在太好了，何不站在巨人的肩膀上呢？
 
 
 - **ReplicaService**  
@@ -96,9 +149,89 @@
   不过你可以参考counter例子中的实现。或许我们应该对不同的算法（zookeeper、raft等）提供默认的实现，若有兴趣，随时欢迎贡献你的代码。
 
 
+## 编码
 
+### 必要的
 
+#### ReplicaWharf
+```java
+ReplicaWharf replicaWharf = ReplicaWharf.newBuilder(replicaId)//
+                .stateMachine(counterFsm)//
+                .logStoragePath(logStoragePath)//
+                .snapshotStoragePath(snapshotStoragePath)//
+                .configurationClient(configurationClient)//
+                .rpcServer(rpcServer)//
+                .rpcClient(rpcClient)//
+                .build();
+replicaWharf.start();
+```
+ReplicaWharf类采用构建者模式，可以帮助用户构建你的Replica。其中StateMachine是用户必须实现的，代表了副本的业务状态机。
+其次logStoragePath指定日志存储(LogStorage)的路径，snapshotStoragePath指定了快照存储的路经，
+configurationClient指定配置集群的接口实现，rpcClient指定副本间的rpc通信方式，我们默认提供了grpc的实现。  
 
+#### ReplicaOption
+指定ReplicaImpl装载(init)阶段的属性，我们为其设置了默认值，必要的属性我们已经在上节ReplicaWharf中指出。
 
+#### Operation
+```java
+private void doApplyOperation(Replica replica, CounterOperation counterOperation, OperationClosure operationClosure) {
+    Objects.requireNonNull(counterOperation, "operation");
+    Operation operation = new Operation();
+    operation.setLogData(ByteBuffer.wrap(CounterOperation.toBytes(counterOperation)));
+    operation.setOnFinish(operationClosure);
+    replica.apply(operation);
+}
+```
+Operation 表示一次操作，`setLogData(ByteBuffer logData)` 参数logData表示此次写请求序列化后的字节，它将被持久化存储至LogStorage，
+以便主副本读取并复制给其他副本。`setOnFinish(Callback onFinish)` 设置此次operation完成后的监听事件，当该operation被提交到业务状态机后执行的回调。
+`replica.apply(operation)` 将operation应用到副本，最终被提交到用户的业务状态机。
+
+#### 状态机StateMachine
+用户通过`replica.apply(operation)`的operation最终将会复制到所有的副本(Replica)，用户必须实现自己的业务状态机。它包含以下重要的接口
+``onApply(OperationIterator iterator)`` 总是批量地按顺序地提交，当这个方法返回后，我们就认为这一批operation已经成功应用到了状态机，
+如果是用户的业务异常，你应该通过``onFinish.run(Finished.failure) ``告知用户发生了异常，否则若为没有完全应用到状态机，应通过`iterator.breakAndRollback(throwable)`告知副本异常。
+``onSnapshotLoad(snapshotReader)`` 加载快照时触发，用户应实现自己的业务逻辑。
+``onSnapshotSave(snapshotWriter)`` 保存快照时触发，用户应实现自己的业务逻辑。
+
+### 非必要的
+
+#### SnapshotStorageFactory
+```java
+@SPI
+public class DefaultSnapshotStorageFactory implements SnapshotStorageFactory {
+    @Override
+    public SnapshotStorage newSnapshotStorage(String path) throws PacificaException {
+        try {
+            DefaultSnapshotStorage snapshotStorage = new DefaultSnapshotStorage(path);
+            snapshotStorage.load();
+            return snapshotStorage;
+        } catch (IOException e) {
+            throw new PacificaException(PacificaErrorCode.IO, String.format("failed to new SnapshotStorage, error_msg=%s", e.getMessage()), e);
+        }
+    }
+}
+```
+DefaultSnapshotStorageFactory是JPacificA默认提供的快照存储实现，用户可以根据自己的业务情况实现，如基于lucene实现等。
+但你需要通过ReplicaWharf构建器、ReplicaOption或@SPI的方式告知JPacificA你采用的SnapshotStorageFactory。
+
+#### RpcServer
+```java
+rpcServer = JPacificaRpcServerFactory.createPacificaRpcServer(nodeAddress);
+```
+创建RpcServer，你可以通过在你的应用中添加maven或gradle的依赖"rpc-grpc-impl"来使用默认的基于grpc的实现。
+如果仍然要用自己的rpc实现，请务必实现RpcServer接口，并调用`JPacificaRpcServerFactory.addPacificaRequestHandlers(rpcServer, replicaServiceManager)` 注册有关JPacificA的请求处理器。
+
+#### ReplicaServiceManager
+副本管理器，方便处理rpc请求时通过副本id定位到对应的ReplicaService。提供了默认的实现，你也可以自行实现。
+
+#### RpcClient
+```java
+rpcClient = JPacificaRpcServerFactory.createPacificaRpcClient();
+```
+完成副本间rpc通信，如果采用自己的rpc实现，务必要实现RpcClient接口。
+
+#### EndpointManager
+节点管理器，通过节点id可以快速定位到对应的ip地址和端口号。提供了默认实现，
+你可以通过`EndpointManagerHolder.getInstance()`完成节点的注册。
 
 
