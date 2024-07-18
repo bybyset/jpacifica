@@ -276,9 +276,9 @@ public class FsLogStorage implements LogStorage {
     public LogId getLastLogId() {
         this.readLock.lock();
         try {
-            final long firstLogIndex = this.segmentStore.getLastLogIndex();
-            if (firstLogIndex > 0) {
-                return lookLogIdFromIndexStore(firstLogIndex);
+            final long lastLogIndex = this.segmentStore.getLastLogIndex();
+            if (lastLogIndex > 0) {
+                return lookLogIdFromIndexStore(lastLogIndex);
             }
             return null;
         } catch (IOException e) {

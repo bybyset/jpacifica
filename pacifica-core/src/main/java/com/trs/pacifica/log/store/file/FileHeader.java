@@ -116,7 +116,7 @@ public class FileHeader {
         if (this.magic != _MAGIC) {
             return false;
         }
-        this.version = byteBuffer.get();
+        this.version = byteBuffer.getShort();
         this.tag = byteBuffer.get();
         this.startOffset = byteBuffer.getLong();
         this.firstLogIndex = byteBuffer.getLong();

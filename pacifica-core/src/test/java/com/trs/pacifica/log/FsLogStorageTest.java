@@ -18,8 +18,13 @@
 package com.trs.pacifica.log;
 
 import com.trs.pacifica.LogStorage;
+import com.trs.pacifica.error.PacificaException;
+import com.trs.pacifica.model.LogEntry;
+import com.trs.pacifica.model.LogId;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -52,5 +57,31 @@ public class FsLogStorageTest extends BaseLogStorageTest {
     public void shutdown() throws Exception {
         logStorage.close();
         super.shutdown();
+    }
+
+
+    @Test
+    public void testReload() throws PacificaException, IOException {
+        LogEntry logEntry1 = new LogEntry(1, 1, LogEntry.Type.NO_OP);
+        logStorage.appendLogEntry(logEntry1);
+        LogEntry logEntry2 = new LogEntry(2, 1, LogEntry.Type.NO_OP);
+        logStorage.appendLogEntry(logEntry2);
+        LogEntry logEntry3 = new LogEntry(3, 1, LogEntry.Type.NO_OP);
+        logStorage.appendLogEntry(logEntry3);
+        LogEntry logEntry4 = new LogEntry(4, 1, LogEntry.Type.NO_OP);
+        logStorage.appendLogEntry(logEntry4);
+        this.logStorage.close();
+
+        final FsLogStorageOption option = new FsLogStorageOption();
+        option.setSegmentFileSize(100 * 1024);//100k
+        logStorage = new FsLogStorage(path, this.logEntryEncoder, this.logEntryDecoder, option);
+        logStorage.open();
+        LogId firstLogId = this.logStorage.getFirstLogId();
+        Assertions.assertNotNull(firstLogId);
+        Assertions.assertEquals(logEntry1.getLogId(), firstLogId);
+
+        LogId lastLogId = this.logStorage.getLastLogId();
+        Assertions.assertNotNull(lastLogId);
+        Assertions.assertEquals(logEntry4.getLogId(), lastLogId);
     }
 }
