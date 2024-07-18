@@ -21,21 +21,26 @@ import com.trs.pacifica.StateMachine;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.snapshot.SnapshotReader;
 import com.trs.pacifica.snapshot.SnapshotWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class StateMachineAdapter implements StateMachine {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StateMachineAdapter.class);
 
     @Override
     public void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException {
+        LOGGER.info("the StateMachine({}, {}) load snapshot.", this.getClass().getSimpleName(), this);
         return ;
     }
 
     @Override
     public void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException  {
+        LOGGER.info("the StateMachine({}, {}) save snapshot.", this.getClass().getSimpleName(), this);
         return ;
     }
 
     @Override
     public void onShutdown() {
-
+        LOGGER.info("the StateMachine({}, {}) shutdown.", this.getClass().getSimpleName(), this);
     }
 }

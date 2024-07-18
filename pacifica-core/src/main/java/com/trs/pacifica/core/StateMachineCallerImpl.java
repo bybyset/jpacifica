@@ -22,6 +22,7 @@ import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.async.Finished;
 import com.trs.pacifica.async.thread.SingleThreadExecutor;
 import com.trs.pacifica.core.fsm.OperationIteratorImpl;
+import com.trs.pacifica.error.AlreadyClosedException;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
 import com.trs.pacifica.core.fsm.OperationIteratorWrapper;
@@ -60,7 +61,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
-    private byte state = _STATE_UNINITIALIZED;
+    private volatile byte state = _STATE_UNINITIALIZED;
 
     /**
      * last committed log index, it's increasing.
@@ -124,15 +125,36 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     @Override
     public void shutdown() throws PacificaException {
-        this.writeLock.lock();
+        ShutdownEvent shutdownEvent = new ShutdownEvent();
         try {
-            if (this.state == _STATE_STARTED) {
+            shutdownEvent.await();
+        } catch (InterruptedException e) {
+            LOGGER.warn("{}-{} is interrupted on shutdown", this.replica.getReplicaId(), this.getClass().getSimpleName());
+        }
+    }
+
+    public boolean isStarted() {
+        return this.state == _STATE_STARTED;
+    }
+
+    private void ensureStarted() {
+        if (!isStarted()) {
+            throw new AlreadyClosedException(String.format("%s(%s) is stopped.", this.getClass().getSimpleName(), this.replica.getReplicaId()));
+        }
+    }
+
+    private void doShutdown() {
+        if (this.state == _STATE_STARTED) {
+            this.writeLock.lock();
+            try {
                 this.state = _STAT_SHUTTING;
                 //
+                this.stateMachine.onShutdown();
+                LOGGER.info("{} StateMachine of user is shutdown.", this.replica.getReplicaId());
                 this.state = _STAT_SHUTDOWN;
+            } finally {
+                this.writeLock.unlock();
             }
-        } finally {
-            this.writeLock.unlock();
         }
     }
 
@@ -410,6 +432,28 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
 
     }
+
+    class ShutdownEvent implements Runnable {
+
+        private CountDownLatch countDownLatch = new CountDownLatch(1);
+        @Override
+        public void run() {
+            try {
+                doShutdown();
+            } finally {
+                this.countDownLatch.countDown();
+            }
+        }
+
+        void await() throws InterruptedException {
+            this.countDownLatch.await();
+        }
+
+        boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+            return this.countDownLatch.await(timeout, unit);
+        }
+    }
+
 
 
     public static class Option {
