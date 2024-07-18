@@ -156,7 +156,7 @@ public class GrpcServer implements RpcServer{
 
     private static RpcContext<Message> getRpcContext(StreamObserver<Message> responseObserver) {
         final SocketAddress remoteAddress = RemoteAddressInterceptor.getRemoteAddress();
-        final RpcContext<Message> rpcContext = new RpcContext<>() {
+        final RpcContext<Message> rpcContext = new RpcContext<Message>() {
             @Override
             public void sendResponse(Message response) {
                 try {
