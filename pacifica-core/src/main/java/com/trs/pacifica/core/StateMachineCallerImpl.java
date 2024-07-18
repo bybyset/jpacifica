@@ -125,9 +125,14 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     @Override
     public void shutdown() throws PacificaException {
-        ShutdownEvent shutdownEvent = new ShutdownEvent();
         try {
-            shutdownEvent.await();
+            ShutdownEvent shutdownEvent = new ShutdownEvent();
+            while (true) {
+                if (submitEvent(shutdownEvent)) {
+                    shutdownEvent.await();
+                    break;
+                }
+            }
         } catch (InterruptedException e) {
             LOGGER.warn("{}-{} is interrupted on shutdown", this.replica.getReplicaId(), this.getClass().getSimpleName());
         }
@@ -210,6 +215,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
 
     private boolean submitEvent(final Runnable run) {
         assert run != null;
+        ensureStarted();
         try {
             this.eventExecutor.execute(run);
         } catch (RejectedExecutionException e) {
