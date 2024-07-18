@@ -38,7 +38,7 @@ public class ChangePrimaryProcessor implements RpcProcessor<MetaReplicaRpc.Chang
 
     @Override
     public void handleRequest(RpcContext rpcCtx, MetaReplicaRpc.ChangePrimaryRequest request) {
-        RpcMetaReplicaClosure<Boolean> closure = new RpcMetaReplicaClosure<>(rpcCtx) {
+        RpcMetaReplicaClosure<Boolean> closure = new RpcMetaReplicaClosure<Boolean>(rpcCtx) {
             @Override
             public Message buildRpcResponse(Boolean result) {
                 return MetaReplicaRpc.ChangePrimaryResponse.newBuilder().setSuccess(result).build();

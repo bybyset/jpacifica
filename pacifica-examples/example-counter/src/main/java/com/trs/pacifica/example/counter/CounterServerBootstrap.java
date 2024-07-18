@@ -72,14 +72,15 @@ public class CounterServerBootstrap {
             if (!serverId.parse(replicaServerAddress)) {
                 throw new IllegalArgumentException("Fail to parse serverId:" + replicaServerAddress);
             }
-            MasterServer.Option masterOption = new MasterServer.Option();
-            masterOption.setDataPath(masterDataPath);
-            masterOption.setServerId(masterId);
-            masterOption.setConfiguration(initConf);
-            masterServer = new MasterServer();
-            masterServer.init(masterOption);
-            masterServer.startup();
-
+            if (initConf.contains(masterId)) {
+                MasterServer.Option masterOption = new MasterServer.Option();
+                masterOption.setDataPath(masterDataPath);
+                masterOption.setServerId(masterId);
+                masterOption.setConfiguration(initConf);
+                masterServer = new MasterServer();
+                masterServer.init(masterOption);
+                masterServer.startup();
+            }
 
             String counterReplicaDataPath = dataPath + File.separator + COUNTER_REPLICA_DIR_NAME;
             FileUtils.forceMkdir(new File(counterReplicaDataPath));

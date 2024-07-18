@@ -81,7 +81,7 @@ public class MetaReplicaServiceImpl implements MetaReplicaService{
     }
 
     private <T> void doApplyOperation(final MetaReplicaOperation operation, MetaReplicaClosure<T> closure) {
-        OperationClosure<T> operationClosure = new OperationClosure<>() {
+        OperationClosure<T> operationClosure = new OperationClosure<T>() {
             @Override
             public void run(Status status) {
                 if (status.isOk()) {

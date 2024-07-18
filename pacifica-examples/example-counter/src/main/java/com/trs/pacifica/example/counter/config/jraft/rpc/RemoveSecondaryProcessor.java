@@ -38,7 +38,7 @@ public class RemoveSecondaryProcessor implements RpcProcessor<MetaReplicaRpc.Rem
 
     @Override
     public void handleRequest(RpcContext rpcCtx, MetaReplicaRpc.RemoveSecondaryRequest request) {
-        RpcMetaReplicaClosure<Boolean> closure = new RpcMetaReplicaClosure<>(rpcCtx) {
+        RpcMetaReplicaClosure<Boolean> closure = new RpcMetaReplicaClosure<Boolean>(rpcCtx) {
             @Override
             public Message buildRpcResponse(Boolean result) {
                 return MetaReplicaRpc.RemoveSecondaryResponse.newBuilder().setSuccess(result).build();
