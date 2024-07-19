@@ -18,26 +18,74 @@
 package com.trs.pacifica;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
-public interface PendingQueue<E> extends Iterable<E>{
+/**
+ * Given a pending index,
+ * the queue is always consumed in the order of increasing pending index.
+ * No element is consumed, pending index is incremented.
+ *
+ * @param <E> Element
+ */
+public interface PendingQueue<E> extends Iterable<E> {
+
+    /**
+     * get current pending index (log index)
+     *
+     * @return
+     */
+    long getPendingIndex();
+
+    /**
+     * rest pending index (log index) and return a collection of abandoned elements
+     *
+     * @param pendIndex
+     * @return collection of abandoned elements
+     */
+    Collection<E> reset(final long pendIndex);
 
 
-    public long getPendingIndex();
+    /**
+     * clear all element of the queue
+     *
+     * @return collection of abandoned elements
+     */
+    Collection<E> clear();
 
-    public void resetPendingIndex(final long pendIndex);
+    /**
+     * add element to queue
+     *
+     * @param e element it is nullable
+     * @return
+     */
+    boolean add(@Nullable E e);
 
-    public boolean add(@Nullable E e);
+    /**
+     * Pops the element at the head of the queue,
+     * and the pending index moves forward
+     *
+     * @return element it is nullable.
+     */
+    @Nullable
+    E poll();
 
-    public @Nullable E poll();
+    /**
+     * Pop the head of the queue element if and only if index is equal to pending index
+     *
+     * @param index
+     * @return
+     */
+    E poll(final long index);
 
-    public List<E> pollUntil(final long endIndex);
+    List<E> pollUntil(final long endIndex);
 
-    public @Nullable E peek();
+    @Nullable
+    E peek();
 
-    public int size();
+    int size();
 
-    public boolean isEmpty();
+    boolean isEmpty();
 
 }

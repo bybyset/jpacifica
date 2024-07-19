@@ -17,6 +17,7 @@
 
 package com.trs.pacifica.core;
 
+import com.trs.pacifica.LogManager;
 import com.trs.pacifica.Replica;
 import com.trs.pacifica.StateMachineCaller;
 import com.trs.pacifica.model.ReplicaGroup;
@@ -36,6 +37,7 @@ public class BallotBoxImplTest {
     private BallotBoxImpl ballotBox;
 
     private StateMachineCaller stateMachineCaller;
+    private LogManager logManager;
 
     private ReplicaGroup replicaGroup;
 
@@ -47,12 +49,17 @@ public class BallotBoxImplTest {
 
         this.stateMachineCaller = Mockito.mock(StateMachineCaller.class);
         Mockito.doReturn(1003L).when(this.stateMachineCaller).getLastCommittedLogIndex();
+
+        this.logManager = Mockito.mock(LogManager.class);
+        Mockito.doReturn(1003L).when(this.logManager).getLastLogIndex();
+
         Replica replica = Mockito.mock(Replica.class);
         Mockito.doReturn(new ReplicaId("group", "node")).when(replica).getReplicaId();
         this.ballotBox = new BallotBoxImpl(replica);
 
         BallotBoxImpl.Option option = new BallotBoxImpl.Option();
         option.setFsmCaller(stateMachineCaller);
+        option.setLogManager(logManager);
         ballotBox.init(option);
         ballotBox.startup();
     }

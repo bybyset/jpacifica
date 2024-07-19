@@ -18,6 +18,7 @@
 package com.trs.pacifica.core.fsm;
 
 import com.trs.pacifica.LogManager;
+import com.trs.pacifica.PendingQueue;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.NotFoundLogEntryException;
 import com.trs.pacifica.error.PacificaErrorCode;
@@ -34,7 +35,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     private final long startLogIndex;
     private final long endLogIndex;
     private final AtomicLong applyingIndex;
-    private final List<Callback> callbackList;
+    private final PendingQueue<Callback> callbackList;
 
     private Callback curCallback = null;
     private LogEntry curLogEntry = null;
@@ -50,7 +51,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
      * @param applyingIndex
      * @param callbackList
      */
-    public OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong applyingIndex, List<Callback> callbackList) {
+    public OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong applyingIndex, PendingQueue<Callback> callbackList) {
         this.logManager = logManager;
         this.startLogIndex = applyingIndex.get();
         this.endLogIndex = endLogIndex;
@@ -95,11 +96,7 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
                     throw new NotFoundLogEntryException("not found LogEntry at logIndex=" + currentLogIndex);
                 }
                 this.curLogEntry = logEntry;
-                if (callbackList.isEmpty()) {
-                    this.curCallback = null;
-                } else {
-                    this.curCallback = this.callbackList.get((int) (currentLogIndex - startLogIndex));
-                }
+                this.curCallback = this.callbackList.poll(currentLogIndex);
                 this.applyingIndex.incrementAndGet();
             } catch (Throwable e) {
                 if (e instanceof PacificaException) {

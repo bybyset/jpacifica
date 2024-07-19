@@ -18,6 +18,7 @@
 package com.trs.pacifica.core.fsm;
 
 import com.trs.pacifica.LogManager;
+import com.trs.pacifica.PendingQueue;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaErrorCode;
 import com.trs.pacifica.error.PacificaException;
@@ -39,15 +40,15 @@ import static org.mockito.Mockito.*;
 class OperationIteratorImplTest {
     LogManager logManager;
     AtomicLong applyingIndex = new AtomicLong(1);
-    List<Callback> callbackList;
+    PendingQueue<Callback> callbackList;
 
     OperationIteratorImpl operationIteratorImpl;
 
     @BeforeEach
     void setUp() {
         this.logManager = Mockito.mock(LogManager.class);
-        this.callbackList = Mockito.mock(List.class);
-        Mockito.doReturn(null).when(this.callbackList).get(Mockito.anyInt());
+        this.callbackList = Mockito.mock(PendingQueue.class);
+        Mockito.doReturn(null).when(this.callbackList).poll(Mockito.anyInt());
         for (long logIndex = 1; logIndex <= 11; logIndex++) {
             final LogEntry log = new LogEntry(logIndex, 1, LogEntry.Type.OP_DATA);
             Mockito.when(this.logManager.getLogEntryAt(logIndex)).thenReturn(log);

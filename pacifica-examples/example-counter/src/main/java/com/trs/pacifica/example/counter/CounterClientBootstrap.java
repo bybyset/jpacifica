@@ -85,7 +85,7 @@ public class CounterClientBootstrap {
                 .setGroupName(groupName)
                 .build();
 
-        final CounterRpc.IncrementAndGetResponse response = (CounterRpc.IncrementAndGetResponse) rpcClient.invokeSync(primary, request, 60 * 1000);
+        final CounterRpc.IncrementAndGetResponse response = (CounterRpc.IncrementAndGetResponse) rpcClient.invokeSync(primary, request, 600 * 1000);
         return response.getValue();
     }
 

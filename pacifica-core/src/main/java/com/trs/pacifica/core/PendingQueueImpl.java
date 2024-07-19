@@ -20,9 +20,17 @@ package com.trs.pacifica.core;
 import com.trs.pacifica.PendingQueue;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+@ThreadSafe
 public class PendingQueueImpl<E> implements PendingQueue<E> {
+
+    private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     private final Queue<NodeContext<E>> queue;
 
@@ -34,52 +42,132 @@ public class PendingQueueImpl<E> implements PendingQueue<E> {
 
     @Override
     public long getPendingIndex() {
-        return this.pendingIndex;
+        this.readLock.lock();
+        try {
+            return this.pendingIndex;
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
-    public void resetPendingIndex(long pendIndex) {
-        this.pendingIndex = pendIndex;
+    public Collection<E> reset(long pendIndex) {
+        this.writeLock.lock();
+        try{
+            long oldPendingIndex = this.pendingIndex;
+            this.pendingIndex = pendIndex;
+            if (oldPendingIndex < pendIndex) {
+                List<E> abandonedElements = new ArrayList<>();
+                while (!this.queue.isEmpty() && oldPendingIndex < pendIndex) {
+                    NodeContext<E> nodeContext = this.queue.poll();
+                    if (nodeContext != null && nodeContext.e != null) {
+                        abandonedElements.add(nodeContext.e);
+                    }
+                    oldPendingIndex++;
+                }
+                return abandonedElements;
+            } else {
+                return Collections.emptyList();
+            }
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    @Override
+    public Collection<E> clear() {
+        this.writeLock.lock();
+        try {
+            List<E> elements = new ArrayList<>();
+            for (NodeContext<E> nodeContext : this.queue) {
+                if (nodeContext.e != null) {
+                    elements.add(nodeContext.e);
+                }
+            }
+            this.queue.clear();
+            this.pendingIndex = 0;
+            return elements;
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     @Override
     public boolean add(@Nullable E e) {
-        return queue.add(new NodeContext<>(e));
+        this.writeLock.lock();
+        try {
+            return queue.add(new NodeContext<>(e));
+        } finally {
+            this.writeLock.unlock();
+        }
     }
 
     @Nullable
     @Override
     public E poll() {
-        final NodeContext<E> nodeContext = queue.poll();
-        if (nodeContext != null) {
-            advancePendingIndex();
-            return nodeContext.e;
+        this.writeLock.lock();
+        try {
+            final NodeContext<E> nodeContext = queue.poll();
+            if (nodeContext != null) {
+                advancePendingIndex();
+                return nodeContext.e;
+            }
+            return null;
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    @Override
+    public E poll(long index) {
+        this.writeLock.lock();
+        try {
+            if (index == this.pendingIndex) {
+                return poll();
+            }
+        } finally {
+            this.writeLock.unlock();
         }
         return null;
     }
 
     @Override
     public List<E> pollUntil(final long endIndex) {
-        List<E> list = new ArrayList<>();
-        while (!this.isEmpty() && this.pendingIndex <= endIndex) {
-            list.add(poll());
+        this.writeLock.lock();
+        try {
+            List<E> list = new ArrayList<>();
+            while (!this.isEmpty() && this.pendingIndex <= endIndex) {
+                list.add(poll());
+            }
+            return list;
+        } finally {
+            this.writeLock.unlock();
         }
-        return list;
     }
 
     @Nullable
     @Override
     public E peek() {
-        final NodeContext<E> nodeContext = this.queue.peek();
-        if (nodeContext != null) {
-            return nodeContext.e;
+        this.readLock.lock();
+        try {
+            final NodeContext<E> nodeContext = this.queue.peek();
+            if (nodeContext != null) {
+                return nodeContext.e;
+            }
+            return null;
+        } finally {
+            this.readLock.unlock();
         }
-        return null;
     }
 
     @Override
     public int size() {
-        return queue.size();
+        this.readLock.lock();
+        try {
+            return queue.size();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override

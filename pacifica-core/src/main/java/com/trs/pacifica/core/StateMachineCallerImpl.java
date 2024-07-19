@@ -230,10 +230,7 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
             return;
         }
         this.lastCommitLogIndex = commitLogIndex;
-        final List<Callback> callbackList = new ArrayList<>();
-        pollCallback(callbackList, commitLogIndex);
-        final OperationIteratorImpl iterator = new OperationIteratorImpl(this.logManager, commitLogIndex, this.applyingLogIndex, callbackList);
-
+        final OperationIteratorImpl iterator = new OperationIteratorImpl(this.logManager, commitLogIndex, this.applyingLogIndex, this.callbackPendingQueue);
         LogEntry logEntry = iterator.hasNext() ? iterator.next() : null;
         while (logEntry != null) {
             if (iterator.hasError()) {
@@ -262,13 +259,6 @@ public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<Sta
         }
         final long commitLogTerm = this.logManager.getLogTermAt(commitLogIndex);
         this.committedPont = new LogId(commitLogIndex, commitLogTerm);
-    }
-
-    private void pollCallback(List<Callback> callbackList, final long commitPoint) {
-        final List<Callback> callbacks = this.callbackPendingQueue.pollUntil(commitPoint);
-        if (callbacks != null && !callbacks.isEmpty()) {
-            callbackList.addAll(callbacks);
-        }
     }
 
     private void setError(PacificaException fault) {

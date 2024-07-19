@@ -56,7 +56,9 @@ public class CounterFsm extends BaseStateMachine {
             operationClosure = (OperationClosure) callback;
             counterOperation = operationClosure.getOperation();
         } else {
-            counterOperation = CounterOperation.fromBytes(logData.array());
+            byte[] bytes = new byte[logData.limit()];
+            logData.get(bytes, 0, bytes.length);
+            counterOperation = CounterOperation.fromBytes(bytes);
         }
         if (counterOperation != null) {
             replayOperation(counterOperation, operationClosure);

@@ -41,6 +41,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     private long pendingLogIndex = 0; //pendingLogIndex = last_log_index + 1
     private volatile long lastCommittedLogIndex = 0; //lastCommittedLogIndex
     private StateMachineCaller fsmCaller;
+    private LogManager logManager;
     private final LinkedList<Ballot> ballotQueue = new LinkedList<>();
 
     public BallotBoxImpl(Replica replica) {
@@ -53,6 +54,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         this.writeLock.lock();
         try {
             this.fsmCaller = Objects.requireNonNull(option.getFsmCaller(), "option.getFsmCaller()");
+            this.logManager = Objects.requireNonNull(option.getLogManager(), "logManager");
         } finally {
             this.writeLock.unlock();
         }
@@ -62,7 +64,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     public void startup() {
         this.writeLock.lock();
         try {
-            this.lastCommittedLogIndex = this.fsmCaller.getLastCommittedLogIndex();
+            this.lastCommittedLogIndex = this.logManager.getLastLogIndex();
             this.pendingLogIndex = this.lastCommittedLogIndex + 1;
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("{} start BallotBox, pending_log_index={}, last_committed_log_index={}", this.replica.getReplicaId(),
@@ -242,6 +244,7 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
     public static class Option {
 
         private StateMachineCaller fsmCaller;
+        private LogManager logManager;
 
         public StateMachineCaller getFsmCaller() {
             return fsmCaller;
@@ -251,6 +254,13 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
             this.fsmCaller = fsmCaller;
         }
 
+        public LogManager getLogManager() {
+            return logManager;
+        }
+
+        public void setLogManager(LogManager logManager) {
+            this.logManager = logManager;
+        }
     }
 
     static class Ballot {

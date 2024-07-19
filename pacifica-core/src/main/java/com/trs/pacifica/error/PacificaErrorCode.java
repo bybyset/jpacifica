@@ -37,6 +37,7 @@ public enum PacificaErrorCode {
     CONF_CLUSTER(100112, "conf cluster"),
     NO_MATCH_TERM(100113, "higher term"),
     INTERRUPTED(100114, "interrupted"),
+    SHUTDOWN(100115, "shutdown"),
 
 
 

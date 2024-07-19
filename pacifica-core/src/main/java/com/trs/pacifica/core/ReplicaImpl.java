@@ -51,10 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -175,6 +172,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     private void initBallotBox(ReplicaOption option) throws PacificaException {
         final BallotBoxImpl.Option ballotBoxOption = new BallotBoxImpl.Option();
         ballotBoxOption.setFsmCaller(Objects.requireNonNull(this.stateMachineCaller));
+        ballotBoxOption.setLogManager(this.logManager);
         ballotBox.init(ballotBoxOption);
     }
 
@@ -290,6 +288,10 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             this.stateMachineCaller.shutdown();
             this.logManager.shutdown();
             this.snapshotManager.shutdown();
+            Collection<Callback> callbacks = this.callbackPendingQueue.clear();
+            for (Callback callback : callbacks) {
+                ThreadUtil.runCallback(callback, Finished.failure(new PacificaException(PacificaErrorCode.SHUTDOWN, "it is shutdown.")));
+            }
             SingleThreadExecutorUtil.shutdownIfNeed(this.applyExecutor);
         } finally {
             this.writeLock.unlock();
@@ -330,6 +332,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             apply(logEntry, operation.getOnFinish());
         } catch (PacificaException e) {
             ThreadUtil.runCallback(operation.getOnFinish(), Finished.failure(e));
+            LOGGER.error("{} failed to apply operation.", this.replicaId);
         }
     }
 
@@ -636,7 +639,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             startSnapshotTimer();
             startSenderGroup();
             startBallotBox();
-
+            resetCallbackQueue();
             reconciliation();
 
         } finally {
@@ -669,6 +672,17 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             LOGGER.info("The replica({}) has become Candidate.", this.replicaId);
         } finally {
             this.writeLock.unlock();
+        }
+    }
+
+    private void resetCallbackQueue() {
+        long pendIndex = this.logManager.getLastLogIndex() + 1;
+        Collection<Callback> callbacks = this.callbackPendingQueue.reset(pendIndex);
+        if (callbacks != null && !callbacks.isEmpty()) {
+            PacificaException exception = new PacificaException(PacificaErrorCode.STEP_DOWN, "callback queue rest.");
+            for (Callback callback :callbacks) {
+                ThreadUtil.runCallback(callback, Finished.failure(exception));
+            }
         }
     }
 

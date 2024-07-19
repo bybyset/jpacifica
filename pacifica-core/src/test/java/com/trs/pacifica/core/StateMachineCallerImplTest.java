@@ -66,7 +66,7 @@ public class StateMachineCallerImplTest {
         option.setExecutor(this.singleThreadExecutor);
         option.setCallbackPendingQueue(callbacks);
         option.setBootstrapId(new LogId(4, 1));
-        callbacks.resetPendingIndex(4);
+        callbacks.reset(4);
         this.stateMachineCaller.init(option);
         this.stateMachineCaller.startup();
 
