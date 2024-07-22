@@ -45,6 +45,11 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:$jupiter_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$jupiter_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$jupiter_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiter_version"
 }
 
 sourceSets {
@@ -57,6 +62,10 @@ sourceSets {
             srcDir 'generated-sources/main/java'
         }
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 protobuf {

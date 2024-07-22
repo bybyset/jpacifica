@@ -19,6 +19,7 @@ package com.trs.pacifica.example.counter.config.jraft.fsm;
 
 import com.trs.pacifica.model.ReplicaId;
 import com.trs.pacifica.util.BitUtil;
+import com.trs.pacifica.util.OnlyForTest;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -148,6 +149,11 @@ public class MetaReplicaGroup {
         return new ReplicaId(groupName, this.primary.getNodeId());
     }
 
+    @OnlyForTest
+    Map<String, MetaReplica> getAllReplica() {
+        return this.allReplica;
+    }
+
     public List<ReplicaId> listSecondary() {
         List<ReplicaId> secondaryList = new ArrayList<>();
         for (MetaReplica secondary : secondaries.values()) {
@@ -174,12 +180,15 @@ public class MetaReplicaGroup {
         offset += Integer.BYTES;
         List<MetaReplica> replicas = new ArrayList<>(replicaCount);
         if (replicaCount > 0) {
-            final int metaReplicaBytesLength = BitUtil.getInt(bytes, offset);
-            offset += Integer.BYTES;
-            byte[] metaReplicaBytes = new byte[metaReplicaBytesLength];
-            System.arraycopy(bytes, offset, metaReplicaBytes, 0, metaReplicaBytesLength);
-            final MetaReplica metaReplica = MetaReplica.fromBytes(metaReplicaBytes);
-            replicas.add(metaReplica);
+            for (int i = 0; i < replicaCount; i++) {
+                final int metaReplicaBytesLength = BitUtil.getInt(bytes, offset);
+                offset += Integer.BYTES;
+                byte[] metaReplicaBytes = new byte[metaReplicaBytesLength];
+                System.arraycopy(bytes, offset, metaReplicaBytes, 0, metaReplicaBytesLength);
+                final MetaReplica metaReplica = MetaReplica.fromBytes(metaReplicaBytes);
+                replicas.add(metaReplica);
+                offset += metaReplicaBytesLength;
+            }
         }
         return new MetaReplicaGroup(groupName, version, term, replicas);
     }
@@ -206,6 +215,7 @@ public class MetaReplicaGroup {
             byte[] metaReplicaBytes = MetaReplica.toBytes(metaReplica);
             byte[] metaReplicaBytesLength = new byte[Integer.BYTES];
             BitUtil.putInt(metaReplicaBytesLength, 0, metaReplicaBytes.length);
+            bytes = ArrayUtils.addAll(bytes, metaReplicaBytesLength);
             bytes = ArrayUtils.addAll(bytes, metaReplicaBytes);
         }
         return bytes;

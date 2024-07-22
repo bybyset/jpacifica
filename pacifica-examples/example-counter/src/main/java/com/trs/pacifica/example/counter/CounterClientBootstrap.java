@@ -58,14 +58,14 @@ public class CounterClientBootstrap {
         registerNodeId(endpointManager, replicaInitConfStr);
         CounterGrpcHelper.registerProtobufSerializer();
         CounterReplicaConfigClient counterReplicaConfigClient = new CounterReplicaConfigClient(initConf);
-        final ReplicaGroup replicaGroup = counterReplicaConfigClient.getReplicaGroup(groupName);
-        ReplicaId primaryId = replicaGroup.getPrimary();
-        Endpoint primaryEndPoint = endpointManager.getEndpoint(primaryId.getNodeId());
         GrpcClient rpcClient = (GrpcClient) JPacificaRpcServerFactory.createPacificaRpcClient();
         rpcClient.extendMarshaller(CounterRpc.IncrementAndGetRequest.getDefaultInstance(), CounterRpc.IncrementAndGetResponse.getDefaultInstance());
         try {
             long delta = 3;
             for (int i = 0; i < 10; i++) {
+                final ReplicaGroup replicaGroup =  getReplicaGroup(counterReplicaConfigClient, groupName);
+                ReplicaId primaryId = replicaGroup.getPrimary();
+                Endpoint primaryEndPoint = endpointManager.getEndpoint(primaryId.getNodeId());
                 long value = incrementAndGet(rpcClient, primaryEndPoint, groupName, delta);
                 System.out.println(value);
             }
@@ -76,6 +76,12 @@ public class CounterClientBootstrap {
 
         }
 
+    }
+
+    static ReplicaGroup getReplicaGroup(CounterReplicaConfigClient counterReplicaConfigClient, String groupName) {
+        final ReplicaGroup replicaGroup = counterReplicaConfigClient.getReplicaGroup(groupName);
+        LOGGER.info("ReplicaGroup[group_name={}, primary={}, secondary=[]]", replicaGroup.getGroupName(), replicaGroup.getPrimary(), replicaGroup.listSecondary());
+        return replicaGroup;
     }
 
 

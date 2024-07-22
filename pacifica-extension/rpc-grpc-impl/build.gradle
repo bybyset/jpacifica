@@ -34,3 +34,7 @@ dependencies {
     implementation "io.grpc:grpc-protobuf:$grpc_version"
 
 }
+
+test {
+    useJUnitPlatform()
+}
