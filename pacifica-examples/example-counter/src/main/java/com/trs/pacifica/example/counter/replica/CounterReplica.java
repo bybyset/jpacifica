@@ -79,6 +79,7 @@ public class CounterReplica {
                 .configurationClient(this.configurationClient)//
                 .rpcServer(rpcServer)//
                 .rpcClient(rpcClient)//
+                .gracePeriodTimeoutMs(600 * 1000)
                 .build();
 
         this.replicaWharf.start();

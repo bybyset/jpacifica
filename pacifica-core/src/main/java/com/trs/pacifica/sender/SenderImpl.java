@@ -660,9 +660,10 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
         final int appendCount = request.getLogMetaCount();
         if (appendCount > 0) {
             if (this.type.isSecondary()) {
-                final long endLogIndex = this.nextLogIndex + appendCount - 1;
+                final long endLogIndex  = this.nextLogIndex + appendCount - 1;
                 this.option.getBallotBox().ballotBy(this.toId, this.nextLogIndex, endLogIndex);
             }
+            this.nextLogIndex += appendCount;
         }
         if (response.hasLastLogIndex()) {
             final long lastLogIndex = response.getLastLogIndex();

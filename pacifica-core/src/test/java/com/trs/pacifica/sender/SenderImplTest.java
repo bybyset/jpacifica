@@ -227,7 +227,9 @@ public class SenderImplTest {
         RpcRequest.AppendEntriesResponse.Builder responseBuilder = mockAppendEntriesResponseBuilder();
         responseBuilder.setSuccess(true);
         responseBuilder.setLastLogIndex(lastLogIndex);
+        long nextLogIndex = this.sender.getNextLogIndex();
         Assertions.assertTrue(this.sender.handleAppendLogEntryResponse(requestBuilder.build(), Finished.success(), responseBuilder.build()));
+        Assertions.assertEquals(nextLogIndex + logEntryCount, this.sender.getNextLogIndex());
         Mockito.verify(this.ballotBox).ballotBy(this.toId, test_endLogIndex + 1, lastLogIndex);
         Mockito.verify(this.sender).notifyOnCaughtUp(lastLogIndex);
     }
