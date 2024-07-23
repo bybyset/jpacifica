@@ -252,7 +252,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
                 throw new PacificaException(PacificaErrorCode.CONF_CLUSTER, "Failed to add Secondary");
             }
             // join ballot
-            if (!ballotBox.recoverBallot(toId, caughtUpLogIndex)) {
+            if (!ballotBox.recoverBallot(toId, caughtUpLogIndex + 1)) {
                 throw new PacificaException(PacificaErrorCode.INTERNAL, "Failed to join ballot.");
             }
             this.type = SenderType.Secondary;

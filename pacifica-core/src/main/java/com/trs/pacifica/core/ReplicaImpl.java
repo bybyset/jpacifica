@@ -1061,11 +1061,12 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             if (!this.recovering.compareAndSet(false, true)) {
                 throw new PacificaException(PacificaErrorCode.BUSY, "The Candidate busy with recovery.");
             }
-            if (this.state != ReplicaState.Candidate) {
-                throw new PacificaException(PacificaErrorCode.NOT_SUPPORT, "Only Candidate state needs to recover. current state is " + this.state);
-            }
             this.readLock.lock();
             try {
+                //
+                if (this.state != ReplicaState.Candidate) {
+                    throw new PacificaException(PacificaErrorCode.NOT_SUPPORT, "Only Candidate state needs to recover. current state is " + this.state);
+                }
                 final ReplicaId primaryId = this.replicaGroup.getPrimary();
                 final long term = this.replicaGroup.getPrimaryTerm();
                 RpcRequest.ReplicaRecoverRequest recoverRequest = RpcRequest.ReplicaRecoverRequest.newBuilder()//

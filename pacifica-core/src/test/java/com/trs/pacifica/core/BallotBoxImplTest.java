@@ -153,7 +153,12 @@ public class BallotBoxImplTest {
         for (BallotBoxImpl.Ballot ballot : ballots) {
             Assertions.assertEquals(4, ballot.getQuorum());
         }
-        this.ballotBox.recoverBallot(candidate, 1004);
+        Assertions.assertFalse(this.ballotBox.recoverBallot(candidate, 1001));
+        Assertions.assertFalse(this.ballotBox.recoverBallot(candidate, 1003));
+
+        Assertions.assertTrue(this.ballotBox.recoverBallot(candidate, 1004));
+
+
 
         Assertions.assertEquals(1004, this.ballotBox.getPendingLogIndex());
         Assertions.assertEquals(1003, this.ballotBox.getLastCommittedLogIndex());

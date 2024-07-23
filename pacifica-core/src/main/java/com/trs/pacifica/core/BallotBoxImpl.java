@@ -138,13 +138,11 @@ public class BallotBoxImpl implements BallotBox, LifeCycle<BallotBoxImpl.Option>
         Objects.requireNonNull(replicaId, "replicaId");
         this.readLock.lock();
         try {
-            if (startLogIndex < this.pendingLogIndex) {
+            if (startLogIndex <= this.lastCommittedLogIndex) {
+                //
                 return false;
             }
-            if (startLogIndex < this.lastCommittedLogIndex) {
-                // has committed
-                return false;
-            }
+            startLogIndex = Math.max(startLogIndex, this.pendingLogIndex);
             final int fromIndex = (int) Math.max(0, startLogIndex - pendingLogIndex);
             final int toIndex = this.ballotQueue.size();
             List<Ballot> recoverList = this.ballotQueue.subList(fromIndex, toIndex);
