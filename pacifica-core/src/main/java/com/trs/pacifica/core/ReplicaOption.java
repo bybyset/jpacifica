@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class ReplicaOption {
 
     public static final int DEFAULT_MAX_OPERATION_NUM_PER_BATCH = 16;
-    public static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(60);
+    public static final int DEFAULT_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(120);
     public static final int MIN_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(10);
     public static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
     public static final int DEFAULT_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(3);
@@ -58,7 +58,7 @@ public class ReplicaOption {
      * Grace period. If the time limit of the Secondary detection is exceeded,
      * the Primary is considered to be faulty, and the Primary change request is sent
      */
-    private int gracePeriodTimeoutMs = DEFAULT_GRACE_PERIOD_TIMEOUT_MS; // default 60 s
+    private int gracePeriodTimeoutMs = DEFAULT_GRACE_PERIOD_TIMEOUT_MS; // default 120 s
 
     /**
      * lease period timeout ms= gracePeriodTimeoutMs * leasePeriodTimeoutRatio/100
@@ -69,7 +69,7 @@ public class ReplicaOption {
      * factor of heartbeat intervals between replicas
      * heartbeat intervals = lease period timeout * factor / 100
      */
-    private int heartBeatFactor = 30;
+    private int heartBeatFactor = 40;
 
     /**
      * snapshot timeout ms
