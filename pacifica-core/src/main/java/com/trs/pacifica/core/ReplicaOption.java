@@ -30,10 +30,12 @@ import com.trs.pacifica.log.codec.LogEntryCodecFactoryHolder;
 import com.trs.pacifica.rpc.client.RpcClient;
 import com.trs.pacifica.rpc.node.EndpointManager;
 import com.trs.pacifica.rpc.node.EndpointManagerHolder;
+import com.trs.pacifica.util.thread.ThreadUtil;
 import com.trs.pacifica.util.timer.TimerFactory;
 import com.trs.pacifica.util.timer.TimerFactoryHolder;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ReplicaOption {
@@ -44,6 +46,8 @@ public class ReplicaOption {
     public static final int MAX_GRACE_PERIOD_TIMEOUT_MS = (int) TimeUnit.SECONDS.toMillis(600);
     public static final int DEFAULT_SNAPSHOT_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(3);
     public static final int DEFAULT_RECOVER_TIMEOUT_MS = (int) TimeUnit.MINUTES.toMillis(10);
+    public static final int DEFAULT_RECOVER_INTERVAL_MS = (int) TimeUnit.SECONDS.toMillis(30);
+
     public static final int DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED = 10;
     public static final int DEFAULT_SNAPSHOT_LOG_INDEX_MARGIN = 0;
     public static final boolean DEFAULT_ENABLE_LOG_ENTRY_CHECKSUM = true;
@@ -74,6 +78,7 @@ public class ReplicaOption {
 
 
     private int recoverTimeoutMs = DEFAULT_RECOVER_TIMEOUT_MS;
+    private int recoverIntervalMs = DEFAULT_RECOVER_INTERVAL_MS;
 
     private int snapshotLogIndexReserved = DEFAULT_SNAPSHOT_LOG_INDEX_RESERVED;
 
@@ -107,7 +112,7 @@ public class ReplicaOption {
     private ExecutorGroup fsmCallerExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
 
     private ExecutorGroup senderExecutorGroup = ReplicaExecutorGroupHolder.getDefaultInstance();
-
+    private ScheduledExecutorService senderScheduler = ThreadUtil._JPACIFICA_SCHEDULE_EXECUTOR;
     private Executor downloadSnapshotExecutor = ReplicaExecutorGroupHolder.getDefaultInstance();
 
     /**
@@ -348,5 +353,21 @@ public class ReplicaOption {
 
     public void setDownloadSnapshotTimeoutMs(int downloadSnapshotTimeoutMs) {
         this.downloadSnapshotTimeoutMs = downloadSnapshotTimeoutMs;
+    }
+
+    public ScheduledExecutorService getSenderScheduler() {
+        return senderScheduler;
+    }
+
+    public void setSenderScheduler(ScheduledExecutorService senderScheduler) {
+        this.senderScheduler = senderScheduler;
+    }
+
+    public int getRecoverIntervalMs() {
+        return recoverIntervalMs;
+    }
+
+    public void setRecoverIntervalMs(int recoverIntervalMs) {
+        this.recoverIntervalMs = recoverIntervalMs;
     }
 }

@@ -160,6 +160,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
         senderGroupOption.setLeasePeriodTimeOutMs(option.getLeasePeriodTimeoutMs());
         senderGroupOption.setHeartBeatFactor(option.getHeartBeatFactor());
         senderGroupOption.setTimerFactory(Objects.requireNonNull(option.getTimerFactory()));
+        senderGroupOption.setSenderScheduler(Objects.requireNonNull(option.getSenderScheduler()));
         this.senderGroup.init(senderGroupOption);
     }
 
@@ -212,7 +213,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             }
         };
 
-        this.recoverTimer = new RepeatedTimer("Replica_Recover_Timer_" + this.replicaId.getGroupName(), option.getRecoverTimeoutMs(),
+        this.recoverTimer = new RepeatedTimer("Replica_Recover_Timer_" + this.replicaId.getGroupName(), option.getRecoverIntervalMs(),
                 Objects.requireNonNull(option.getTimerFactory().newTimer())) {
             @Override
             protected void onTrigger() {
@@ -482,7 +483,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
             this.senderGroup.addSenderTo(recoverId, SenderType.Candidate, true);
             // wait caught up
             final CandidateCaughtUpCallback onCaughtUp = new CandidateCaughtUpCallback(recoverId, callback);
-            this.senderGroup.waitCaughtUp(recoverId, onCaughtUp, 1000);
+            this.senderGroup.waitCaughtUp(recoverId, onCaughtUp, option.getRecoverTimeoutMs());
         } catch (Throwable throwable) {
             ThreadUtil.runCallback(callback, Finished.failure(throwable));
         } finally {
@@ -1234,12 +1235,18 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
 
         @Override
         public void run(Finished finished) {
+            final long version = this.getGroupVersion();
             if (!finished.isOk()) {
                 ThreadUtil.runCallback(callback, finished);
-                LOGGER.error("Failed to recover. replica_id={}.", recoverId, finished.error());
+                if (version > 0) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.warn("Failed to recover, but it is a high version and requires a refresh of the replica group");
+                    }
+                    asyncAlignReplicaGroupVersion(version);
+                }
+                LOGGER.error("Failed to recover. replica_id={}. group_version={}", recoverId, version, finished.error());
                 return;
             }
-            long version = this.getGroupVersion();
             RpcRequest.ReplicaRecoverResponse response = RpcRequest.ReplicaRecoverResponse.newBuilder()//
                     .setSuccess(true)//
                     .setVersion(version)//

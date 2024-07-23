@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -80,6 +81,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
     private ConfigurationClient configurationClient;
 
     private FileService fileService;
+    private ScheduledExecutorService senderScheduledExecutor;
 
     public SenderGroupImpl(ReplicaImpl replica, PacificaClient pacificaClient) {
         this.replica = replica;
@@ -175,6 +177,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
             this.replicaGroup = Objects.requireNonNull(option.getReplicaGroup(), "replicaGroup");
             this.configurationClient = Objects.requireNonNull(option.getConfigurationClient(), "configurationClient");
             this.fileService = Objects.requireNonNull(option.getFileService(), "fileService");
+            this.senderScheduledExecutor = Objects.requireNonNull(option.getSenderScheduler(), "getSenderScheduler");
             this.state = STATE_SHUTDOWN;
         } finally {
             this.writeLock.unlock();
@@ -257,6 +260,7 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
 
             senderOption.setHeartbeatTimeoutMs(Math.max(100, option.getLeasePeriodTimeOutMs() / option.getHeartBeatFactor()));
             senderOption.setHeartBeatTimer(option.getTimerFactory().newTimer());
+            senderOption.setSenderScheduler(option.getSenderScheduler());
             sender.init(senderOption);
             return sender;
         }
@@ -278,6 +282,8 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         private int heartBeatFactor = 30;
 
         private TimerFactory timerFactory;
+
+        private ScheduledExecutorService senderScheduler;
 
         public ConfigurationClient getConfigurationClient() {
             return configurationClient;
@@ -358,6 +364,15 @@ public class SenderGroupImpl implements SenderGroup, LifeCycle<SenderGroupImpl.O
         public void setTimerFactory(TimerFactory timerFactory) {
             this.timerFactory = timerFactory;
         }
+
+        public ScheduledExecutorService getSenderScheduler() {
+            return senderScheduler;
+        }
+
+        public void setSenderScheduler(ScheduledExecutorService senderScheduler) {
+            this.senderScheduler = senderScheduler;
+        }
+
     }
 
 

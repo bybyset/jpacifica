@@ -87,6 +87,7 @@ public class MasterServer implements LifeCycle<MasterServer.Option> {
             options.setLogUri(dataPath + File.separator + LOG_DIR_NAME);
             options.setSnapshotUri(dataPath + File.separator + SNAPSHOT_DIR_NAME);
             options.setRaftMetaUri(dataPath + File.separator + RAFT_META_DIR_NAME);
+            options.setSnapshotIntervalSecs(10 * 1000);
             this.raftGroupService = new RaftGroupService(groupId, masterServerId, options, rpcServer);
             this.node = raftGroupService.start();
         } catch (Throwable e) {
@@ -102,7 +103,6 @@ public class MasterServer implements LifeCycle<MasterServer.Option> {
 
 
     void startRpcServer(RpcServer rpcServer) {
-        CounterGrpcHelper.registerProtobufSerializer();
         rpcServer.registerProcessor(new AddSecondaryProcessor(metaReplicaService));
         rpcServer.registerProcessor(new RemoveSecondaryProcessor(metaReplicaService));
         rpcServer.registerProcessor(new ChangePrimaryProcessor(metaReplicaService));

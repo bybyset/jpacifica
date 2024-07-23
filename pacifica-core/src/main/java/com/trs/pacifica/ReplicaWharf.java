@@ -30,6 +30,7 @@ import com.trs.pacifica.rpc.node.EndpointManager;
 import com.trs.pacifica.util.timer.TimerFactory;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Starting the bootstrap class
@@ -112,6 +113,8 @@ public class ReplicaWharf {
 
         private Integer recoverTimeoutMs = null;
 
+        private Integer recoverIntervalMs = null;
+
         private Integer snapshotLogIndexReserved = null;
 
         private Integer snapshotLogIndexMargin = null;
@@ -132,6 +135,7 @@ public class ReplicaWharf {
 
         private ExecutorGroup fsmCallerExecutorGroup = null;
         private ExecutorGroup senderExecutorGroup = null;
+        private ScheduledExecutorService senderScheduler = null;
 
         private Executor downloadSnapshotExecutor = null;
 
@@ -190,6 +194,11 @@ public class ReplicaWharf {
             return this;
         }
 
+        public Builder recoverIntervalMs(int recoverIntervalMs) {
+            this.recoverIntervalMs = recoverIntervalMs;
+            return this;
+        }
+
         public Builder snapshotLogIndexReserved(int snapshotLogIndexReserved) {
             this.snapshotLogIndexReserved = snapshotLogIndexReserved;
             return this;
@@ -237,6 +246,11 @@ public class ReplicaWharf {
 
         public Builder senderExecutorGroup(ExecutorGroup senderExecutorGroup) {
             this.senderExecutorGroup = senderExecutorGroup;
+            return this;
+        }
+
+        public Builder senderScheduler(ScheduledExecutorService senderScheduler) {
+            this.senderScheduler = senderScheduler;
             return this;
         }
 
@@ -295,6 +309,9 @@ public class ReplicaWharf {
             if (this.recoverTimeoutMs != null) {
                 this.replicaOption.setRecoverTimeoutMs(recoverTimeoutMs);
             }
+            if (this.recoverIntervalMs != null) {
+                this.replicaOption.setRecoverIntervalMs(recoverIntervalMs);
+            }
             if (this.snapshotLogIndexReserved != null) {
                 this.replicaOption.setSnapshotLogIndexReserved(snapshotLogIndexReserved);
             }
@@ -328,6 +345,9 @@ public class ReplicaWharf {
             }
             if (this.senderExecutorGroup != null) {
                 this.replicaOption.setSenderExecutorGroup(senderExecutorGroup);
+            }
+            if (this.senderScheduler != null) {
+                this.replicaOption.setSenderScheduler(senderScheduler);
             }
             if (this.downloadSnapshotExecutor != null) {
                 this.replicaOption.setDownloadSnapshotExecutor(downloadSnapshotExecutor);

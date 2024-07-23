@@ -33,6 +33,7 @@ buildscript {
 ext {
     jraft_version = '1.3.14'
     log4j_version = '2.22.1'
+    grpc_version = '1.63.0'
 }
 dependencies {
     api project(':pacifica-core')
@@ -41,6 +42,14 @@ dependencies {
     implementation "com.alipay.sofa:rpc-grpc-impl:$jraft_version"
     implementation "com.google.protobuf:protobuf-java:$protobuf_version"
     implementation "com.google.guava:guava:$guava_version"
+
+
+    implementation "io.grpc:grpc-core:$grpc_version"
+    implementation "io.grpc:grpc-netty-shaded:$grpc_version"
+    implementation "io.grpc:grpc-api:$grpc_version"
+    implementation "io.grpc:grpc-services:$grpc_version"
+    implementation "io.grpc:grpc-util:$grpc_version"
+    implementation "io.grpc:grpc-protobuf:$grpc_version"
 
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-api:$log4j_version"

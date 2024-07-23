@@ -24,16 +24,19 @@ import com.trs.pacifica.util.NamedThreadFactory;
 import com.trs.pacifica.util.SystemConstants;
 import com.trs.pacifica.util.SystemPropertyUtil;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class ThreadUtil {
 
 
     private ThreadUtil() {
     }
+
+    /**
+     * Default pacifica callback executor pool minimum size, CPUs by default.
+     */
+    public static final int _SCHEDULE_THREAD_NUM = SystemPropertyUtil.getInt("pacifica.schedule.thread.num", SystemConstants.CPUS);
+
 
     /**
      * Default pacifica callback executor pool minimum size, CPUs by default.
@@ -55,6 +58,12 @@ public class ThreadUtil {
             .threadFactory(new NamedThreadFactory("pacifica-callback-thread-", true))
             .build();
 
+    public static final ScheduledExecutorService _JPACIFICA_SCHEDULE_EXECUTOR = ThreadPoolUtil.newScheduledBuilder()//
+            .poolName("pacifica-schedule-executor")//
+            .enableMetric(true)//
+            .coreThreads(_SCHEDULE_THREAD_NUM)//
+            .threadFactory(new NamedThreadFactory("pacifica-schedule-thread-", true))//
+            .build();
 
     /**
      * run callback in executor

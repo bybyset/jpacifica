@@ -19,6 +19,7 @@ package com.trs.pacifica.example.counter;
 
 import com.alipay.sofa.jraft.conf.Configuration;
 import com.alipay.sofa.jraft.entity.PeerId;
+import com.trs.pacifica.example.counter.config.CounterGrpcHelper;
 import com.trs.pacifica.example.counter.config.CounterReplicaConfigClient;
 import com.trs.pacifica.example.counter.config.jraft.MasterServer;
 import com.trs.pacifica.rpc.node.Endpoint;
@@ -72,6 +73,7 @@ public class CounterServerBootstrap {
             if (!serverId.parse(replicaServerAddress)) {
                 throw new IllegalArgumentException("Fail to parse serverId:" + replicaServerAddress);
             }
+            CounterGrpcHelper.registerProtobufSerializer();
             if (initConf.contains(masterId)) {
                 MasterServer.Option masterOption = new MasterServer.Option();
                 masterOption.setDataPath(masterDataPath);

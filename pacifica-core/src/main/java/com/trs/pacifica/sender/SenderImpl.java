@@ -248,6 +248,7 @@ public class SenderImpl implements Sender, LifeCycle<SenderImpl.Option> {
             final long version = this.option.getReplicaGroup().getVersion();
             // add Secondary
             if (!this.option.getConfigurationClient().addSecondary(version, toId)) {
+                onCaughtUp.setGroupVersion(version + 1); //
                 throw new PacificaException(PacificaErrorCode.CONF_CLUSTER, "Failed to add Secondary");
             }
             // join ballot

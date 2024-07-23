@@ -43,9 +43,9 @@ public class MetaReplicaGroup {
      */
     private Map<String, MetaReplica> allReplica = new HashMap<>();
 
-    private volatile long version = 0L;
+    private volatile long version = 1L;
 
-    private volatile long term = 0L;
+    private volatile long term = 1L;
 
 
     public MetaReplicaGroup(String groupName, String primaryNodeId) {

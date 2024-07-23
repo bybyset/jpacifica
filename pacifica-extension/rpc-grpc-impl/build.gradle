@@ -33,6 +33,10 @@ dependencies {
     implementation "io.grpc:grpc-util:$grpc_version"
     implementation "io.grpc:grpc-protobuf:$grpc_version"
 
+    testImplementation "org.mockito:mockito-core:$mockito_version"
+    testImplementation "org.mockito:mockito-inline:$mockito_version"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
+
 }
 
 test {
