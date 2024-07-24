@@ -9,12 +9,12 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/pacifica-config" />
-            <option value="$PROJECT_DIR$/pacifica-core" />
-            <option value="$PROJECT_DIR$/pacifica-examples" />
-            <option value="$PROJECT_DIR$/pacifica-examples/example-counter" />
-            <option value="$PROJECT_DIR$/pacifica-extension" />
-            <option value="$PROJECT_DIR$/pacifica-extension/rpc-grpc-impl" />
+            <option value="$PROJECT_DIR$/jpacifica-config" />
+            <option value="$PROJECT_DIR$/jpacifica-core" />
+            <option value="$PROJECT_DIR$/jpacifica-examples" />
+            <option value="$PROJECT_DIR$/jpacifica-examples/jpacifica-example-counter" />
+            <option value="$PROJECT_DIR$/jpacifica-extension" />
+            <option value="$PROJECT_DIR$/jpacifica-extension/jpacifica-rpc-grpc-impl" />
           </set>
         </option>
       </GradleProjectSettings>
