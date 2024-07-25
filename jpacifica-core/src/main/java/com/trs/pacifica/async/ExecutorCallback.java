@@ -27,7 +27,7 @@ public interface ExecutorCallback extends Callback {
     /**
      * Specifies the executor on which the callback will run, default {@link DirectExecutor}
      * You should rewrite it,  otherwise it will be executed in the current thread
-     * @return
+     * @return Executor
      */
     default public Executor executor() {
         return _DEFAULT_EXECUTOR;

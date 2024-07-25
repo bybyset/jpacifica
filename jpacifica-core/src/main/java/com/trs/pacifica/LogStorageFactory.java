@@ -26,11 +26,11 @@ public interface LogStorageFactory {
     /**
      * create LogStorage for path
      *
-     * @param path
-     * @param logEntryEncoder
-     * @param logEntryDecoder
-     * @return
-     * @throws PacificaException
+     * @param path path of LogStorage
+     * @param logEntryEncoder logEntryEncoder
+     * @param logEntryDecoder logEntryDecoder
+     * @return  LogStorage
+     * @throws PacificaException if error
      */
     LogStorage newLogStorage(final String path, final LogEntryEncoder logEntryEncoder, final LogEntryDecoder logEntryDecoder) throws PacificaException;
 

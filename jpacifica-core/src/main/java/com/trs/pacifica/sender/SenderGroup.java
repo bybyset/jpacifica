@@ -40,9 +40,10 @@ public interface SenderGroup {
     /**
      * add Sender
      *
-     * @param replicaId
+     * @param replicaId       replicaId
      * @param senderType      to see {@link SenderType}
      * @param checkConnection check connect
+     * @throws PacificaException if error
      */
     void addSenderTo(ReplicaId replicaId, SenderType senderType, boolean checkConnection) throws PacificaException;
 
@@ -50,7 +51,7 @@ public interface SenderGroup {
     /**
      * Whether the specified Replica is alive
      *
-     * @param replicaId
+     * @param replicaId replicaId
      * @return true if the Replica is alive
      */
     boolean isAlive(ReplicaId replicaId);
@@ -60,16 +61,30 @@ public interface SenderGroup {
         return waitCaughtUp(replicaId, onCaughtUp, unit.toMillis(timeout));
     }
 
+    /**
+     * submit CaughtUp task and wait
+     *
+     * @param replicaId  replicaId
+     * @param onCaughtUp callback
+     * @param timeoutMs  timeout
+     * @return true if success to submit CaughtUp task
+     */
     boolean waitCaughtUp(final ReplicaId replicaId, final Sender.OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**
-     * @param logIndex
-     * @return
+     * @param logIndex logIndex
+     * @return true if continue
      */
     boolean continueAppendLogEntry(final long logIndex);
 
 
+    /**
+     * remove sender
+     *
+     * @param replicaId replicaId
+     * @return sender of removed
+     */
     Sender removeSender(ReplicaId replicaId);
 
 

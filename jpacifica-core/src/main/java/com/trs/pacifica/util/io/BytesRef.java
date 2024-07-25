@@ -59,6 +59,10 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
 
     /**
      * This instance will directly reference bytes w/o making a copy. bytes should not be null.
+     *
+     * @param bytes  bytes
+     * @param offset offset
+     * @param length length
      */
     public BytesRef(byte[] bytes, int offset, int length) {
         this.bytes = bytes;
@@ -69,6 +73,8 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
 
     /**
      * This instance will directly reference bytes w/o making a copy. bytes should not be null
+     *
+     * @param bytes bytes
      */
     public BytesRef(byte[] bytes) {
         this(bytes, 0, bytes.length);
@@ -77,6 +83,8 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
     /**
      * Create a BytesRef pointing to a new array of size <code>capacity</code>. Offset and length will
      * both be zero.
+     *
+     * @param capacity capacity
      */
     public BytesRef(int capacity) {
         this.bytes = new byte[capacity];
@@ -87,7 +95,7 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
      * Expert: compares the bytes against another BytesRef, returning true if the bytes are equal.
      *
      * @param other Another BytesRef, should not be null.
-     * @lucene.internal
+     * @return true if equals
      */
     public boolean bytesEquals(BytesRef other) {
         assert other != null;
@@ -110,6 +118,7 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
      * Returns a shallow clone of this instance (the underlying bytes are <b>not</b> copied and will
      * be shared by both the returned object and this object.
      *
+     * @return BytesRef
      * @see #deepCopyOf
      */
     @Override
@@ -130,6 +139,8 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
 
     /**
      * Returns hex encoded bytes, eg [0x6c 0x75 0x63 0x65 0x6e 0x65]
+     *
+     * @return String
      */
     @Override
     public String toString() {
@@ -148,6 +159,8 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
 
     /**
      * Unsigned byte order comparison
+     *
+     * @return int
      */
     @Override
     public int compareTo(BytesRef other) {
@@ -178,6 +191,9 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
      * Creates a new BytesRef that points to a copy of the bytes from <code>other</code>
      *
      * <p>The returned BytesRef will have a length of other.length and an offset of zero.
+     *
+     * @param other other
+     * @return BytesRef
      */
     public static BytesRef deepCopyOf(BytesRef other) {
         final byte[] copy = new byte[other.length];
@@ -187,6 +203,8 @@ public class BytesRef implements Comparable<BytesRef>, Cloneable {
 
     /**
      * Performs internal consistency checks. Always returns true (or throws IllegalStateException)
+     *
+     * @return true if valid
      */
     public boolean isValid() {
         if (bytes == null) {

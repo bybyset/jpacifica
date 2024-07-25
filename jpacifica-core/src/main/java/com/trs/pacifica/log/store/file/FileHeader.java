@@ -107,6 +107,11 @@ public class FileHeader {
         return headerData.array();
     }
 
+    /**
+     * decode file header
+     * @param headerData header bytes
+     * @return true if success
+     */
     public boolean decode(final byte[] headerData) {
         if (headerData == null || headerData.length < _HEADER_BYTE_SIZE) {
             return false;
@@ -125,12 +130,15 @@ public class FileHeader {
         return true;
     }
 
+    /**
+     * @return ture if Blank
+     */
     public boolean isBlank() {
         return this.tag == TAG_BLANK;
     }
 
     /**
-     * @return
+     * @return ture if Consecutive
      */
     public boolean isConsecutive() {
         return (this.tag & TAG_CONSECUTIVE) != 0;
@@ -140,6 +148,10 @@ public class FileHeader {
         this.tag |= TAG_CONSECUTIVE;
     }
 
+    /**
+     *
+     * @return ture if Available
+     */
     public boolean isAvailable() {
         return (this.tag & TAG_AVAILABLE) != 0;
     }
@@ -148,10 +160,17 @@ public class FileHeader {
         this.tag |= TAG_AVAILABLE;
     }
 
+    /**
+     * get byte size the file header
+     * @return byte size
+     */
     public static int getBytesSize() {
         return _HEADER_BYTE_SIZE;
     }
 
+    /**
+     * rest file header
+     */
     public void rest() {
         this.tag = TAG_BLANK;
         this.firstLogIndex = NO_FIRST_LOG_INDEX;

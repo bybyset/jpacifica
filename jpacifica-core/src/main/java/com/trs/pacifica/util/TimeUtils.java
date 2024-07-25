@@ -28,6 +28,8 @@ public class TimeUtils {
 
     /**
      * Gets the current monotonic time in milliseconds.
+     *
+     * @return monotonicMs
      */
     public static long monotonicMs() {
         return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
@@ -36,6 +38,8 @@ public class TimeUtils {
     /**
      * Returns the current time in milliseconds, it's not monotonic, would be forwarded/backward by
      * clock synchronous.
+     *
+     * @return currentTimeMillis
      */
     public static long nowMs() {
         return System.currentTimeMillis();
@@ -43,6 +47,8 @@ public class TimeUtils {
 
     /**
      * Gets the current monotonic time in microseconds.
+     *
+     * @return monotonicUs
      */
     public static long monotonicUs() {
         return TimeUnit.NANOSECONDS.toMicros(System.nanoTime());

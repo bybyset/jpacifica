@@ -24,8 +24,8 @@ import java.util.concurrent.Executor;
 public interface ExecutorChooser {
 
     /**
-     *
-     * @return
+     * choose one SingleThreadExecutor to execute
+     * @return SingleThreadExecutor
      */
     SingleThreadExecutor chooseExecutor();
 

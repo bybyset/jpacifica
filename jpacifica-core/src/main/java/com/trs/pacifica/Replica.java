@@ -29,7 +29,7 @@ public interface Replica {
     /**
      * get id of the Replica
      *
-     * @return
+     * @return ReplicaId
      */
     ReplicaId getReplicaId();
 
@@ -45,7 +45,7 @@ public interface Replica {
      * get state of the Replica
      * default not thread-safe
      *
-     * @return
+     * @return ReplicaState
      */
     default ReplicaState getReplicaState() {
         return getReplicaState(false);
@@ -65,8 +65,9 @@ public interface Replica {
     /**
      * Whether the replica is the Primary.
      * default not thread-safe
+     * @see #isPrimary(boolean)
      *
-     * @return
+     * @return true if is primary
      */
     default boolean isPrimary() {
         return isPrimary(false);
@@ -76,7 +77,7 @@ public interface Replica {
      * called by user.
      * asynchronous apply operation to the replicated-state-machine,
      *
-     * @param operation
+     * @param operation operation
      */
     void apply(Operation operation);
 
@@ -94,7 +95,7 @@ public interface Replica {
      * Replica recovery is started immediately ,
      * and the callback is executed when the snapshot is completed.
      *
-     * @param onFinish
+     * @param onFinish callback
      */
     void recover(Callback onFinish);
 

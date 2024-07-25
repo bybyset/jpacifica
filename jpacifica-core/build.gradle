@@ -14,11 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply plugin: 'java-library'
-apply plugin: 'com.google.protobuf'
-
-description = 'jpacifica core library'
-
 buildscript {
     repositories {
         maven {
@@ -30,6 +25,12 @@ buildscript {
     }
 }
 
+apply plugin: 'java-library'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'maven-publish'
+apply plugin: 'org.jreleaser'
+
+description = 'jpacifica core library'
 
 dependencies {
     api project(':jpacifica-config')
@@ -81,3 +82,67 @@ tasks.withType(Copy) {
 }
 
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            pom {
+                name = 'jpacifica'
+                description = description
+                url = 'https://github.com/aalmiray/app'
+                inceptionYear = '2024'
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'bybyset'
+                        name = 'cff'
+                        url = 'https://github.com/bybyset'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/bybyset/jpacifica.git'
+                    developerConnection = 'scm:git:ssh://github.com/bybyset/jpacifica.git'
+                    url = 'https://github.com/bybyset/jpacifica'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            nexus2 {
+                'maven-central' {
+                    active = 'ALWAYS'
+                    url = 'https://s01.oss.sonatype.org/service/local'
+                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+                    closeRepository = true
+                    releaseRepository = false
+                    stagingRepository('target/staging-deploy')
+                }
+            }
+        }
+    }
+}

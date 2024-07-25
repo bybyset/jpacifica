@@ -47,7 +47,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * CommittedPoint <= LastAppliedLogIndex <= LastCommittedLogIndex
+ * CommittedPoint {@code<=} LastAppliedLogIndex {@code<=} LastCommittedLogIndex
  */
 public class StateMachineCallerImpl implements StateMachineCaller, LifeCycle<StateMachineCallerImpl.Option> {
     private static final Logger LOGGER = LoggerFactory.getLogger(StateMachineCallerImpl.class);

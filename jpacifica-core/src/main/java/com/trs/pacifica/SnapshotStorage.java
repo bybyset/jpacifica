@@ -36,7 +36,7 @@ public interface SnapshotStorage {
      * when the replica loading snapshot, will ask for a SnapshotReader to be opened.
      *
      * @return null if not found snapshot
-     * @throws IOException
+     * @throws IOException io error
      */
     SnapshotReader openSnapshotReader() throws IOException;
 
@@ -46,9 +46,9 @@ public interface SnapshotStorage {
      * snapshotLogId: Passed by PacificA, the user is expected to persist the store
      * so that it can be loaded and read in SnapshotReader
      *
-     * @param snapshotLogId
-     * @return
-     * @throws IOException
+     * @param snapshotLogId snapshotLogId
+     * @return SnapshotWriter
+     * @throws IOException io error
      */
     SnapshotWriter openSnapshotWriter(final LogId snapshotLogId) throws IOException;
 
@@ -56,9 +56,9 @@ public interface SnapshotStorage {
     /**
      * Start the task of downloading snapshots.
      *
-     * @param downloadContext
-     * @return
-     * @throws IOException
+     * @param downloadContext downloadContext
+     * @return SnapshotDownloader
+     * @throws IOException io error
      */
     SnapshotDownloader startDownloadSnapshot(final DownloadContext downloadContext) throws IOException;
 

@@ -31,7 +31,7 @@ public interface LogManager {
      * The logEntries is appended in bulk,
      * and callback are executed after persistent storage.
      *
-     * @param logEntries
+     * @param logEntries logEntries
      * @param callback   finished callback
      */
     void appendLogEntries(List<LogEntry> logEntries, AppendLogEntriesCallback callback);
@@ -39,8 +39,8 @@ public interface LogManager {
     /**
      * append LogEntry
      *
-     * @param logEntry
-     * @param callback
+     * @param logEntry logEntry
+     * @param callback callback
      */
     default void appendLogEntry(final LogEntry logEntry, final AppendLogEntriesCallback callback) {
         appendLogEntries(Lists.newArrayList(logEntry), callback);
@@ -49,8 +49,8 @@ public interface LogManager {
     /**
      * get LogEntry at log index
      *
-     * @param logIndex
-     * @return
+     * @param logIndex logIndex
+     * @return LogEntry
      * @throws LogEntryCorruptedException if the LogEntry corrupted
      */
     LogEntry getLogEntryAt(final long logIndex) throws LogEntryCorruptedException;
@@ -58,9 +58,9 @@ public interface LogManager {
     /**
      * get term of LogId at log index
      *
-     * @param logIndex
+     * @param logIndex logIndex
      * @return term of LogId at logIndex.
-     * @return 0 if logIndex <= 0 or not found LogEntry.
+     * @return 0 if logIndex {@code <= } 0 or not found LogEntry.
      */
     long getLogTermAt(final long logIndex);
 
@@ -82,7 +82,7 @@ public interface LogManager {
      * Get last log index of prepare queue.
      * It is possible to merge it into the snapshot.
      *
-     * @return
+     * @return last log index
      */
     long getLastLogIndex();
 

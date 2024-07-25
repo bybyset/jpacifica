@@ -46,10 +46,10 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
     /**
      * Operation iterator: range form applyingIndex to endLogIndex, containing the boundary values
      *
-     * @param logManager
-     * @param endLogIndex
-     * @param applyingIndex
-     * @param callbackList
+     * @param logManager    logManager
+     * @param endLogIndex   endLogIndex
+     * @param applyingIndex applyingIndex
+     * @param callbackList  callbackList
      */
     public OperationIteratorImpl(LogManager logManager, final long endLogIndex, AtomicLong applyingIndex, PendingQueue<Callback> callbackList) {
         this.logManager = logManager;
@@ -111,12 +111,16 @@ public class OperationIteratorImpl implements Iterator<LogEntry> {
 
     /**
      * roll back
+     *
      * @param tailCount num of roll back on tail
      */
     void rollback(long tailCount) {
         this.applyingIndex.addAndGet(Math.negateExact(tailCount));
     }
 
+    /**
+     * rollback(1)
+     */
     void rollback() {
         rollback(1);
     }

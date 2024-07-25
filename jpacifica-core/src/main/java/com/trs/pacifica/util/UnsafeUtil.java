@@ -69,6 +69,7 @@ public class UnsafeUtil {
 
     /**
      * Whether or not can use the unsafe api.
+     * @return true if has unsafe
      */
     public static boolean hasUnsafe() {
         return UNSAFE != null;
@@ -76,6 +77,7 @@ public class UnsafeUtil {
 
     /**
      * Get a {@link UnsafeAccessor} appropriate for the platform.
+     * @return UnsafeAccessor
      */
     public static UnsafeAccessor getUnsafeAccessor() {
         return UNSAFE_ACCESSOR;
@@ -278,31 +280,21 @@ public class UnsafeUtil {
     /**
      * Reports the offset of the first element in the storage allocation of a
      * given array class.
+     * @param clazz clazz
+     * @return int
      */
     public static int arrayBaseOffset(final Class<?> clazz) {
         return hasUnsafe() ? UNSAFE_ACCESSOR.arrayBaseOffset(clazz) : -1;
     }
 
-    /**
-     * Reports the scale factor for addressing elements in the storage
-     * allocation of a given array class.
-     */
     public static int arrayIndexScale(final Class<?> clazz) {
         return hasUnsafe() ? UNSAFE_ACCESSOR.arrayIndexScale(clazz) : -1;
     }
 
-    /**
-     * Returns the offset of the provided field, or {@code -1} if {@code sun.misc.Unsafe} is not
-     * available.
-     */
     public static long objectFieldOffset(final Field field) {
         return field == null || hasUnsafe() ? UNSAFE_ACCESSOR.objectFieldOffset(field) : -1;
     }
 
-    /**
-     * Returns the offset of the provided class and fieldName, or {@code -1} if {@code sun.misc.Unsafe} is not
-     * available.
-     */
     public static long objectFieldOffset(final Class<?> clazz, final String fieldName) {
         try {
             return objectFieldOffset(clazz.getDeclaredField(fieldName));
@@ -312,10 +304,6 @@ public class UnsafeUtil {
         return -1; // never get here
     }
 
-    /**
-     * Gets the offset of the {@code address} field of the given
-     * direct {@link ByteBuffer}.
-     */
     public static long addressOffset(final ByteBuffer buffer) {
         return UNSAFE_ACCESSOR.getLong(buffer, BUFFER_ADDRESS_OFFSET);
     }
@@ -324,11 +312,6 @@ public class UnsafeUtil {
         UNSAFE_ACCESSOR.throwException(t);
     }
 
-    /**
-     * Returns a new {@link String} backed by the given {@code chars}.
-     * The char array should not be mutated any more after calling
-     * this function.
-     */
     public static String moveToString(final char[] chars) {
         if (STRING_VALUE_OFFSET == -1) {
             // In the off-chance that this JDK does not implement String as we'd expect, just do a copy.
@@ -345,9 +328,6 @@ public class UnsafeUtil {
         return str;
     }
 
-    /**
-     * Returns the system {@link ClassLoader}.
-     */
     public static ClassLoader getSystemClassLoader() {
         if (System.getSecurityManager() == null) {
             return ClassLoader.getSystemClassLoader();
@@ -356,24 +336,14 @@ public class UnsafeUtil {
         }
     }
 
-    /**
-     * Finds the address field within a direct {@link Buffer}.
-     */
     private static Field bufferAddressField() {
         return field(Buffer.class, "address", long.class);
     }
 
-    /**
-     * Finds the value field within a {@link String}.
-     */
     private static Field stringValueField() {
         return field(String.class, "value", char[].class);
     }
 
-    /**
-     * Gets the field with the given name within the class, or
-     * {@code null} if not found. If found, the field is made accessible.
-     */
     private static Field field(final Class<?> clazz, final String fieldName, final Class<?> expectedType) {
         Field field;
         try {
@@ -409,220 +379,205 @@ public class UnsafeUtil {
         return unsafe;
     }
 
-    public static class UnsafeAccessor {
+    public static class UnsafeAccessor<T> {
 
-        private final sun.misc.Unsafe unsafe;
+        private final Object unsafe;
 
         UnsafeAccessor(Object unsafe) {
-            this.unsafe = (sun.misc.Unsafe) unsafe;
+            this.unsafe = unsafe;
         }
 
-        /**
-         * Returns the {@link sun.misc.Unsafe}'s instance.
-         */
         public sun.misc.Unsafe getUnsafe() {
-            return unsafe;
+            return (sun.misc.Unsafe) unsafe;
         }
 
         public byte getByte(final Object target, final long offset) {
-            return this.unsafe.getByte(target, offset);
+            return this.getUnsafe().getByte(target, offset);
         }
 
         public void putByte(final Object target, final long offset, final byte value) {
-            this.unsafe.putByte(target, offset, value);
+            this.getUnsafe().putByte(target, offset, value);
         }
 
         public short getShort(final Object target, final long offset) {
-            return this.unsafe.getShort(target, offset);
+            return this.getUnsafe().getShort(target, offset);
         }
 
         public void putShort(final Object target, final long offset, final short value) {
-            this.unsafe.putShort(target, offset, value);
+            this.getUnsafe().putShort(target, offset, value);
         }
 
         public int getInt(final Object target, final long offset) {
-            return this.unsafe.getInt(target, offset);
+            return this.getUnsafe().getInt(target, offset);
         }
 
         public void putInt(final Object target, final long offset, final int value) {
-            this.unsafe.putInt(target, offset, value);
+            this.getUnsafe().putInt(target, offset, value);
         }
 
         public long getLong(final Object target, final long offset) {
-            return this.unsafe.getLong(target, offset);
+            return this.getUnsafe().getLong(target, offset);
         }
 
         public void putLong(final Object target, final long offset, final long value) {
-            this.unsafe.putLong(target, offset, value);
+            this.getUnsafe().putLong(target, offset, value);
         }
 
         public boolean getBoolean(final Object target, final long offset) {
-            return this.unsafe.getBoolean(target, offset);
+            return this.getUnsafe().getBoolean(target, offset);
         }
 
         public void putBoolean(final Object target, final long offset, final boolean value) {
-            this.unsafe.putBoolean(target, offset, value);
+            this.getUnsafe().putBoolean(target, offset, value);
         }
 
         public float getFloat(final Object target, final long offset) {
-            return this.unsafe.getFloat(target, offset);
+            return this.getUnsafe().getFloat(target, offset);
         }
 
         public void putFloat(final Object target, final long offset, final float value) {
-            this.unsafe.putFloat(target, offset, value);
+            this.getUnsafe().putFloat(target, offset, value);
         }
 
         public double getDouble(final Object target, final long offset) {
-            return this.unsafe.getDouble(target, offset);
+            return this.getUnsafe().getDouble(target, offset);
         }
 
         public void putDouble(final Object target, final long offset, final double value) {
-            this.unsafe.putDouble(target, offset, value);
+            this.getUnsafe().putDouble(target, offset, value);
         }
 
         public Object getObject(final Object target, final long offset) {
-            return this.unsafe.getObject(target, offset);
+            return this.getUnsafe().getObject(target, offset);
         }
 
         public void putObject(final Object target, final long offset, final Object value) {
-            this.unsafe.putObject(target, offset, value);
+            this.getUnsafe().putObject(target, offset, value);
         }
 
         public byte getByte(final long address) {
-            return this.unsafe.getByte(address);
+            return this.getUnsafe().getByte(address);
         }
 
         public void putByte(final long address, final byte value) {
-            this.unsafe.putByte(address, value);
+            this.getUnsafe().putByte(address, value);
         }
 
         public short getShort(final long address) {
-            return this.unsafe.getShort(address);
+            return this.getUnsafe().getShort(address);
         }
 
         public void putShort(final long address, final short value) {
-            this.unsafe.putShort(address, value);
+            this.getUnsafe().putShort(address, value);
         }
 
         public int getInt(final long address) {
-            return this.unsafe.getInt(address);
+            return this.getUnsafe().getInt(address);
         }
 
         public void putInt(final long address, final int value) {
-            this.unsafe.putInt(address, value);
+            this.getUnsafe().putInt(address, value);
         }
 
         public long getLong(final long address) {
-            return this.unsafe.getLong(address);
+            return this.getUnsafe().getLong(address);
         }
 
         public void putLong(final long address, final long value) {
-            this.unsafe.putLong(address, value);
+            this.getUnsafe().putLong(address, value);
         }
 
         public void copyMemory(final Object srcBase, final long srcOffset, final Object dstBase, final long dstOffset,
                                final long bytes) {
-            this.unsafe.copyMemory(srcBase, srcOffset, dstBase, dstOffset, bytes);
+            this.getUnsafe().copyMemory(srcBase, srcOffset, dstBase, dstOffset, bytes);
         }
 
         public void copyMemory(final long srcAddress, final long dstAddress, final long bytes) {
-            this.unsafe.copyMemory(srcAddress, dstAddress, bytes);
+            this.getUnsafe().copyMemory(srcAddress, dstAddress, bytes);
         }
 
         public byte getByteVolatile(final Object target, final long offset) {
-            return this.unsafe.getByteVolatile(target, offset);
+            return this.getUnsafe().getByteVolatile(target, offset);
         }
 
         public void putByteVolatile(final Object target, final long offset, final byte value) {
-            this.unsafe.putByteVolatile(target, offset, value);
+            this.getUnsafe().putByteVolatile(target, offset, value);
         }
 
         public short getShortVolatile(final Object target, final long offset) {
-            return this.unsafe.getShortVolatile(target, offset);
+            return this.getUnsafe().getShortVolatile(target, offset);
         }
 
         public void putShortVolatile(final Object target, final long offset, final short value) {
-            this.unsafe.putShortVolatile(target, offset, value);
+            this.getUnsafe().putShortVolatile(target, offset, value);
         }
 
         public int getIntVolatile(final Object target, final long offset) {
-            return this.unsafe.getIntVolatile(target, offset);
+            return this.getUnsafe().getIntVolatile(target, offset);
         }
 
         public void putIntVolatile(final Object target, final long offset, final int value) {
-            this.unsafe.putIntVolatile(target, offset, value);
+            this.getUnsafe().putIntVolatile(target, offset, value);
         }
 
         public long getLongVolatile(final Object target, final long offset) {
-            return this.unsafe.getLongVolatile(target, offset);
+            return this.getUnsafe().getLongVolatile(target, offset);
         }
 
         public void putLongVolatile(final Object target, final long offset, final long value) {
-            this.unsafe.putLongVolatile(target, offset, value);
+            this.getUnsafe().putLongVolatile(target, offset, value);
         }
 
         public boolean getBooleanVolatile(final Object target, final long offset) {
-            return this.unsafe.getBooleanVolatile(target, offset);
+            return this.getUnsafe().getBooleanVolatile(target, offset);
         }
 
         public void putBooleanVolatile(final Object target, final long offset, final boolean value) {
-            this.unsafe.putBooleanVolatile(target, offset, value);
+            this.getUnsafe().putBooleanVolatile(target, offset, value);
         }
 
         public float getFloatVolatile(final Object target, final long offset) {
-            return this.unsafe.getFloatVolatile(target, offset);
+            return this.getUnsafe().getFloatVolatile(target, offset);
         }
 
         public void putFloatVolatile(final Object target, final long offset, final float value) {
-            this.unsafe.putFloatVolatile(target, offset, value);
+            this.getUnsafe().putFloatVolatile(target, offset, value);
         }
 
         public double getDoubleVolatile(final Object target, final long offset) {
-            return this.unsafe.getDoubleVolatile(target, offset);
+            return this.getUnsafe().getDoubleVolatile(target, offset);
         }
 
         public void putDoubleVolatile(final Object target, final long offset, final double value) {
-            this.unsafe.putDoubleVolatile(target, offset, value);
+            this.getUnsafe().putDoubleVolatile(target, offset, value);
         }
 
         public Object getObjectVolatile(final Object target, final long offset) {
-            return this.unsafe.getObjectVolatile(target, offset);
+            return this.getUnsafe().getObjectVolatile(target, offset);
         }
 
         public void putObjectVolatile(final Object target, final long offset, final Object value) {
-            this.unsafe.putObjectVolatile(target, offset, value);
+            this.getUnsafe().putObjectVolatile(target, offset, value);
         }
 
-        /**
-         * Reports the offset of the first element in the storage allocation of a
-         * given array class.
-         */
         public int arrayBaseOffset(final Class<?> clazz) {
-            return this.unsafe != null ? this.unsafe.arrayBaseOffset(clazz) : -1;
+            return this.getUnsafe() != null ? this.getUnsafe().arrayBaseOffset(clazz) : -1;
         }
 
-        /**
-         * Reports the scale factor for addressing elements in the storage
-         * allocation of a given array class.
-         */
         public int arrayIndexScale(final Class<?> clazz) {
-            return this.unsafe != null ? this.unsafe.arrayIndexScale(clazz) : -1;
+            return this.getUnsafe() != null ? this.getUnsafe().arrayIndexScale(clazz) : -1;
         }
 
-        /**
-         * Returns the offset of the provided field, or {@code -1} if {@code sun.misc.Unsafe} is not
-         * available.
-         */
         public long objectFieldOffset(final Field field) {
-            return field == null || this.unsafe == null ? -1 : this.unsafe.objectFieldOffset(field);
+            return field == null || this.unsafe == null ? -1 : this.getUnsafe().objectFieldOffset(field);
         }
 
         public Object allocateInstance(final Class<?> clazz) throws InstantiationException {
-            return this.unsafe.allocateInstance(clazz);
+            return this.getUnsafe().allocateInstance(clazz);
         }
 
         public void throwException(final Throwable t) {
-            this.unsafe.throwException(t);
+            this.getUnsafe().throwException(t);
         }
     }
 

@@ -54,6 +54,7 @@ public class IndexStore extends AbstractStore {
      * @param logPosition start position in segment file about LogEntry
      * @return two-tuples: (start write position of index file, expect flush position)
      * @throws IllegalArgumentException we have to submit in the order of log index, otherwise throw
+     * @throws IOException io error
      */
     public Tuple2<Integer, Long> appendLogIndex(final LogId logId, final int logPosition) throws IOException {
         //TODO How is the order of logIndex guaranteed for concurrency, or do we not need to consider the order?
@@ -74,9 +75,9 @@ public class IndexStore extends AbstractStore {
 
     /**
      *
-     * @param indexEntry
+     * @param indexEntry indexEntry
      * @return two-tuples: (start write position of segment file, expect flush position)
-     * @throws IOException
+     * @throws IOException io error
      */
     public Tuple2<Integer, Long> appendLogIndex(final IndexEntry indexEntry) throws IOException {
       return appendLogIndex(indexEntry.getLogId(), indexEntry.getPosition());

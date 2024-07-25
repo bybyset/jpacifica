@@ -34,14 +34,14 @@ public interface PendingQueue<E> extends Iterable<E> {
     /**
      * get current pending index (log index)
      *
-     * @return
+     * @return pending index
      */
     long getPendingIndex();
 
     /**
      * rest pending index (log index) and return a collection of abandoned elements
      *
-     * @param pendIndex
+     * @param pendIndex pendIndex
      * @return collection of abandoned elements
      */
     Collection<E> reset(final long pendIndex);
@@ -58,7 +58,7 @@ public interface PendingQueue<E> extends Iterable<E> {
      * add element to queue
      *
      * @param e element it is nullable
-     * @return
+     * @return true if success
      */
     boolean add(@Nullable E e);
 
@@ -74,8 +74,8 @@ public interface PendingQueue<E> extends Iterable<E> {
     /**
      * Pop the head of the queue element if and only if index is equal to pending index
      *
-     * @param index
-     * @return
+     * @param index log index
+     * @return Element
      */
     E poll(final long index);
 

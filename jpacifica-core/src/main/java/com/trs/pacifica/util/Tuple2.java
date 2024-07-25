@@ -19,8 +19,8 @@ package com.trs.pacifica.util;
 
 /**
  * two-tuples
- * @param <A>
- * @param <B>
+ * @param <A> first clazz
+ * @param <B> secondary clazz
  */
 public class Tuple2<A, B> {
     private final A first;

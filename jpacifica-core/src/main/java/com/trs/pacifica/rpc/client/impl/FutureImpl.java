@@ -219,6 +219,7 @@ public class FutureImpl<R> implements Future<R> {
     /**
      * Notify about the failure, occured during asynchronous operation
      * execution.
+     * @param failure error
      */
     public void failure(final Throwable failure) {
         this.lock.lock();

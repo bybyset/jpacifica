@@ -24,6 +24,8 @@ public interface ExecutorChooserFactory {
 
     /**
      * Returns a new {@link ExecutorChooser}.
+     * @param executors executors
+     * @return ExecutorChooser
      */
     ExecutorChooser newChooser(SingleThreadExecutor[] executors);
 }

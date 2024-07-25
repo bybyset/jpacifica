@@ -29,7 +29,7 @@ public interface FileService {
     /**
      * get the unique FileReader by readerId
      *
-     * @param readerId
+     * @param readerId readerId
      * @return FileReader
      */
     FileReader getFileReader(final long readerId);
@@ -37,7 +37,7 @@ public interface FileService {
     /**
      * add the FileReader and return unique readerId
      *
-     * @param fileReader
+     * @param fileReader fileReader
      * @return unique readerId
      */
     long addFileReader(final FileReader fileReader);
@@ -45,7 +45,7 @@ public interface FileService {
     /**
      * remove the unique FileReader by readerId
      *
-     * @param readerId
+     * @param readerId readerId
      * @return true if success
      */
     boolean removeFileReader(final long readerId);
@@ -53,9 +53,9 @@ public interface FileService {
     /**
      * handle GetFileRequest from other replica
      *
-     * @param request
-     * @param callback
-     * @return
+     * @param request request
+     * @param callback callback
+     * @return callback nullable
      */
     RpcRequest.GetFileResponse handleGetFileRequest(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback);
 

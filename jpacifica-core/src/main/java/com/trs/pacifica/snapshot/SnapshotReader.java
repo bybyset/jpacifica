@@ -26,7 +26,8 @@ public interface SnapshotReader extends Snapshot, Closeable {
 
     /**
      * generate file reader id for download snapshot
-     * @return
+     * @param fileService fileService
+     * @return file reader id
      */
     long generateReadIdForDownload(FileService fileService);
 

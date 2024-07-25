@@ -25,21 +25,21 @@ import com.trs.pacifica.snapshot.SnapshotWriter;
 public interface StateMachine {
 
     /**
-     * @param iterator
+     * @param iterator one batch operation
      */
     void onApply(OperationIterator iterator);
 
     /**
      * User defined snapshot load function get and load snapshot.
-     * @param snapshotReader
-     * @throws PacificaException
+     * @param snapshotReader snapshotReader
+     * @throws PacificaException if error
      */
     void onSnapshotLoad(final SnapshotReader snapshotReader) throws PacificaException;
 
     /**
      *
-     * @param snapshotWriter
-     * @throws PacificaException
+     * @param snapshotWriter snapshotWriter
+     * @throws PacificaException if error
      */
     void onSnapshotSave(final SnapshotWriter snapshotWriter) throws PacificaException;
 
@@ -54,7 +54,7 @@ public interface StateMachine {
      * after this point, no any further modification is allowed to
      * apply to this replica until the error is fixed and this replica restarts.
      *
-     * @param fault
+     * @param fault fault
      */
     void onError(PacificaException fault);
 

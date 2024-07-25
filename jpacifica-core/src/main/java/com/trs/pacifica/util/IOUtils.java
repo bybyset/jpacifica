@@ -40,6 +40,7 @@ public class IOUtils {
      * while closing, or completes normally if there were no exceptions.
      *
      * @param objects objects to call <code>close()</code> on
+     * @throws IOException io error
      */
     public static void close(Closeable... objects) throws IOException {
         close(Arrays.asList(objects));
@@ -48,6 +49,8 @@ public class IOUtils {
     /**
      * Closes all given <code>Closeable</code>s.
      *
+     * @param objects objects to call <code>close()</code> on
+     * @throws IOException io error
      * @see #close(Closeable...)
      */
     public static void close(Iterable<? extends Closeable> objects) throws IOException {
@@ -83,6 +86,7 @@ public class IOUtils {
      * closeable are closed.
      *
      * @see #closeWhileHandlingException(Closeable...)
+     * @param objects Closeable
      */
     public static void closeWhileHandlingException(Iterable<? extends Closeable> objects) {
         VirtualMachineError firstError = null;
@@ -112,6 +116,11 @@ public class IOUtils {
     /**
      * Returns the second throwable if the first is null otherwise adds the second as suppressed to
      * the first and returns it.
+     *
+     * @param first  first Throwable
+     * @param second second Throwable
+     * @param <T> Throwable
+     * @return Suppress
      */
     public static <T extends Throwable> T useOrSuppress(T first, T second) {
         if (first == null) {
@@ -170,6 +179,8 @@ public class IOUtils {
      * @param fileToSync the file to fsync
      * @param isDir      if true, the given file is a directory (we open for read and ignore IOExceptions,
      *                   because not all file systems and operating systems allow to fsync on a directory)
+     *
+     * @throws IOException io error
      */
     public static void fsync(Path fileToSync, boolean isDir) throws IOException {
         // If the file is a directory we have to open read-only, for regular files we must open r/w for

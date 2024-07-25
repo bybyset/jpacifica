@@ -21,7 +21,7 @@ public interface TimerFactory {
 
     /**
      *
-     * @return
+     * @return Timer
      */
     Timer newTimer();
 

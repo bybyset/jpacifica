@@ -42,8 +42,7 @@ import org.slf4j.LoggerFactory;
  * and Hierarchical Timing Wheels: data structures to efficiently implement a
  * timer facility'</a>.  More comprehensive slides are located
  * <a href="http://www.cse.wustl.edu/~cdgill/courses/cs6874/TimingWheels.ppt">here</a>.
- * <p>
- * <p>
+ * </p>
  * Forked from <a href="https://github.com/netty/netty">Netty</a>.
  */
 public class HashedWheelTimer implements Timer {
@@ -357,6 +356,7 @@ public class HashedWheelTimer implements Timer {
 
     /**
      * Returns the number of pending timeouts of this {@link Timer}.
+     * @return timeoout
      */
     public long pendingTimeouts() {
         return pendingTimeouts.get();

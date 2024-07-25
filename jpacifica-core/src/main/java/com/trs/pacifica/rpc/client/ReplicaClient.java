@@ -30,7 +30,7 @@ public interface ReplicaClient {
     /**
      * connect to targetReplicaId
      *
-     * @param targetReplicaId
+     * @param targetReplicaId targetReplicaId
      * @return true if success
      */
     default boolean connect(ReplicaId targetReplicaId) {
@@ -42,22 +42,21 @@ public interface ReplicaClient {
      * Check the connection for the given targetReplicaId,
      * and if there is no connection, create a new address.
      *
-     * @param targetReplicaId
-     * @param createIfAbsent
+     * @param targetReplicaId targetReplicaId
+     * @param createIfAbsent  createIfAbsent
      * @return true if keep connected
      */
     boolean checkConnection(ReplicaId targetReplicaId, boolean createIfAbsent);
 
 
     /**
-     *
-     * @param endpoint
-     * @param request
-     * @param callback
-     * @param timeoutMs
-     * @param callbackExecutor
-     * @return
-     * @param <T>
+     * @param endpoint         endpoint
+     * @param request          request
+     * @param callback         callback
+     * @param timeoutMs        timeout
+     * @param callbackExecutor callbackExecutor
+     * @param <T>              response
+     * @return Future
      */
     <T extends Message> Future<T> sendRequest(final Endpoint endpoint, final Message request, final RpcRequestFinished<T> callback, final int timeoutMs, final Executor callbackExecutor);
 

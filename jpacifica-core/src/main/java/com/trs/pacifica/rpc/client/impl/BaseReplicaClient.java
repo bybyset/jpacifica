@@ -85,9 +85,9 @@ public abstract class BaseReplicaClient implements ReplicaClient {
     /**
      * get endpoint of target replica, or throw exception if not found
      *
-     * @param targetReplicaId
-     * @return
-     * @throws NotFoundEndpointException
+     * @param targetReplicaId targetReplicaId
+     * @return Endpoint
+     * @throws NotFoundEndpointException if not found
      */
     protected Endpoint getEndpointOrThrow(final ReplicaId targetReplicaId) throws NotFoundEndpointException {
         Objects.requireNonNull(targetReplicaId, "targetReplicaId");
@@ -119,7 +119,7 @@ public abstract class BaseReplicaClient implements ReplicaClient {
                                 final Message response = (Message) result;
                                 try {
                                     checkResponse(response);
-                                    callback.setRpcResponse((T)response);
+                                    callback.setRpcResponse((T) response);
                                     ThreadUtil.runCallback(callback, Finished.success());
                                 } catch (PacificaException e) {
                                     ThreadUtil.runCallback(callback, Finished.failure(e));
@@ -162,7 +162,7 @@ public abstract class BaseReplicaClient implements ReplicaClient {
     /**
      * get endpoint of target replica
      *
-     * @param targetReplicaId
+     * @param targetReplicaId targetReplicaId
      * @return null if not found
      */
     protected abstract Endpoint getEndpoint(final ReplicaId targetReplicaId);

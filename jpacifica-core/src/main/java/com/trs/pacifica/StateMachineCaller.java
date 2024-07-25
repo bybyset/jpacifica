@@ -34,8 +34,8 @@ public interface StateMachineCaller {
      * Move the commit point forward,
      * and the log of user actions committed is applied to the state machine in order.
      *
-     * @param logIndex
-     * @return
+     * @param logIndex logIndex
+     * @return true if success submit commit task
      */
     boolean commitAt(final long logIndex);
 
@@ -49,7 +49,7 @@ public interface StateMachineCaller {
 
     /**
      * Get the index of LogEntry that was committed to replica group
-     * It is possible: LastCommittedLogIndex >= LastAppliedLogIndex
+     * It is possible: LastCommittedLogIndex {@code >=} LastAppliedLogIndex
      *
      * @return 0 if nothing to commit
      * @see StateMachineCaller#commitAt(long)
@@ -61,8 +61,8 @@ public interface StateMachineCaller {
      * Triggered when first started or after the Candidate
      * has downloaded a snapshot from the Primary.
      *
-     * @param snapshotLoadCallback
-     * @return
+     * @param snapshotLoadCallback snapshotLoadCallback
+     * @return true if success to submit  SnapshotLoad task
      */
     boolean onSnapshotLoad(final SnapshotLoadCallback snapshotLoadCallback);
 
@@ -71,8 +71,8 @@ public interface StateMachineCaller {
      * This event is fired by a user call to {@link Replica#snapshot(Callback)}
      * or by a timed schedule.
      *
-     * @param snapshotSaveCallback
-     * @return
+     * @param snapshotSaveCallback snapshotSaveCallback
+     * @return true if success to submit  SnapshotSave task
      */
     boolean onSnapshotSave(final SnapshotSaveCallback snapshotSaveCallback);
 
@@ -103,8 +103,9 @@ public interface StateMachineCaller {
     static interface SnapshotSaveCallback extends Callback {
 
         /**
-         * @param saveLogId
-         * @return
+         * @param saveLogId saveLogId
+         * @return SnapshotWriter
+         * @throws IOException io error
          */
         SnapshotWriter start(final LogId saveLogId) throws IOException;
 

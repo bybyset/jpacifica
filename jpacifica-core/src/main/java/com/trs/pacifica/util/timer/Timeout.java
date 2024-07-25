@@ -25,23 +25,27 @@ public interface Timeout {
 
     /**
      * Returns the {@link Timer} that created this handle.
+     * @return timer
      */
     Timer timer();
 
     /**
      * Returns the {@link TimerTask} which is associated with this handle.
+     * @return TimerTask
      */
     TimerTask task();
 
     /**
      * Returns {@code true} if and only if the {@link TimerTask} associated
      * with this handle has been expired.
+     * @return true if expired
      */
     boolean isExpired();
 
     /**
      * Returns {@code true} if and only if the {@link TimerTask} associated
      * with this handle has been cancelled.
+     * @return true if cancelled
      */
     boolean isCancelled();
 

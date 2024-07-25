@@ -55,7 +55,7 @@ public interface SnapshotManager {
     /**
      * get the LogId at last execute snapshot
      *
-     * @return
+     * @return LogId
      */
     LogId getLastSnapshotLodId();
 

@@ -17,15 +17,14 @@
 
 package com.trs.pacifica.sender;
 
-import com.trs.pacifica.Replica;
 import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.error.PacificaException;
 
 /**
  * implement:
- * <li>Maintain the heartbeat of the Primary to other replica</li>
- * <li>Primary copies op log to other replica </li>
- * <li>Primary send install snapshot request to other replica </li>
+ * Maintain the heartbeat of the Primary to other replica.
+ * Primary copies op log to other replica.
+ * Primary send install snapshot request to other replica.
  */
 public interface Sender {
 
@@ -33,7 +32,7 @@ public interface Sender {
     /**
      * Check if the peer-to-peer heartbeat is alive
      *
-     * @param leasePeriodTimeOutMs
+     * @param leasePeriodTimeOutMs lease period  ms
      * @return true if alive
      */
     boolean isAlive(final int leasePeriodTimeOutMs);
@@ -43,7 +42,7 @@ public interface Sender {
      * get SenderType
      * to see {@link SenderType}
      *
-     * @return
+     * @return SenderType
      */
     SenderType getType();
 
@@ -52,8 +51,8 @@ public interface Sender {
      * When the primary replica has new OP log stored persistently,
      * this function will be called to continue sending new OP log.
      *
-     * @param endLogIndex
-     * @return
+     * @param endLogIndex op-logs are sent up to the end specified log index
+     * @return true if continue send
      */
     boolean continueSendLogEntries(final long endLogIndex);
 
@@ -64,19 +63,19 @@ public interface Sender {
      * until time out.
      *
      * @param onCaughtUp Callback when the OP log of the Candidate catches up with the Primary.
-     * @param timeoutMs
-     * @return
+     * @param timeoutMs  timeout
+     * @return true if success caught up
      */
     boolean waitCaughtUp(OnCaughtUp onCaughtUp, final long timeoutMs);
 
 
     /**
-     * @throws PacificaException
+     * @throws PacificaException if error
      */
     void startup() throws PacificaException;
 
     /**
-     * @throws PacificaException
+     * @throws PacificaException if error
      */
     void shutdown() throws PacificaException;
 

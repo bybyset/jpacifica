@@ -61,6 +61,12 @@ public class UnicodeUtil {
     /**
      * Encode characters from a char[] source, starting at offset for length chars. It is the
      * responsibility of the caller to make sure that the destination array is large enough.
+     *
+     * @param source source
+     * @param offset offset
+     * @param length length
+     * @param out    out
+     * @return len
      */
     public static int UTF16toUTF8(
             final char[] source, final int offset, final int length, byte[] out) {
@@ -111,6 +117,12 @@ public class UnicodeUtil {
     /**
      * Encode characters from this String, starting at offset for length characters. It is the
      * responsibility of the caller to make sure that the destination array is large enough.
+     *
+     * @param s      source
+     * @param offset offset
+     * @param length length
+     * @param out    out
+     * @return int
      */
     public static int UTF16toUTF8(
             final CharSequence s, final int offset, final int length, byte[] out) {
@@ -123,6 +135,13 @@ public class UnicodeUtil {
      * make sure that the destination array is large enough.
      *
      * <p>note this method returns the final output offset (outOffset + number of bytes written)
+     *
+     * @param s         source
+     * @param offset    offset
+     * @param length    length
+     * @param out       out
+     * @param outOffset outOffset
+     * @return int
      */
     public static int UTF16toUTF8(
             final CharSequence s, final int offset, final int length, byte[] out, int outOffset) {
@@ -170,6 +189,9 @@ public class UnicodeUtil {
     /**
      * Calculates the number of UTF8 bytes necessary to write a UTF16 string.
      *
+     * @param s      source
+     * @param offset offset
+     * @param len    len
      * @return the number of bytes written
      */
     public static int calcUTF16toUTF8Length(final CharSequence s, final int offset, final int len) {
@@ -353,6 +375,8 @@ public class UnicodeUtil {
      * UTF8 validation, it will check only the first byte of each codepoint (for multi-byte sequences
      * any bytes after the head are skipped).
      *
+     * @param utf8 utf8 bytes
+     * @return int
      * @throws IllegalArgumentException If invalid codepoint header byte occurs or the content is
      *                                  prematurely truncated.
      */
@@ -400,6 +424,9 @@ public class UnicodeUtil {
      * bytes after the head are skipped). It is the responsibility of the caller to make sure that the
      * destination array is large enough.
      *
+     * @param utf8 utf8 bytes
+     * @param ints ints
+     * @return int
      * @throws IllegalArgumentException If invalid codepoint header byte occurs or the content is
      *                                  prematurely truncated.
      */
@@ -425,6 +452,11 @@ public class UnicodeUtil {
      * class, this assumes valid UTF8 input and <strong>does not perform</strong> full UTF8
      * validation. Passing invalid UTF8 or a position that is not a valid header byte position may
      * result in undefined behavior. This makes no attempt to synchronize or validate.
+     *
+     * @param utf8  utf8
+     * @param pos   pos
+     * @param reuse reuse
+     * @return UTF8CodePoint
      */
     public static UTF8CodePoint codePointAt(byte[] utf8, int pos, UTF8CodePoint reuse) {
         if (reuse == null) {
@@ -584,6 +616,12 @@ public class UnicodeUtil {
      * <p>NOTE: Full characters are read, even if this reads past the length passed (and can result in
      * an ArrayOutOfBoundsException if invalid UTF-8 is passed). Explicit checks for valid UTF-8 are
      * not performed.
+     *
+     * @param utf8   utf8
+     * @param offset offset
+     * @param length length
+     * @param out    out
+     * @return int
      */
     // TODO: broken if chars.offset != 0
     public static int UTF8toUTF16(byte[] utf8, int offset, int length, char[] out) {
@@ -622,6 +660,9 @@ public class UnicodeUtil {
 
     /**
      * Returns the maximum number of utf8 bytes required to encode a utf16 (e.g., java char[], String)
+     *
+     * @param utf16Length utf16Length
+     * @return int
      */
     public static int maxUTF8Length(int utf16Length) {
         return Math.multiplyExact(utf16Length, MAX_UTF8_BYTES_PER_CHAR);
@@ -630,6 +671,9 @@ public class UnicodeUtil {
     /**
      * Utility method for {@link #UTF8toUTF16(byte[], int, int, char[])}
      *
+     * @param bytesRef bytesRef
+     * @param chars    chars
+     * @return int
      * @see #UTF8toUTF16(byte[], int, int, char[])
      */
     public static int UTF8toUTF16(BytesRef bytesRef, char[] chars) {

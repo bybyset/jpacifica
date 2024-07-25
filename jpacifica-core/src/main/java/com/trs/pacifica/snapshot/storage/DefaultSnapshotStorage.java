@@ -57,7 +57,7 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     }
 
     /**
-     * @throws IOException
+     * @throws IOException if error
      */
     public void load() throws IOException {
         File storageDir = new File(storagePath);
@@ -109,7 +109,7 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     /**
      * @param pathname the dir of will delete
      * @return true if success to delete dir
-     * @throws IOException
+     * @throws IOException io error
      */
     boolean destroySnapshot(final String pathname) throws IOException {
         if (decRef(pathname)) {
@@ -131,7 +131,7 @@ public class DefaultSnapshotStorage implements SnapshotStorage {
     }
 
     /**
-     * @param snapshotName
+     * @param snapshotName snapshotName
      * @return true if the file should be deleted
      */
     boolean decRef(final String snapshotName) {

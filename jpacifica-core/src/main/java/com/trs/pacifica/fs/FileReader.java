@@ -27,11 +27,13 @@ public interface FileReader {
 
     /**
      * Read file into buffer starts from offset at most length.
-     * @param buffer
-     * @param filename
-     * @param offset
-     * @param length max read length
+     *
+     * @param buffer   buffer
+     * @param filename filename
+     * @param offset   offset
+     * @param length   max read length
      * @return -1 If the end of the file is reached, otherwise, the length read is returned.
+     * @throws IOException io error
      */
     public int read(ByteBuffer buffer, String filename, int offset, int length) throws IOException;
 

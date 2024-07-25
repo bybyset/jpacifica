@@ -19,13 +19,14 @@ package com.trs.pacifica.util;
 /**
  * Copyable mark interface.
  *
- * @param <T>
+ * @param <T> clazz
  */
 @FunctionalInterface
 public interface Copyable<T> {
 
     /**
      * Copy current object(deep-clone).
+     * @return T
      */
     T copy();
 }

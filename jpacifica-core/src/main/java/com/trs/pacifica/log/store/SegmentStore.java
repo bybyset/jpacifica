@@ -53,10 +53,10 @@ public class SegmentStore extends AbstractStore {
     /**
      * append byte array of the log data to segment file
      *
-     * @param logIndex
-     * @param logEntryData
+     * @param logIndex     logIndex
+     * @param logEntryData logEntryData
      * @return two-tuples: (start write position of segment file, expect flush position)
-     * @throws IOException
+     * @throws IOException io error
      */
     public Tuple2<Integer, Long> appendLogData(final long logIndex, final DataBuffer logEntryData) throws IOException {
         assert logEntryData != null;
@@ -108,6 +108,7 @@ public class SegmentStore extends AbstractStore {
      * @param logIndex    index of log entry
      * @param logPosition position in segment file of log entry
      * @return null if not found
+     * @throws IOException io error
      */
     public DataBuffer lookupLogEntry(final long logIndex, int logPosition) throws IOException {
         //lookup segment file
@@ -143,10 +144,11 @@ public class SegmentStore extends AbstractStore {
     }
 
     /**
-     * @param startLogIndex
-     * @param startLogPosition
-     * @param endLogIndex
-     * @return
+     * @param logEntryDecoder  logEntryDecoder
+     * @param startLogIndex    startLogIndex
+     * @param startLogPosition startLogPosition
+     * @param endLogIndex      endLogIndex
+     * @return LogEntryIterator
      */
     public LogEntryIterator sliceLogEntry(final LogEntryDecoder logEntryDecoder, final long startLogIndex, final int startLogPosition, final long endLogIndex) {
         SegmentFile segmentFile = (SegmentFile) this.lookupFile(startLogIndex);
@@ -172,7 +174,7 @@ public class SegmentStore extends AbstractStore {
      * When appending the log, at least the number of bytes to write,
      * when the end of the file is not enough to write, we will skip writing to the file and fill the end.
      *
-     * @return
+     * @return byte size
      */
     static int getMinWriteByteSize() {
         return DEFAULT_MIN_WRITE_BYTES;
@@ -182,6 +184,7 @@ public class SegmentStore extends AbstractStore {
 
         /**
          * get start position of the current log entry at segment file
+         *
          * @return -1 if log entry is null
          */
         int getLogEntryStartPosition();

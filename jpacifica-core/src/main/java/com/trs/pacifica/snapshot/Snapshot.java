@@ -25,19 +25,19 @@ public interface Snapshot {
 
     /**
      * get LogId on snapshot
-     * @return
+     * @return LogId
      */
     public LogId getSnapshotLogId();
 
     /**
      * get directory of the snapshot
-     * @return
+     * @return directory
      */
     public String getDirectory();
 
     /**
      * list files of the snapshot
-     * @return
+     * @return file name set
      */
     public Collection<String> listFiles();
 

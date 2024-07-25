@@ -14,11 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 apply plugin: 'java-library'
+apply plugin: 'org.jreleaser'
 
 description = 'jpacifica config library'
 
 dependencies {
     implementation "com.google.guava:guava:$guava_version"
+}
+
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }

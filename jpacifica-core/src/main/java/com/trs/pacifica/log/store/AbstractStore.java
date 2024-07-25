@@ -88,7 +88,7 @@ public abstract class AbstractStore implements Closeable {
     /**
      * load existed files
      *
-     * @return
+     * @throws IOException io error
      */
     protected void loadExistedFiles() throws IOException {
         final String[] filenames = this.directory.listAll();
@@ -185,7 +185,7 @@ public abstract class AbstractStore implements Closeable {
     /**
      * get file suffix when create next file
      *
-     * @return
+     * @return suffix
      */
     protected abstract String getFileSuffix();
 
@@ -205,7 +205,7 @@ public abstract class AbstractStore implements Closeable {
      * create next file
      *
      * @return AbstractFile
-     * @throws IOException
+     * @throws IOException io error
      */
     protected AbstractFile allocateNextFile() throws IOException {
         final String nextFilename = getNextFilename();
@@ -215,7 +215,7 @@ public abstract class AbstractStore implements Closeable {
     /**
      * get next file of the specified currentFile.
      *
-     * @param currentFile
+     * @param currentFile currentFile
      * @return null if there is no next file
      */
     public AbstractFile getNextFile(final AbstractFile currentFile) {
@@ -250,8 +250,8 @@ public abstract class AbstractStore implements Closeable {
      *
      * @param minFreeByteSize   minimum number of free bytes of a file
      * @param createIfNecessary create
-     * @return
-     * @throws IOException
+     * @return AbstractFile
+     * @throws IOException io error
      */
     public AbstractFile getLastFile(final int minFreeByteSize, final boolean createIfNecessary) throws IOException {
         ensureOpen();
@@ -363,7 +363,7 @@ public abstract class AbstractStore implements Closeable {
     }
 
     /**
-     * @return
+     * @return position first log
      */
     public int getFirstLogPosition() {
         ensureOpen();
@@ -424,9 +424,9 @@ public abstract class AbstractStore implements Closeable {
      * the last log index of file is less than firstIndexKept
      * we will return first log index of the store.
      *
-     * @param firstIndexKept
+     * @param firstIndexKept firstIndexKept
      * @return first log index of the store.
-     * @throws IOException
+     * @throws IOException io error
      */
     public long truncatePrefix(final long firstIndexKept) throws IOException {
         ensureOpen();
@@ -456,7 +456,7 @@ public abstract class AbstractStore implements Closeable {
      *
      * @param lastIndexKept The last log index to keep
      * @param resetPosition resets the position of the file to align. eg: end position of the last log entry + 1
-     * @return
+     * @return true if success
      */
     public boolean truncateSuffix(long lastIndexKept, final int resetPosition) {
         ensureOpen();
@@ -577,6 +577,8 @@ public abstract class AbstractStore implements Closeable {
 
     /**
      * Delete all files and go back to the initial state
+     *
+     * @throws IOException io error
      */
     public void reset() throws IOException {
         this.writeLock.lock();

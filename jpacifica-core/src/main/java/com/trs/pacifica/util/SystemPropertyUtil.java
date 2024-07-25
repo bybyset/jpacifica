@@ -35,6 +35,7 @@ public class SystemPropertyUtil {
      * specified {@code key}, while falling back to {@code null}
      * if the property access fails.
      *
+     * @param key key
      * @return the property value or {@code null}
      */
     public static String get(String key) {
@@ -46,6 +47,8 @@ public class SystemPropertyUtil {
      * specified {@code key}, while falling back to the specified
      * default value if the property access fails.
      *
+     * @param key key
+     * @param def default value
      * @return the property value.
      * {@code def} if there's no such property or if an access to
      * the specified property is not allowed.
@@ -83,6 +86,8 @@ public class SystemPropertyUtil {
      * specified {@code key}, while falling back to the specified
      * default value if the property access fails.
      *
+     * @param key key
+     * @param def default value
      * @return the property value.
      * {@code def} if there's no such property or if an access to
      * the specified property is not allowed.
@@ -116,6 +121,8 @@ public class SystemPropertyUtil {
      * specified {@code key}, while falling back to the specified
      * default value if the property access fails.
      *
+     * @param key key
+     * @param def default value
      * @return the property value.
      * {@code def} if there's no such property or if an access
      * to the specified property is not allowed.
@@ -143,6 +150,8 @@ public class SystemPropertyUtil {
      * specified {@code key}, while falling back to the specified
      * default value if the property access fails.
      *
+     * @param key key
+     * @param def default value
      * @return the property value.
      * {@code def} if there's no such property or if an access to
      * the specified property is not allowed.
@@ -168,6 +177,10 @@ public class SystemPropertyUtil {
     /**
      * Sets the value of the Java system property with the
      * specified {@code key}
+     *
+     * @param key   key
+     * @param value value
+     * @return value
      */
     public static Object setProperty(String key, String value) {
         return System.getProperties().setProperty(key, value);

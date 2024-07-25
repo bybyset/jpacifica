@@ -1123,7 +1123,8 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     /**
      * on receive primary term
      *
-     * @param higherTerm
+     * @param higherTerm higher term
+     * @return true if align
      */
     public boolean onReceiveHigherTerm(final long higherTerm) {
         long curVersion = Long.MIN_VALUE;
@@ -1149,7 +1150,7 @@ public class ReplicaImpl implements Replica, ReplicaService, LifeCycle<ReplicaOp
     /**
      * on PacificaException occurs
      *
-     * @param pacificaException
+     * @param pacificaException pacificaException
      */
     public void onError(PacificaException pacificaException) {
         this.writeLock.lock();

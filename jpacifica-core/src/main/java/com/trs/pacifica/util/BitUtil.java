@@ -25,6 +25,9 @@ public class BitUtil {
 
     /**
      * Same as {@link #zigZagEncode(long)} but on integers.
+     *
+     * @param i i
+     * @return int
      */
     public static int zigZagEncode(int i) {
         return (i >> 31) ^ (i << 1);
@@ -35,6 +38,9 @@ public class BitUtil {
      * the provided long. Assuming the input is a signed long whose absolute value can be stored on
      * <code>n</code> bits, the returned value will be an unsigned long that can be stored on <code>
      * n+1</code> bits.
+     *
+     * @param l long
+     * @return long
      */
     public static long zigZagEncode(long l) {
         return (l >> 63) ^ (l << 1);
@@ -42,6 +48,9 @@ public class BitUtil {
 
     /**
      * Decode an int previously encoded with {@link #zigZagEncode(int)}.
+     *
+     * @param i int
+     * @return int
      */
     public static int zigZagDecode(int i) {
         return ((i >>> 1) ^ -(i & 1));
@@ -49,18 +58,25 @@ public class BitUtil {
 
     /**
      * Decode a long previously encoded with {@link #zigZagEncode(long)}.
+     *
+     * @param l long
+     * @return long
      */
     public static long zigZagDecode(long l) {
         return ((l >>> 1) ^ -(l & 1));
     }
 
 
-
-    /** Maximum number of UTF8 bytes per UTF16 character. */
+    /**
+     * Maximum number of UTF8 bytes per UTF16 character.
+     */
     public static final int MAX_UTF8_BYTES_PER_CHAR = 3;
 
     /**
      * Returns the maximum number of utf8 bytes required to encode a utf16 (e.g., java char[], String)
+     *
+     * @param utf16Length utf16Length
+     * @return int
      */
     public static int maxUTF8Length(int utf16Length) {
         return Math.multiplyExact(utf16Length, MAX_UTF8_BYTES_PER_CHAR);

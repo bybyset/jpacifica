@@ -53,10 +53,10 @@ public abstract class BaseStateMachine extends StateMachineAdapter {
     /**
      * Apply the op log to the state machine
      *
-     * @param logId
+     * @param logId logId
      * @param callback specified by user, to see {@link Operation#getOnFinish()}, Non-Primary it is null
      * @param logData  specified by user, to see {@link Operation#getLogData()},
-     * @throws Exception
+     * @throws Exception if error
      */
     public abstract void doApply(final LogId logId, final ByteBuffer logData, @Nullable final Callback callback) throws Exception;
 

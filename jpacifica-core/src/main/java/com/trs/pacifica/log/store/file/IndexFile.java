@@ -51,10 +51,10 @@ public class IndexFile extends AbstractFile {
 
     /**
      * append index
-     * @param logId
-     * @param logPosition
+     * @param logId logId
+     * @param logPosition position of the file
      * @return the starting position before writing to the file
-     * @throws IOException
+     * @throws IOException io error
      */
     public int appendIndexData(final LogId logId, final int logPosition) throws IOException {
         final long logIndex = logId.getIndex();
@@ -71,8 +71,9 @@ public class IndexFile extends AbstractFile {
     /**
      * lookup position of the log in segment file
      *
-     * @param logIndex
-     * @return
+     * @param logIndex log index
+     * @return null if not found
+     * @throws IOException io error
      */
     public IndexEntry lookupIndexEntry(final long logIndex) throws IOException {
         //calculating position
@@ -115,6 +116,8 @@ public class IndexFile extends AbstractFile {
 
     /**
      * Return the relative offset
+     * @param logIndex log index
+     * @return relative log index vs first log index
      */
     private int toRelativeOffset(final long logIndex) {
         if (this.header.isBlank()) {

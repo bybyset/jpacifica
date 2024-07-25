@@ -29,32 +29,36 @@ public abstract class DataInput {
     public abstract int getByteSize();
 
     /**
-     *
-     * @return
+     * @return true if eof
      */
     public abstract boolean eof();
 
     /**
      * Reads and returns a single byte.
      *
+     * @return byte
      * @see DataOutput#writeByte(byte)
+     * @throws IOException io error
      */
     public abstract byte readByte() throws IOException;
 
     /**
      * Reads a specified number of bytes into an array at the specified offset.
      *
-     * @param b the array to read bytes into
+     * @param b      the array to read bytes into
      * @param offset the offset in the array to start storing bytes
-     * @param len the number of bytes to read
-     * @see DataOutput#writeBytes(byte[],int)
+     * @param len    the number of bytes to read
+     * @throws IOException io error
+     * @see DataOutput#writeBytes(byte[], int)
      */
     public abstract void readBytes(byte[] b, int offset, int len) throws IOException;
 
     /**
      * Reads two bytes and returns a short (LE byte order).
      *
+     * @throws IOException io error
      * @see DataOutput#writeShort(short)
+     * @return short
      */
     public short readShort() throws IOException {
         final byte b1 = readByte();
@@ -65,7 +69,9 @@ public abstract class DataInput {
     /**
      * Reads four bytes and returns an int (LE byte order).
      *
+     * @throws IOException io error
      * @see DataOutput#writeInt(int)
+     * @return int
      */
     public int readInt() throws IOException {
         final byte b1 = readByte();
@@ -81,7 +87,9 @@ public abstract class DataInput {
      *
      * <p>The format is described further in {@link DataOutput#writeVInt(int)}.
      *
+     * @throws IOException io error
      * @see DataOutput#writeVInt(int)
+     * @return int
      */
     public int readVInt() throws IOException {
     /* This is the original code of this method,
@@ -118,7 +126,9 @@ public abstract class DataInput {
      * Read a {@link BitUtil#zigZagDecode(int) zig-zag}-encoded {@link #readVInt() variable-length}
      * integer.
      *
+     * @throws IOException io error
      * @see DataOutput#writeZInt(int)
+     * @return int
      */
     public int readZInt() throws IOException {
         return BitUtil.zigZagDecode(readVInt());
@@ -127,7 +137,9 @@ public abstract class DataInput {
     /**
      * Reads eight bytes and returns a long (LE byte order).
      *
+     * @throws IOException io error
      * @see DataOutput#writeLong(long)
+     * @return long
      */
     public long readLong() throws IOException {
         return (readInt() & 0xFFFFFFFFL) | (((long) readInt()) << 32);
@@ -136,7 +148,10 @@ public abstract class DataInput {
     /**
      * Read a specified number of longs.
      *
-     * @lucene.experimental
+     * @param dst    dst
+     * @param offset offset
+     * @param length length
+     * @throws IOException io error
      */
     public void readLongs(long[] dst, int offset, int length) throws IOException {
         ObjectsUtil.checkFromIndexSize(offset, length, dst.length);
@@ -148,9 +163,10 @@ public abstract class DataInput {
     /**
      * Reads a specified number of ints into an array at the specified offset.
      *
-     * @param dst the array to read bytes into
+     * @param dst    the array to read bytes into
      * @param offset the offset in the array to start storing ints
      * @param length the number of ints to read
+     * @throws IOException io error
      */
     public void readInts(int[] dst, int offset, int length) throws IOException {
         ObjectsUtil.checkFromIndexSize(offset, length, dst.length);
@@ -164,7 +180,8 @@ public abstract class DataInput {
      *
      * @param floats the array to read bytes into
      * @param offset the offset in the array to start storing floats
-     * @param len the number of floats to read
+     * @param len    the number of floats to read
+     * @throws IOException io error
      */
     public void readFloats(float[] floats, int offset, int len) throws IOException {
         ObjectsUtil.checkFromIndexSize(offset, len, floats.length);
@@ -180,6 +197,8 @@ public abstract class DataInput {
      * <p>The format is described further in {@link DataOutput#writeVInt(int)}.
      *
      * @see DataOutput#writeVLong(long)
+     * @throws IOException io error
+     * @return long
      */
     public long readVLong() throws IOException {
         return readVLong(false);
@@ -239,6 +258,8 @@ public abstract class DataInput {
      * integer. Reads between one and ten bytes.
      *
      * @see DataOutput#writeZLong(long)
+     * @throws IOException io error
+     * @return long
      */
     public long readZLong() throws IOException {
         return BitUtil.zigZagDecode(readVLong(true));
@@ -248,6 +269,8 @@ public abstract class DataInput {
      * Reads a string.
      *
      * @see DataOutput#writeString(String)
+     * @throws IOException io error
+     * @return string
      */
     public String readString() throws IOException {
         int length = readVInt();
@@ -279,6 +302,7 @@ public abstract class DataInput {
      * DataOutput#writeMapOfStrings(Map)}.
      *
      * @return An immutable map containing the written contents.
+     * @throws IOException io error
      */
     public Map<String, String> readMapOfStrings() throws IOException {
         int count = readVInt();
@@ -301,6 +325,7 @@ public abstract class DataInput {
      * Reads a Set&lt;String&gt; previously written with {@link DataOutput#writeSetOfStrings(Set)}.
      *
      * @return An immutable set containing the written contents.
+     * @throws IOException io error
      */
     public Set<String> readSetOfStrings() throws IOException {
         int count = readVInt();
@@ -321,6 +346,8 @@ public abstract class DataInput {
      * Skip over <code>numBytes</code> bytes. This method may skip bytes in whatever way is most
      * optimal, and may not have the same behavior as reading the skipped bytes. In general, negative
      * <code>numBytes</code> are not supported.
+     * @param numBytes skip bytes num
+     * @throws IOException io error
      */
     public abstract void skipBytes(final long numBytes) throws IOException;
 

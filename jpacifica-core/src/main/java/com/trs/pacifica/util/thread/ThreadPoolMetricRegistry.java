@@ -29,6 +29,7 @@ public class ThreadPoolMetricRegistry {
 
     /**
      * Return the global registry of metric instances.
+     * @return MetricRegistry
      */
     public static MetricRegistry metricRegistry() {
         return metricRegistry;

@@ -22,15 +22,15 @@ public interface EndpointManager {
 
     /**
      * get Endpoint of special node id
-     * @param nodeId
+     * @param nodeId nodeId
      * @return rpc address of node id
      */
     Endpoint getEndpoint(final String nodeId);
 
     /**
      * register Endpoint
-     * @param nodeId
-     * @param endpoint
+     * @param nodeId nodeId
+     * @param endpoint address
      */
     void registerEndpoint(String nodeId, Endpoint endpoint);
 

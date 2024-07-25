@@ -60,6 +60,7 @@ public final class ThreadPoolUtil {
      *                                  {@code maximumPoolSize < corePoolSize}
      * @throws NullPointerException     if {@code workQueue}
      *                                  or {@code threadFactory} or {@code handler} is null
+     * @return ThreadPoolExecutor
      */
     public static ThreadPoolExecutor newThreadPool(final String poolName, final boolean enableMetric,
                                                    final int coreThreads, final int maximumThreads,
@@ -95,6 +96,7 @@ public final class ThreadPoolUtil {
      *                                  {@code maximumPoolSize < corePoolSize}
      * @throws NullPointerException     if {@code workQueue}
      *                                  or {@code threadFactory} or {@code handler} is null
+     * @return ThreadPoolExecutor
      */
     public static ThreadPoolExecutor newThreadPool(final String poolName, final boolean enableMetric,
                                                    final int coreThreads, final int maximumThreads,

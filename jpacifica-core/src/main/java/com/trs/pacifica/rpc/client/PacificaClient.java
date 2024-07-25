@@ -28,32 +28,74 @@ public interface PacificaClient extends ReplicaClient {
     public static final int DEFAULT_TIMEOUT_MS = SystemPropertyUtil.getInt("pacifica.client.rpc.client.timeout.ms", 60 * 1000);
 
     /**
-     * @param request
-     * @param callback
-     * @return
+     * @param request  request
+     * @param callback callback
+     * @return Future
      */
     default Future<RpcRequest.AppendEntriesResponse> appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback) {
         return appendLogEntries(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
+    /**
+     * @param request   request
+     * @param callback  callback
+     * @param timeoutMs timeoutMs
+     * @return Future
+     */
     Future<RpcRequest.AppendEntriesResponse> appendLogEntries(RpcRequest.AppendEntriesRequest request, RpcRequestFinished<RpcRequest.AppendEntriesResponse> callback, int timeoutMs);
 
 
+    /**
+     * @param request  request
+     * @param callback callback
+     * @return Future
+     */
     default Future<RpcRequest.InstallSnapshotResponse> installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback) {
         return installSnapshot(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
+    /**
+     * @param request   request
+     * @param callback  callback
+     * @param timeoutMs timeout
+     * @return Future
+     */
     Future<RpcRequest.InstallSnapshotResponse> installSnapshot(RpcRequest.InstallSnapshotRequest request, RpcRequestFinished<RpcRequest.InstallSnapshotResponse> callback, int timeoutMs);
 
+    /**
+     * @param request   request
+     * @param callback  callback
+     * @param timeoutMs timeout
+     * @return Future
+     */
     Future<RpcRequest.ReplicaRecoverResponse> recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback, int timeoutMs);
 
+    /**
+     *
+     * @param request request
+     * @param callback callback
+     * @return Future
+     */
     default Future<RpcRequest.ReplicaRecoverResponse> recoverReplica(RpcRequest.ReplicaRecoverRequest request, RpcRequestFinished<RpcRequest.ReplicaRecoverResponse> callback) {
         return recoverReplica(request, callback, DEFAULT_TIMEOUT_MS);
     }
 
+    /**
+     *
+     * @param request request
+     * @param callback callback
+     * @param timeoutMs timeout
+     * @return Future
+     */
     Future<RpcRequest.GetFileResponse> getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback, final int timeoutMs);
 
 
+    /**
+     *
+     * @param request request
+     * @param callback callback
+     * @return Future
+     */
     default Future<RpcRequest.GetFileResponse> getFile(RpcRequest.GetFileRequest request, RpcRequestFinished<RpcRequest.GetFileResponse> callback) {
         return getFile(request, callback, DEFAULT_TIMEOUT_MS);
     }

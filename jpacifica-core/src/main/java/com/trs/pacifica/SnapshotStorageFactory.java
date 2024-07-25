@@ -25,9 +25,9 @@ public interface SnapshotStorageFactory {
     /**
      * create SnapshotStorage for path
      *
-     * @param path
-     * @return
-     * @throws PacificaException
+     * @param path path of snapshot storage path
+     * @return SnapshotStorage
+     * @throws PacificaException if error
      */
     SnapshotStorage newSnapshotStorage(final String path) throws PacificaException;
 

@@ -35,21 +35,36 @@ public interface ReplicaService {
 
 
     /**
-     * @param request
-     * @param callback
-     * @return
-     * @throws
+     * @param request  request
+     * @param callback callback
+     * @return response
+     * @throws PacificaException if error
      */
     public AppendEntriesResponse handleAppendLogEntryRequest(AppendEntriesRequest request, RpcRequestFinished<AppendEntriesResponse> callback) throws PacificaException;
 
-
+    /**
+     * @param request  request
+     * @param callback callback
+     * @return response
+     * @throws PacificaException if error
+     */
     public ReplicaRecoverResponse handleReplicaRecoverRequest(ReplicaRecoverRequest request, RpcRequestFinished<ReplicaRecoverResponse> callback) throws PacificaException;
 
-
+    /**
+     * @param request  request
+     * @param callback callback
+     * @return response
+     * @throws PacificaException if error
+     */
     public InstallSnapshotResponse handleInstallSnapshotRequest(InstallSnapshotRequest request, RpcRequestFinished<InstallSnapshotResponse> callback) throws PacificaException;
 
+    /**
+     * @param request  request
+     * @param callback callback
+     * @return response
+     * @throws PacificaException if error
+     */
     public GetFileResponse handleGetFileRequest(GetFileRequest request, RpcRequestFinished<GetFileResponse> callback) throws PacificaException;
-
 
 
 }

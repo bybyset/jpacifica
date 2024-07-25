@@ -32,6 +32,8 @@ public class ExecutorServiceHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutorServiceHelper.class);
 
     /**
+     * @param pool thread pool
+     * @return true if success
      * @see #shutdownAndAwaitTermination(ExecutorService, long)
      */
     public static boolean shutdownAndAwaitTermination(final ExecutorService pool) {
@@ -43,6 +45,10 @@ public class ExecutorServiceHelper {
      * phases, first by calling {@code shutdown} to reject incoming tasks,
      * and then calling {@code shutdownNow}, if necessary, to cancel any
      * lingering tasks.
+     *
+     * @param pool          thread pool
+     * @param timeoutMillis timeout
+     * @return true if success
      */
     public static boolean shutdownAndAwaitTermination(final ExecutorService pool, final long timeoutMillis) {
         if (pool == null) {

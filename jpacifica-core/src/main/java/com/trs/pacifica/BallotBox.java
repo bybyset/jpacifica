@@ -17,11 +17,9 @@
 
 package com.trs.pacifica;
 
-import com.trs.pacifica.async.Callback;
 import com.trs.pacifica.model.ReplicaGroup;
 import com.trs.pacifica.model.ReplicaId;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -31,9 +29,10 @@ import java.util.concurrent.locks.Lock;
  * move forward the commit point, which is the callback {@link StateMachineCaller#commitAt(long)}
  * </p>
  * <p>
- * Quorum: N < W + R
- * <li> W = N </li>
- * <li> R = 1 </li>
+ * Quorum:<br>
+ * {@code N < W + R } <br>
+ * {@code W = N} <br>
+ * {@code R = 1} <br>
  * </p>
  */
 public interface BallotBox {
@@ -51,8 +50,8 @@ public interface BallotBox {
     /**
      * cancel ballot of the replicaId
      *
-     * @param replicaId
-     * @return
+     * @param replicaId replicaId
+     * @return true if success
      */
     boolean cancelBallot(final ReplicaId replicaId);
 
@@ -60,9 +59,9 @@ public interface BallotBox {
     /**
      * recover ballot of the replicaId from log index
      *
-     * @param replicaId
-     * @param startLogIndex
-     * @return
+     * @param replicaId     replicaId
+     * @param startLogIndex startLogIndex
+     * @return true if success
      */
     boolean recoverBallot(final ReplicaId replicaId, final long startLogIndex);
 
@@ -72,24 +71,24 @@ public interface BallotBox {
      * receive the ballots of replicaId, [startLogIndex, endLogIndex]
      * When the quorum is satisfied, we commit
      *
-     * @param replicaId
-     * @param startLogIndex
-     * @param endLogIndex
+     * @param replicaId     replicaId
+     * @param startLogIndex startLogIndex
+     * @param endLogIndex   endLogIndex
      * @return true is success
-     * @throws IllegalArgumentException if startLogIndex > endLogIndex
+     * @throws IllegalArgumentException if startLogIndex greater than endLogIndex
      */
     boolean ballotBy(final ReplicaId replicaId, final long startLogIndex, final long endLogIndex);
 
 
     /**
-     * @return
+     * @return commitLock
      */
     Lock getCommitLock();
 
     /**
      * get last committed log index
      *
-     * @return
+     * @return log index
      */
     long getLastCommittedLogIndex();
 

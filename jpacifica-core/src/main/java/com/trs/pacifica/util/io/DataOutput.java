@@ -32,6 +32,8 @@ public abstract class DataOutput {
      * All other data types are defined as sequences of bytes, so file formats are byte-order
      * independent.
      *
+     * @param b byte
+     * @throws IOException io error
      * @see DataInput#readByte()
      */
     public abstract void writeByte(byte b) throws IOException;
@@ -42,6 +44,7 @@ public abstract class DataOutput {
      *
      * @param b      the bytes to write
      * @param length the number of bytes to write
+     * @throws IOException io error
      * @see DataInput#readBytes(byte[], int, int)
      */
     public void writeBytes(byte[] b, int length) throws IOException {
@@ -55,6 +58,7 @@ public abstract class DataOutput {
      * @param b      the bytes to write
      * @param offset the offset in the byte array
      * @param length the number of bytes to write
+     * @throws IOException io error
      * @see DataInput#readBytes(byte[], int, int)
      */
     public abstract void writeBytes(byte[] b, int offset, int length) throws IOException;
@@ -63,6 +67,8 @@ public abstract class DataOutput {
     /**
      * Writes an int as four bytes (LE byte order).
      *
+     * @param i int
+     * @throws IOException io error
      * @see DataInput#readInt()
      */
     public void writeInt(int i) throws IOException {
@@ -76,6 +82,8 @@ public abstract class DataOutput {
     /**
      * Writes a short as two bytes (LE byte order).
      *
+     * @param i stort
+     * @throws IOException io error
      * @see DataInput#readShort()
      */
     public void writeShort(short i) throws IOException {
@@ -188,7 +196,7 @@ public abstract class DataOutput {
      * <p>This provides compression while still being efficient to decode.
      *
      * @param i Smaller values take fewer bytes. Negative numbers are supported, but should be
-     *     avoided.
+     *          avoided.
      * @throws IOException If there is an I/O error writing to the underlying medium.
      * @see DataInput#readVInt()
      */
@@ -205,6 +213,8 @@ public abstract class DataOutput {
      * variable-length} integer. This is typically useful to write small signed ints and is equivalent
      * to calling <code>writeVInt(BitUtil.zigZagEncode(i))</code>.
      *
+     * @param i int
+     * @throws IOException io error
      * @see DataInput#readZInt()
      */
     public final void writeZInt(int i) throws IOException {
@@ -214,6 +224,8 @@ public abstract class DataOutput {
     /**
      * Writes a long as eight bytes (LE byte order).
      *
+     * @param i long
+     * @throws IOException io error
      * @see DataInput#readLong()
      */
     public void writeLong(long i) throws IOException {
@@ -227,6 +239,8 @@ public abstract class DataOutput {
      *
      * <p>The format is described further in {@link DataOutput#writeVInt(int)}.
      *
+     * @param i long
+     * @throws IOException io error
      * @see DataInput#readVLong()
      */
     public final void writeVLong(long i) throws IOException {
@@ -250,7 +264,9 @@ public abstract class DataOutput {
      * variable-length} long. Writes between one and ten bytes. This is typically useful to write
      * small signed ints.
      *
+     * @param i long
      * @see DataInput#readZLong()
+     * @throws IOException io error
      */
     public final void writeZLong(long i) throws IOException {
         writeSignedVLong(BitUtil.zigZagEncode(i));
@@ -262,7 +278,9 @@ public abstract class DataOutput {
      * <p>Writes strings as UTF-8 encoded bytes. First the length, in bytes, is written as a {@link
      * #writeVInt VInt}, followed by the bytes.
      *
+     * @param s String
      * @see DataInput#readString()
+     * @throws IOException io error
      */
     public void writeString(String s) throws IOException {
         final BytesRef utf8Result = new BytesRef(s);
@@ -273,7 +291,12 @@ public abstract class DataOutput {
     private static int COPY_BUFFER_SIZE = 16384;
     private byte[] copyBuffer;
 
-    /** Copy numBytes bytes from input to ourself. */
+    /**
+     * Copy numBytes bytes from input to ourself.
+     * @param input input
+     * @param numBytes  byte num
+     * @throws IOException io error
+     */
     public void copyBytes(DataInput input, long numBytes) throws IOException {
         assert numBytes >= 0 : "numBytes=" + numBytes;
         long left = numBytes;
@@ -296,6 +319,7 @@ public abstract class DataOutput {
      *
      * @param map Input map.
      * @throws NullPointerException if {@code map} is null.
+     * @throws IOException io error
      */
     public void writeMapOfStrings(Map<String, String> map) throws IOException {
         writeVInt(map.size());
@@ -313,6 +337,7 @@ public abstract class DataOutput {
      *
      * @param set Input set.
      * @throws NullPointerException if {@code set} is null.
+     * @throws IOException io error
      */
     public void writeSetOfStrings(Set<String> set) throws IOException {
         writeVInt(set.size());

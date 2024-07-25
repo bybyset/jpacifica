@@ -68,8 +68,9 @@ public class ThreadUtil {
     /**
      * run callback in executor
      * for {@link ExecutorCallback} will run in specified executor {@link  ExecutorCallback#executor()}
-     * @param callback
-     * @param result
+     *
+     * @param callback callback
+     * @param result   result
      */
     public static void runCallback(final Callback callback, final Finished result) {
         if (callback == null) {
@@ -90,8 +91,9 @@ public class ThreadUtil {
 
     /**
      * run in executor
-     * @param runnable
-     * @return
+     *
+     * @param runnable runnable
+     * @return Future
      */
     public static Future<?> runInThread(final Runnable runnable) {
         return _CALLBACK_EXECUTOR.submit(runnable);

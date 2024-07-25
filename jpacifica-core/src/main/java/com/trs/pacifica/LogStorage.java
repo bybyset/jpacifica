@@ -60,7 +60,7 @@ public interface LogStorage {
     /**
      * append LogEntry
      *
-     * @param logEntry
+     * @param logEntry logEntry
      * @return true if success
      */
     boolean appendLogEntry(final LogEntry logEntry);
@@ -71,9 +71,8 @@ public interface LogStorage {
      * It will always start appending from 0,
      * and the failed logs will break and return the number of successfully appended logEntries
      *
-     * @param logEntries
+     * @param logEntries logEntries
      * @return number of success
-     * @throws PacificaException
      */
     int appendLogEntries(final List<LogEntry> logEntries);
 
@@ -81,7 +80,7 @@ public interface LogStorage {
     /**
      * truncate logs from storage's head, [first_log_index, first_index_kept) will be discarded.
      *
-     * @param firstIndexKept
+     * @param firstIndexKept firstIndexKept
      * @return first LogId. it is LogId(0 ,0) if nothing
      */
     LogId truncatePrefix(final long firstIndexKept);
@@ -89,7 +88,7 @@ public interface LogStorage {
     /**
      * truncate logs from storage's tail, (last_index_kept, last_log_index]  will be discarded.
      *
-     * @param lastIndexKept
+     * @param lastIndexKept lastIndexKept
      * @return last LogId. it is LogId(0 ,0) if nothing
      */
     LogId truncateSuffix(final long lastIndexKept);
@@ -99,8 +98,8 @@ public interface LogStorage {
      * Drop all the existing logs and reset next log index to |next_log_index|.
      * This function is called after installing snapshot from Primary.
      *
-     * @param nextLogIndex
-     * @return
+     * @param nextLogIndex nextLogIndex
+     * @return true if success
      */
     boolean reset(final long nextLogIndex);
 
@@ -108,14 +107,14 @@ public interface LogStorage {
     /**
      * open the log storage
      *
-     * @throws PacificaException
+     * @throws PacificaException if error
      */
     void open() throws PacificaException;
 
     /**
      * close the log storage
      *
-     * @throws PacificaException
+     * @throws PacificaException if error
      */
     void close() throws PacificaException;
 

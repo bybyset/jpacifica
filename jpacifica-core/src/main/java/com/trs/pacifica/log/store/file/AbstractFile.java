@@ -21,7 +21,10 @@ import com.trs.pacifica.log.dir.Directory;
 import com.trs.pacifica.log.io.Input;
 import com.trs.pacifica.log.io.Output;
 import com.trs.pacifica.util.ObjectsUtil;
-import com.trs.pacifica.util.io.*;
+import com.trs.pacifica.util.io.ByteDataBuffer;
+import com.trs.pacifica.util.io.DataBuffer;
+import com.trs.pacifica.util.io.EmptyDataBuffer;
+import com.trs.pacifica.util.io.LinkedDataBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +34,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -81,8 +83,8 @@ public abstract class AbstractFile implements Closeable {
      * Starting at the head of the file,
      * we iterate over the stored entry and move the pointer to the last writable position
      *
-     * @return
-     * @throws IOException
+     * @return true if success
+     * @throws IOException io error
      */
     public boolean recover() throws IOException {
         if (this.loadHeader()) {
@@ -130,6 +132,8 @@ public abstract class AbstractFile implements Closeable {
      * @param logIndex      the target logIndex
      * @param resetPosition the need to rest position of the file, this parameter is needed only if
      *                      this file is a segmentFile
+     * @return position of file after truncate
+     * @throws IOException io error
      */
     public int truncate(final long logIndex, int resetPosition) throws IOException {
         if (logIndex < this.header.getFirstLogIndex() || logIndex > this.lastLogIndex) {
@@ -150,8 +154,9 @@ public abstract class AbstractFile implements Closeable {
     /**
      * Start at the file header and look for the logIndex to be specified at the start position of the file
      *
-     * @param logIndex
-     * @return
+     * @param logIndex index of log
+     * @return start position of the file
+     * @throws IOException io error
      */
     protected int lookupStartPositionFromHead(final long logIndex) throws IOException {
         int position = FileHeader.getBytesSize();
@@ -206,7 +211,7 @@ public abstract class AbstractFile implements Closeable {
      * @param logIndex  index of append log
      * @param dataInput bytes of append log
      * @return number of bytes written
-     * @throws IOException
+     * @throws IOException io error
      */
     protected int doAppendData(final long logIndex, final DataBuffer dataInput) throws IOException {
         if (!this.header.isAvailable()) {
@@ -222,9 +227,9 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     * @param dataInput
+     * @param dataInput append data
      * @return number of bytes written
-     * @throws IOException
+     * @throws IOException io error
      */
     protected int doAppendData(final DataBuffer dataInput) throws IOException {
         if (header.isBlank()) {
@@ -281,9 +286,9 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     * @param data
+     * @param data append data
      * @return number of bytes written
-     * @throws IOException
+     * @throws IOException io error
      */
     protected int appendData(final DataBuffer data) throws IOException {
         final int currentPosition = this.wrotePosition.get();
@@ -358,7 +363,7 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     * @return
+     * @return first log index
      */
     public long getFirstLogIndex() {
         return this.header.getFirstLogIndex();
@@ -377,14 +382,14 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     * @return
+     * @return relative start offset all store
      */
     public long getStartOffset() {
         return this.header.getStartOffset();
     }
 
     /**
-     * @return
+     * @return relative end offset all store
      */
     public long getEndOffset() {
         return this.header.getStartOffset() + this.fileSize;
@@ -409,7 +414,7 @@ public abstract class AbstractFile implements Closeable {
     /**
      * get current write position in the file
      *
-     * @return
+     * @return wrote position of the file
      */
     public int getWrotePosition() {
         return this.wrotePosition.get();
@@ -418,7 +423,7 @@ public abstract class AbstractFile implements Closeable {
     /**
      * get current flushed position in the file
      *
-     * @return
+     * @return flushed position of the file
      */
     public int getFlushedPosition() {
         return this.flushedPosition.get();
@@ -428,7 +433,7 @@ public abstract class AbstractFile implements Closeable {
     /**
      * Get the free available byte space
      *
-     * @return
+     * @return free available byte space
      */
     public int getFreeByteSize() {
         return this.fileSize - this.wrotePosition.get();
@@ -436,6 +441,8 @@ public abstract class AbstractFile implements Closeable {
 
     /**
      * fill bytes at the end of the file
+     *
+     * @throws IOException io error
      */
     public void fillEmptyBytesInFileEnd() throws IOException {
         if (this.wrotePosition.get() >= this.fileSize) {
@@ -449,20 +456,23 @@ public abstract class AbstractFile implements Closeable {
         appendData(new ByteDataBuffer(footer));
     }
 
+    /**
+     * @return filename
+     */
     public String getFilename() {
         return filename;
     }
 
 
     /**
-     * @return
+     * @return true if it is marked as Available
      */
     public boolean isAvailable() {
         return this.header.isAvailable();
     }
 
     /**
-     * @return
+     * @return true if it is marked as Blank
      */
     public boolean isBlank() {
         return this.header.isBlank();
@@ -486,6 +496,11 @@ public abstract class AbstractFile implements Closeable {
         this.lastLogIndex = NO_LAST_LOG_INDEX;
     }
 
+    /**
+     * rest wrote and flushed position to newPosition
+     *
+     * @param newPosition new position
+     */
     void restPosition(final int newPosition) {
         this.setWrotePosition(newPosition);
         this.setFlushedPosition(newPosition);
@@ -500,6 +515,11 @@ public abstract class AbstractFile implements Closeable {
         }
     }
 
+    /**
+     * Flush the cache to disk and mark position
+     *
+     * @throws IOException io error
+     */
     public void flush() throws IOException {
         final int position = this.getWrotePosition();
         final int flushedPosition = this.getFlushedPosition();
@@ -519,7 +539,11 @@ public abstract class AbstractFile implements Closeable {
     }
 
     /**
-     * Clear data in [startPos, startPos+64).
+     * cleans data starting at the specified startPos.
+     * we only clear data in [startPos, startPos+64).
+     *
+     * @param startPos start position of the file
+     * @throws IOException io error
      */
     public void clear(final int startPos) throws IOException {
         if (startPos < 0 || startPos > this.fileSize) {

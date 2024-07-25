@@ -50,10 +50,10 @@ public class SegmentFile extends AbstractFile {
 
 
     /**
-     * @param logIndex
+     * @param logIndex log index
      * @param segmentBlock segment block
      * @return number of bytes written
-     * @throws IOException
+     * @throws IOException io error
      */
     public int appendLogEntry(final long logIndex, final Block segmentBlock) throws IOException {
         Objects.requireNonNull(segmentBlock, "segmentBlock");
@@ -67,7 +67,7 @@ public class SegmentFile extends AbstractFile {
     /**
      * @param segmentBlock segment block
      * @return number of bytes written
-     * @throws IOException
+     * @throws IOException io error
      */
     public int appendLogEntry(final Block segmentBlock) throws IOException {
         Objects.requireNonNull(segmentBlock, "segmentBlock");
@@ -80,7 +80,7 @@ public class SegmentFile extends AbstractFile {
      *
      * @param position position in the file
      * @return null if the position is greater than file size or is end of file or not found
-     * @throws IOException
+     * @throws IOException io error
      */
     public Block lookupBlock(final int position) throws IOException {
         if (position >= fileSize) {

@@ -27,8 +27,8 @@ public interface ReplicaServiceManager {
     /**
      * register ReplicaService
      *
-     * @param replicaId
-     * @param replicaService
+     * @param replicaId replicaId
+     * @param replicaService replicaService
      */
     void registerReplicaService(final ReplicaId replicaId, final ReplicaService replicaService);
 
@@ -38,7 +38,7 @@ public interface ReplicaServiceManager {
      * Rpc request between replicas is directed to the
      * specified implementation of ReplicaService by its replicaId
      *
-     * @param replicaId
+     * @param replicaId replicaId
      * @return null if not found
      */
     ReplicaService getReplicaService(final ReplicaId replicaId);
@@ -47,7 +47,7 @@ public interface ReplicaServiceManager {
     /**
      * unregister ReplicaService
      *
-     * @param replicaId
+     * @param replicaId replicaId
      * @return null if not found
      */
     ReplicaService unregisterReplicaService(final ReplicaId replicaId);

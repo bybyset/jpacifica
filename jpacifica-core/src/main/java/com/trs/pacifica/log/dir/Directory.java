@@ -34,7 +34,7 @@ public abstract class Directory implements Closeable {
     /**
      * Returns names of all files stored in this directory.
      *
-     * @return
+     * @return files array
      * @throws IOException in case of I/O error
      */
     public abstract String[] listAll() throws IOException;
@@ -56,9 +56,9 @@ public abstract class Directory implements Closeable {
      * <p>This method must throw either {@link NoSuchFileException} or {@link FileNotFoundException}
      * if {@code name} points to a non-existing file.
      *
-     * @param name
-     * @return
-     * @throws IOException
+     * @param name filename
+     * @return byte num of the file
+     * @throws IOException io error
      */
     public abstract int fileLength(String name) throws IOException;
 
@@ -66,8 +66,8 @@ public abstract class Directory implements Closeable {
     /**
      * Ensures that any writes to these files are moved to stable storage (made durable).
      *
-     * @param names
-     * @throws IOException
+     * @param names names
+     * @throws IOException io error
      */
     public abstract void sync(Collection<String> names) throws IOException;
 
@@ -93,7 +93,7 @@ public abstract class Directory implements Closeable {
      * Creates a file with the specified filename and file byte size
      * @param filename name of the file
      * @param fileSize byte size of the file
-     * @throws IOException
+     * @throws IOException io error
      */
     public abstract void createFile(String filename, int fileSize) throws IOException;
 
@@ -109,7 +109,8 @@ public abstract class Directory implements Closeable {
     /**
      * Returns a set of files currently pending deletion in this directory.
      *
-     * @lucene.internal
+     * @return file name set
+     * @throws IOException io error
      */
     public abstract Set<String> getPendingDeletions() throws IOException;
 }
