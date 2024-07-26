@@ -1,0 +1,119 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Configure projects for publishing Maven artifacts and set up repeatable metadata.
+configure(rootProject.ext.mavenProjects) { Project project ->
+    project.apply plugin: 'maven-publish'
+    project.apply plugin: 'signing'
+
+    plugins.withType(JavaPlugin) {
+        // We have two types of publications: jars and signed jars.
+        publishing {
+            publications {
+                jars(MavenPublication)
+                signedJars(MavenPublication)
+            }
+        }
+
+        // signedJars publication is always signed.
+        signing {
+            sign publishing.publications.signedJars
+        }
+
+        // Each publication consists of the java components, source and javadoc artifacts.
+        // Add tasks to assemble source and javadoc JARs.
+        task sourcesJar(type: Jar, dependsOn: classes) {
+            archiveClassifier = 'sources'
+            from sourceSets.main.allJava
+        }
+
+        task javadocJar(type: Jar, dependsOn: javadoc) {
+            archiveClassifier = 'javadoc'
+            from javadoc.destinationDir
+        }
+
+        // This moves pom metadata configuration after all the scripts of all projects
+        // have been evaluated. This is required because we set artifact groups
+        // and archivesBaseName in other scripts and some of the properties below don't
+        // accept lazy property providers (so everything must be in its final form).
+        gradle.projectsEvaluated {
+            publishing {
+                publications.each { publication ->
+                    configure(publication) {
+                        from components.java
+                        groupId = project.group
+                        artifactId = project.archivesBaseName
+
+                        artifact sourcesJar
+                        artifact javadocJar
+
+                        pom({
+                            withXml {
+                                def dm = asNode().dependencyManagement
+                                if (dm) dm.replaceNode {}
+                            }
+                        })
+                    }
+                }
+            }
+        }
+
+        // Configure pom defaults for all publications.
+        publishing {
+            publications.each { publication ->
+                configure(publication) {
+                    pom {
+                        name = provider { -> "${project.name}" }
+                        description = provider { -> "${project.description}" }
+                        url = "https://github.com/bybyset/jpacifica"
+
+                        licenses {
+                            license {
+                                name = "The Apache License, Version 2.0"
+                                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                            }
+                        }
+
+                        inceptionYear = "2024"
+
+                        issueManagement {
+                            system = "GitHub"
+                            url = "https://github.com/bybyset/jpacifica/issues"
+                        }
+
+                        developers {
+                            developer {
+                                id = 'bybyset'
+                                name = 'cff'
+                                url = 'https://github.com/bybyset'
+                            }
+                        }
+                        scm {
+                            connection = 'scm:git:https://github.com/bybyset/jpacifica.git'
+                            developerConnection = 'scm:git:ssh://github.com/bybyset/jpacifica.git'
+                            url = 'https://github.com/bybyset/jpacifica'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
+}

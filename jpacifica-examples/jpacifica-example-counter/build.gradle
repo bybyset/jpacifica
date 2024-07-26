@@ -17,7 +17,7 @@
 apply plugin: 'java-library'
 apply plugin: 'com.google.protobuf'
 
-description = 'jpacifica grpc impl'
+description = 'jpacifica atomic counter example impl'
 
 ext {
     jraft_version = '1.3.14'

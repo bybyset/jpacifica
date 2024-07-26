@@ -16,7 +16,7 @@
  */
 apply plugin: 'java-library'
 
-description = 'jpacifica grpc impl'
+description = 'jpacifica extension grpc impl'
 
 ext {
     grpc_version = '1.63.0'
