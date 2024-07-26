@@ -38,21 +38,21 @@ public interface ReplicaGroup {
     /**
      * get name of the replica group
      *
-     * @return
+     * @return group name
      */
     public String getGroupName();
 
     /**
      * get ID of the Primary replica
      *
-     * @return
+     * @return ReplicaId of Primary
      */
     public ReplicaId getPrimary();
 
     /**
      * list ID of the Secondary replica
      *
-     * @return
+     * @return secondaries
      */
     public List<ReplicaId> listSecondary();
 
@@ -61,7 +61,7 @@ public interface ReplicaGroup {
      * When we send these requests to the "configuration cluster", we carry the version.
      * requests is them:
      *
-     * @return
+     * @return version
      * @see ReConfiguration#addSecondary(long, ReplicaId)
      * @see ReConfiguration#removeSecondary(long, ReplicaId)
      * @see ReConfiguration#changePrimary(long, ReplicaId)
@@ -72,7 +72,7 @@ public interface ReplicaGroup {
     /**
      * get term of the current primary replica
      *
-     * @return
+     * @return primary term
      */
     public long getPrimaryTerm();
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 apply plugin: 'java-library'
-apply plugin: 'org.jreleaser'
+apply plugin: 'maven-publish'
 
 description = 'jpacifica config library'
 

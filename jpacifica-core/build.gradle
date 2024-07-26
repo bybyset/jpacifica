@@ -14,21 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-buildscript {
-    repositories {
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-    }
-    dependencies {
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.19")
-    }
-}
-
 apply plugin: 'java-library'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'maven-publish'
-apply plugin: 'org.jreleaser'
+apply plugin: 'signing'
 
 description = 'jpacifica core library'
 
@@ -62,6 +51,10 @@ test {
     useJUnitPlatform()
 }
 
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
 protobuf {
     // Download from repositories
     protoc {
@@ -69,9 +62,9 @@ protobuf {
     }
     generatedFilesBaseDir = 'generated-sources'
     generateProtoTasks {
-        all().each { task ->
+        all().configureEach { task ->
         }
-        ofSourceSet('main')
+        ofSourceSet("main")
     }
 }
 
@@ -80,27 +73,32 @@ tasks.withType(Copy) {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 }
-
-
 java {
     withJavadocJar()
     withSourcesJar()
 }
 
+tasks.named("sourcesJar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.sourcesJar.mustRunAfter(tasks.generateProto)
+
 publishing {
     publications {
-        maven(MavenPublication) {
+        pluginMaven(MavenPublication) {
+            artifact sourcesJar
+            artifact javadocJar
             from components.java
-
             pom {
                 name = 'jpacifica'
                 description = description
-                url = 'https://github.com/aalmiray/app'
+                url = 'https://github.com/bybyset/jpacifica'
                 inceptionYear = '2024'
                 licenses {
                     license {
-                        name = 'Apache-2.0'
-                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                     }
                 }
                 developers {
@@ -121,28 +119,15 @@ publishing {
 
     repositories {
         maven {
-            url = layout.buildDirectory.dir('staging-deploy')
+            url = version.endsWith("SNAPSHOT") ? publishMavenUrlSnapshot : publishMavenUrlRelease
+            credentials {
+                username = "${sonatypeUsername}"
+                password = "${sonatypePassword}"
+            }
         }
     }
 }
 
-jreleaser {
-    signing {
-        active = 'ALWAYS'
-        armored = true
-    }
-    deploy {
-        maven {
-            nexus2 {
-                'maven-central' {
-                    active = 'ALWAYS'
-                    url = 'https://s01.oss.sonatype.org/service/local'
-                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-                    closeRepository = true
-                    releaseRepository = false
-                    stagingRepository('target/staging-deploy')
-                }
-            }
-        }
-    }
+signing {
+    sign publishing.publications.pluginMaven
 }

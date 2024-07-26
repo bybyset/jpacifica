@@ -68,9 +68,9 @@ public interface ReConfiguration {
      * When the conf cluster accepts and successfully processes the request,
      * the replica is demoted from Primary to Candidate.
      *
-     * @param version
-     * @param replicaId
-     * @return
+     * @param version version
+     * @param replicaId replicaId of new primary
+     * @return true if success
      */
     boolean changePrimary(final long version, final ReplicaId replicaId);
 

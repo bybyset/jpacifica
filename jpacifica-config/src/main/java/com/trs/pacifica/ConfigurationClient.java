@@ -24,8 +24,8 @@ public interface ConfigurationClient extends ReConfiguration {
     /**
      * get replica group by group name
      *
-     * @param groupName
-     * @return
+     * @param groupName  groupName
+     * @return ReplicaGroup
      */
     ReplicaGroup getReplicaGroup(final String groupName);
 

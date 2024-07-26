@@ -1,11 +1,9 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'org.jreleaser' version '1.13.1'
+    id 'signing'
+    id "com.google.protobuf" version "0.9.0"
 }
-
-group = 'io.github.bybyset'
-version = '1.0.0'
 
 allprojects {
     repositories {
@@ -45,30 +43,17 @@ subprojects {
         testImplementation "org.junit.jupiter:junit-jupiter-engine:$jupiter_version"
     }
 
-}
 
-java {
-    withJavadocJar()
-    withSourcesJar()
 }
 
 publishing {
-    repositories {
-        maven {
-            name = "Snapshots"
-            url = "https://aws.oss.sonatype.org/content/repositories/snapshots"
-            credentials {
-                username "$System.env.SONATYPE_USERNAME"
-                password "$System.env.SONATYPE_PASSWORD"
-            }
-        }
-    }
     publications {
-        pluginZip(MavenPublication) { publication ->
+        maven(MavenPublication) {
             pom {
-                name = "jpacifica"
-                description = "java implementation of PacificA"
-                groupId = "io.github.bybyset"
+                name = 'jpacifica'
+                description = description
+                url = 'https://github.com/bybyset/jpacifica'
+                inceptionYear = '2024'
                 licenses {
                     license {
                         name = "The Apache License, Version 2.0"
@@ -77,41 +62,31 @@ publishing {
                 }
                 developers {
                     developer {
-                        name = "bybyset"
-                        url = "https://github.com/bybyset/jpacifica"
+                        id = 'bybyset'
+                        name = 'cff'
+                        url = 'https://github.com/bybyset'
                     }
                 }
+                scm {
+                    connection = 'scm:git:https://github.com/bybyset/jpacifica.git'
+                    developerConnection = 'scm:git:ssh://github.com/bybyset/jpacifica.git'
+                    url = 'https://github.com/bybyset/jpacifica'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = version.endsWith("SNAPSHOT")? publishMavenUrlSnapshot : publishMavenUrlRelease
+            credentials {
+                username = "${sonatypeUsername}"
+                password = "${sonatypePassword}"
             }
         }
     }
 }
 
-jreleaser {
-    signing {
-        active = 'ALWAYS'
-        armored = true
-    }
-    deploy {
-        maven {
-            nexus2 {
-                'maven-central' {
-                    active = 'ALWAYS'
-                    url = 'https://s01.oss.sonatype.org/service/local'
-                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-                    closeRepository = true
-                    releaseRepository = true
-                    stagingRepository('build/staging-deploy')
-                }
-            }
-            /* Portal Publisher API
-            mavenCentral {
-                sonatype {
-                    active = 'ALWAYS'
-                    url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('target/staging-deploy')
-                }
-            }
-            */
-        }
-    }
+signing {
+    sign publishing.publications.maven
 }

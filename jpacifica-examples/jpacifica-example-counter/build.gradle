@@ -19,17 +19,6 @@ apply plugin: 'com.google.protobuf'
 
 description = 'jpacifica grpc impl'
 
-buildscript {
-    repositories {
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-    }
-    dependencies {
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.19")
-    }
-}
-
 ext {
     jraft_version = '1.3.14'
     log4j_version = '2.22.1'
@@ -85,6 +74,7 @@ protobuf {
     generatedFilesBaseDir = 'generated-sources'
     generateProtoTasks {
         all().each { task ->
+
         }
         ofSourceSet('main')
     }
