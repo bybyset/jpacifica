@@ -7,6 +7,9 @@ plugins {
 apply from: file('gradle/globals.gradle')
 
 description = 'jpacifica library'
+ext {
+    snapshotBuild = version.endsWith("SNAPSHOT")
+}
 
 allprojects {
     repositories {

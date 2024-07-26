@@ -15,25 +15,19 @@
  * limitations under the License.
  */
 
-
-// Configure artifact push to apache nexus (releases repository).
-
+// Configure artifact push to Sonatype (releases repository).
 configure(rootProject) {
-  ext {
-    apacheNexusReleasesRepository = "https://repository.apache.org/service/local/staging/deploy/maven2"
-  }
-
   // These access credentials must be passed by the release manager
   // (either on command-line, via the environment or via ~/.gradle.properties).
   def sonatypeUsername = propertyOrEnvOrDefault('sonatypeUsername', "SONATYPE_USERNAME", null)
   def sonatypePassword = propertyOrEnvOrDefault('sonatypePassword', "SONATYPE_PASSWORD", null)
 
-  task mavenToApacheReleases() {
+  task mavenToSonatypeReleases() {
     group "Distribution"
-    description "Publish JPacifica Maven artifacts to Apache Releases repository: ${apacheNexusReleasesRepository}"
+    description "Publish JPacifica Maven artifacts to sonatype repository: ${publishMavenUrlRelease}"
 
     dependsOn rootProject.ext.mavenProjects.collect {
-      it.tasks.matching { it.name == "publishSignedJarsPublicationToApacheReleasesRepository" }
+      it.tasks.matching { it.name == "publishSignedJarsPublicationToSonatypeReleasesRepository" }
     }
   }
 
@@ -42,20 +36,20 @@ configure(rootProject) {
       // Make sure we're pushing a release version. The release repository
       // does not accept snapshots and returns cryptic errors upon trying.
       if (snapshotBuild) {
-        throw new GradleException("ASF releases repository will not accept a snapshot version: ${rootProject.version}")
+        throw new GradleException("Sonatype releases repository will not accept a snapshot version: ${rootProject.version}")
       }
 
       // Make sure access credentials have been passed.
       if (sonatypeUsername == null || sonatypePassword == null) {
         throw new GradleException("sonatypeUsername or sonatypePassword is empty: these are required to publish to " +
-            " ASF Nexus.")
+            " sonatype.")
       }
     }
   }
 
   configure(rootProject.ext.mavenProjects) { Project project ->
     // Make sure any actual publication task is preceded by precondition checks.
-    tasks.matching { it.name ==~ /publish.+ToApacheReleasesRepository/ }.all {
+    tasks.matching { it.name ==~ /publish.+ToSonatypeReleasesRepository/ }.all {
       dependsOn rootProject.tasks.checkReleasesRepositoryPushPreconditions
     }
 
@@ -64,7 +58,7 @@ configure(rootProject) {
       publishing {
         repositories {
           maven {
-            name = "ApacheReleases"
+            name = "SonatypeReleases"
             url = publishMavenUrlRelease
 
             credentials {

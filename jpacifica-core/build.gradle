@@ -71,10 +71,6 @@ tasks.withType(Copy) {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 }
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
 
 tasks.named("sourcesJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
